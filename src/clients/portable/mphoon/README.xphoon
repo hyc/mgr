@@ -1,0 +1,52 @@
+                       xphoon, X11 version
+                     Distribution of 26aug88
+
+Files in this distribution:
+
+    README		this
+    IMakefile		guess
+    Makefile		just to get you bootstrapped
+    main.c		main routine
+    cheapmoon.c		wrapper for standard-sized moon bitmap
+    bigcheapmoon.c	wrapper for big moon bitmap
+    phase.c		phase of moon calculations, from phoon and moontool
+    dtime.c		extracted from the libtws date/time library
+    tws.h		include file from libtws
+    xphoon.man		manual entry
+    cheapmoon.xbm.Z.uu??	standard-sized moon bitmap
+
+To compile: unpack the shar files, and do a 'make unshar' to get
+cheapmoon.bitmap.  Then:
+
+Display size: if your display is a standard Sun low-res 1152x900 screen,
+you can use cheapmoon.xbm.  If you have a Sun high-res 1600x1280 screen,
+and you can FTP, you can fetch bigcheapmoon from expo.lcs.mit.edu, in
+contrib/poskbitmaptars/poskbitmaps.b.tar - the Makefile is already set
+up to make xbigphoon out of bigcheapmoon.  If you have some other size
+display, you will have to HACK.  I suggest using the "pbm" portable
+bitmap package to cut and paste.  Pbm is available for FTP in the same
+place as above, and it has also been distributed over comp.sources.misc
+so it will be in the various archives.  Then:
+
+Once you have the display size figured out:
+ (a) Edit Makefile (not Imakefile) and change the definition of TOP to
+     point to your X11 source tree.
+ (b) make Makefile
+ (c) make depend
+ (d) make
+If things don't work quite right, you may have to mess with the compiler
+flags in Imakefile and go back to step (b).  For instance, we like to add
+-fswitch because some of our Suns have floating point chips and others don't.
+Also, we use the -pipe flag because many of our Suns have small /tmp's.
+
+
+Feedback is welcome - send bug reports, enhancements, checks, money orders,
+gold bullion, drugs, etc. to the addresses below.
+
+    Jef Poskanzer
+    jef@rtsg.ee.lbl.gov
+    {ucbvax, lll-crg, sun!pacbell, apple, hplabs}!well!pokey
+
+    Craig Leres
+    leres@helios.ee.lbl.gov
+    ucbvax!leres

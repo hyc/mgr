@@ -1,0 +1,90 @@
+.TH pgs 1L "July 10, 1992"
+.SH NAME
+pgs \- Preview postscript files in an MGR window
+.SH SYNOPSIS
+.B Pgs
+[ \fB\-a\fP<interval> ]
+[ \fB\-d\fP ]
+[ \fB\-i\fP ]
+[ \fB\-r\fP<dots_per_inch> ]
+<postscript_file>
+.SH DESCRIPTION
+.I Pgs
+is a Postscript interpreter for MGR.  It calls the Ghostscript
+Postscript interpreter
+to render a Postscript file into a set of bitmapped images, 
+one per page.
+The User interface permits the user to peruse through the pages
+interactively.
+.LP
+.I Pgs
+displays the first page as soon as it is finished being rendered.  The remaining
+pages are rendered in the background.  The status line at the top of the
+display prints the current page number, and the number of pages rendered so far.
+If additional pages are being processed, that is indicated on the status
+line as well.
+If the rendered page is larger than the window, the page can be panned around
+using the right most mouse button.  The panning rate and direction is controlled
+by the mouse cursor position relative to the center of the window. If the button
+is held down, it goes into auto-repeat mode until it is released.
+.LP
+The middle mouse button activates a pop-up menu that lets the user select the
+next page,
+previous page, or goto a specific page, quit or suspend.
+In addition, the characters 'n' (or CR),
+and 'p' go to the next and previous pages respectively.
+For "vi" fans, the keys 'h', 'j', 'k' and 'l' cause the page to move
+left, down, up, and right respectively.
+The character 'g' will cause a prompt in the status line for a page number.
+The characters 'q' and '^Z' cause 
+.I pgs
+to quit or suspend respectively.
+.LP
+If the
+.I postscript
+file is specified as '-', standard input is used for the postscript input.
+The command line options are:
+.TP
+-r<res>
+Render the images at 
+.I res
+dots/inch resolution.  The default is 75.
+.TP
+-i
+Render the pages in inverse video
+.TP
+-a<interval>
+adjust the auto-repeat interval for the mouse while panning.
+.I Interval
+is the repeat interval in 100ths of seconds.  The default is 5.
+A value of zero turns off the auto-repeat.
+.TP
+-d
+print lots of diagnostic messages on stderr, which should be re-directed to a
+different window. Setting the environment variable DEBUG has the same effect.
+.LP
+The environment variable TMPDIR can be used to override the default
+temporary directory, which is "/tmp".
+.SH BUGS
+.TP
+*
+Only the first 20 pages are accessible from the menu button.
+.TP
+*
+.B Pgs
+can only be run on the MGR host.
+.SH FILES
+.TP 
+.B gs
+The Ghostscript interpreter.
+.SH SEE ALSO
+gs(1)
+mgr(1L)
+pilot(1)
+.SH AUTHOR
+S. A. Uhler. 
+.SH ACKNOWLEDGEMENTS
+.B pgs
+is based on
+.B pilot
+by S. D. Hawley.

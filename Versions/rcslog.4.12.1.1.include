@@ -1,0 +1,2 @@
+in mgr.h: add findcolorrgb macro, alloccolor macro now has no args.
+add deviceinfo field to BITMAP in bitblit.h

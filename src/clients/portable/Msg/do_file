@@ -1,0 +1,19 @@
+#	$Header$
+#	$Source$
+
+#                        Copyright (c) 1987 Bellcore
+#                            All Rights Reserved
+#       This document contains proprietary information that shall
+#       be distributed or routed only within Bellcore and its
+#       authorized clients, except with written permission of Bellcore.
+
+#! /bin/sh
+# list all file types in current directory
+#
+dir=`echo $* | sed 's./[^/]*$..'`
+(  echo "             ---> $dir <---";
+   cd $dir;
+   file *;
+   echo "Hit RETURN to continue"
+   ) | more
+

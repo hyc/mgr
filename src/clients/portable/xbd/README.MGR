@@ -1,0 +1,14 @@
+This is a MGR port of xbd, the result of a one-evening-hack, mostly done
+on a vt100.
+
+There are default bitmaps in resolution 18x12 provided with the icons,
+which is what I need for my hercules card.  If you have VGA, then you
+should get the pbm package and create new icons by changing the size in
+the Makefile.mgr and use "make -f Makefile.mgr bitmaps".  In contrary to
+the X11 version, recompiling is not neccessary.
+
+The scores file is world-writable.  If you want to prevent cheating,
+then set mgrbd uid games and sgid games and the scores file 660 and
+uid/gid games.
+
+Michael

@@ -1,0 +1,10 @@
+mouse on/off fix in startup.c
+write_ok fix for case of "/"
+do_button.c fix - menu colors over window like over root, not W(style).
+proto.h removes unused memmove prototype
+data.c, defs.h del unused stuff;  initial color_map is B/W.
+mgr.c doesnt pass fg_color to init_colors.
+colormap.c .h, check for wob setup, initialize entire colormap to 2x3x3 true,
+  allocate_color does not set rgb values, add find_color to find rgb values.
+copyright.c calls find_color instead of allocate_color, no need to free_color.
+put_window calls new find_color and changed allocate_color.

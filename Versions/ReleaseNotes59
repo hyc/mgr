@@ -1,0 +1,88 @@
+X-Mn-Key: MGR
+
+Lately, I got more and more involved with working at transputer
+software.  I use MGR daily for usual work and it is stable.  If you are
+interested in a small window system with very low resource usage, MGR is
+for you.  If you want to learn something about GUI programming, 8 1/2 or
+an X11 toolkit may be more appropiate unless you want to rewrite libmgr
+and implement higher functions on top of it.
+
+Since a reliable event handler requires an entirely new appraoch, I
+leave libmgr as it is.  Personally, now I think MGR is *very* difficult
+to use for programming big and user-friendly applications in a race free
+way.  This is the contrary to my point of view when I started with MGR.
+Nevertheless, I learnt a lot with it and the current result is usable.
+Perhaps someone else takes it as a new starting point, it is a nice
+thing to play with.
+
+I will still maintain MGR, which means that you can send me patches or
+new clients and I will apply them.  Unless this happens, this is the
+last release from me.  If you want to upload it to a more common ftp
+site, feel free to do so now, because I don't expect much more activity.
+                                                 [try broman@nosc.mil]
+                              ----------
+
+MGR, version 0.59 for Linux and SunOS (Coherent unfinished).
+
+(Re)move any old versions and unpack src.tz (GNU zipped tape archive) in
+/src/lbin and usr.tz in /usr.
+
+If you don't like these paths, then use others, but remember to edit the
+Configfile after generating it.  YOU NEED TO UNPACK ALL FILES FOR
+COMPILING.  YOU NEED TO READ THE NOTES PRINTED BY THE SCRIPT "Configure"
+AT ITS END AND FOLLOW THEM OR COMPILING MAY NOT WORK.  WARNING: I assume
+using Linux 0.99.13, GCC 2.4.5 and library 4.4.1.
+
+Finally the interface to the bitblit library is complete.  The server
+now should let its fingers out of dealing with BIT_DATA on its own, but
+use the bitblit library instead.  This means, by writing an entirely new
+bitblit library, any kind of video hardware should be supportable
+without changes in the server.  Clients which exchange bitmaps with the
+server now finally got portable.  The semantics of colours and bitblit
+operators need to be documented in the manual page, which is not too
+verbose anyway.
+
+The mgr library contains a new function, m_getevent.  It allows to wait
+for either a keypress or an mgr event, using a timeout.  The code is
+experimental and subject to change.  Its usage is shown by event.c in
+the test clients and by mgrview and walk.  There is no function key
+scanner yet.
+
+Obviously to the pleasure of many people, mgrload now displays the bar
+more similar to xload.
+
+gropbm now can do arcs.
+
+Since nobody objected, snap is gone.  screendump and mgrmag allow you to
+save the screen or parts of it.  rotate is still there, although pnmflip
+from the PBMPLUS package works more nice, because I got votes not to
+remove it.
+
+There is a new icon, sandclock.  mgrsclock really looks more nice now ;-)
+
+eyes.c has been replaced by mgreyes.c, which is rewritten from scratch.
+It is a lot faster and looks more nice.
+
+There is EGA support now, but it is not supported by Configure.
+
+                          --- Things to do ---
+
+Libtex should use 8 bit width-aligned bitmaps instead of converting them
+from 8 to 16 bit alignment in order to work.
+
+The whole linuxblit offers room for major optimisations.  An easy one
+(for people with knowledge about it) is converting the do_* functions to
+inline assembler, which would save lots of procedure calls.  This should
+preferably be done in the do.h file.
+
+The portable sun bitblit library only almost works, there seems to be a
+problem with line drawing.  To see it, compile it, link the MGR server
+with sunport and start a big clock.          [client problem?]
+
+The movie code compiles and partially works, but some bitblit command
+are not executed when replayed.  Start mgrbiff to see the problem.
+
+You can get MGR from ftp.thp.uni-koeln.de [134.95.64.1] pub/linux/mgr or
+[134.95.80.1] pub/thp/linux/mgr, if you can't reach the first site.
+
+Michael (u31b3hs@pool.informatik.rwth-aachen.de)

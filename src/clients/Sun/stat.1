@@ -1,0 +1,115 @@
+'\"
+'\"
+'\"
+'\"                        Copyright (c) 1988 Bellcore
+'\"                            All Rights Reserved
+'\"       Permission is granted to copy or use this program, EXCEPT that it
+'\"       may not be sold for profit, the copyright notice must be reproduced
+'\"       on copies, and credit should be given to Bellcore where it is due.
+'\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+'\"
+'\"	$Header: stat.1,v 4.1 88/06/21 13:52:13 bianchi Exp $
+'\"	$Source: /tmp/mgrsrc/doc/RCS/stat.1,v $
+.TH stat 1L "April 30, 1985"
+.SH NAME
+stat \- Display a strip chart of one or more current machine statistics.
+.SH SYNOPSIS
+.B stat
+[ \fB\-c<color_map_indexes>\fP ]
+[ \fB\-bsf<freq>\fP
+[[ \fB\-<max>\fP ]
+\fB<parameter>\fP ]] ...
+.SH DESCRIPTION
+.B Stat
+is a graphical version of
+.I vmstat
+that runs on
+.I mgr
+terminals.
+.B Stat,
+with no options, displays the list of parameters it will chart.
+.LP
+The following options are recognized on the command line:
+.TP
+.B \-b
+Do not update the display if the window is obscured.
+When the window is uncovered,
+the display rushes to catch up,
+instead of reflecting reality immediately.
+.TP
+.B \-s
+Traces are drawn as thin lines, instead of solid filled.
+.TP
+.B \-c
+If stat is run on a color version of MGR, various parts of the display are
+shown in different colors.  This option alters the colormap index values
+used.  The 
+.B \-c
+is immediately followed by a string of characters in the range of [0-9a-z]
+where each color represents a colormap index from 0 to 36 respectively.
+The position in the string determines what portion of the display is affected
+as follows:
+.sp
+.nf
+#	use
+.sp
+0	unused
+1	background 
+2	title
+3	axis labels
+4	grid lines
+5	values that exeed the maximum
+6	color for plot 1
+7	color for plot 2 etc.
+.sp
+.fl
+.TP
+.B \-f<freq>
+The time interval between display updates is
+.I freq
+seconds.  The default is 5 seconds.
+.TP
+.B -<max>
+specifies the maximum value of the following parameter, in units appropriate for that parameter.
+.TP
+.B <parameter>
+is a code that represents a particular statistic to plot.
+The available parameters are:
+ r	jobs in run q
+ b	jobs blocked
+ w	jobs waiting
+ fre	free memory
+ fr	freed pages
+ d1	disk 1 accesses
+ d2	disk 2 accesses
+ d3	disk 3 accesses
+ d4	disk 4 accesses
+ in	interrupts
+ sy	system calls
+ cs	context switches
+ us	% user time
+ kn	% system time
+ id	% idle time
+.SH SEE ALSO
+mgr(1L)
+vmstat(1)
+.SH DIAGNOSTICS
+.TP
+Window is not wide enough
+Make the window wider and the graph will continue.
+.TP
+Window is not high enough
+Make the window taller and the graph will continue.
+.SH BUGS
+If the window is reshaped,
+.I stat
+requires up to
+.B freq
+(usually 3)
+seconds to learn about the new window size.
+.LP
+.I Stat
+calls 
+.I vmstat(1),
+and assumes a particular (i.e. BSD 4.2) output format from
+.I vmstat(1). 

@@ -1,0 +1,71 @@
+#!/bin/sh
+#                        Copyright (c) 1990 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+#	reset the mgr window state
+
+ESC=""
+CLEAR=""
+TWENTY="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20"
+
+NONL=-n
+NONLEND=
+#NONL=
+#NONLEND="\\c"
+
+if ismgrterm; then :
+else
+   echo "$0 only works on mgr terminals"
+   exit 1
+fi
+
+#	pop the environment stack a few times
+echo $NONL "${ESC}p${ESC}p${ESC}p${ESC}p${ESC}p"$NONLEND
+
+# clear the events
+for i in $TWENTY; do
+	echo $NONL "${ESC}${i}e"$NONLEND
+done
+
+# clear some menus
+for i in $TWENTY; do
+	echo $NONL "${ESC}${i}m"$NONLEND
+done
+
+# clear some bitmaps
+for i in $TWENTY; do
+	echo $NONL "${ESC}${i}b"$NONLEND
+done
+
+#	reset the window modes (except 8 - bury, and 3 - set)
+for i in $TWENTY; do
+	if test $i = 3 
+		then
+		echo $NONL "${ESC}${i}S"$NONLEND
+	elif test $i != 8 
+		then
+		echo $NONL "${ESC}${i}s"$NONLEND
+	fi
+done
+
+# reset the cursor
+echo $NONL "${ESC}0h"$NONLEND
+
+# reset the font
+# echo $NONL "${ESC}F"$NONLEND
+
+# reset the video mode
+echo $NONL "${ESC}n"$NONLEND
+
+# reset the drawing mode (to OR)
+echo $NONL "${ESC}14b"$NONLEND
+
+#	clear the text region
+echo $NONL "${ESC}t"$NONLEND
+
+#	clear the window and home the cursor
+echo $NONL "$CLEAR"$NONLEND

@@ -1,0 +1,65 @@
+#                        Copyright (c) 1987 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+#	$Header: README,v 1.2 88/08/29 13:23:05 sau Exp $
+#	$Source: /tmp/mgrsrc/demo/msg/RCS/README,v $
+
+This directory contains a sample client-server system.  It uses menus
+to traverse the file system, and servers to do things to selected files.
+
+* do		runs a unix command as a server
+* start		calls do with a bunch of canned servers
+* client		monitors communications, and is a prototype for clients
+* alias		is a CSH alias that lets the shell send messages to the servers
+                via mgr menus
+* send		sends a message to a server
+* menus		downloads menus into mgr for use with send and do
+
+USAGE
+-----
+
+1) type make (makes do,client,menus,send and alias)
+   - make sure LIB and INCL in Makefile are correct
+2) make sure you are running mgr (and it is suid to root)
+3) switch to csh (or convert alias to your favorite shell equivalent)
+4) source alias
+5) start up some clients (using start) - try "start more"
+   - open a new window and change to this directory
+   - cat start for some examples
+   - make sure the appropriate icons are in .../icon
+   
+6) type "cd ." to start things off.
+7) use the menu (button 2) to select a file, then
+   use button 1 to pick a server
+
+
+
+MGR message subsystem summary
+--- ------- --------- -------
+m_put(str)		put STR into the global buffer
+m_snarf()		return the global buffer
+
+m_broadcast(str)	broadcast STR to all listeners
+m_sendme(str)		send STR back to self
+m_sendto(id,str)	send STR to window ID
+
+Message events:
+	ACCEPT		accept messages from applications
+			running in other windows.
+
+	NOTIFY		register a name with MGR, and make this 
+			name available to other applications 
+
+event parameters (for button events):
+	%n		notify message (if any) from clicked-on window.
+	%w		same as %n, only the ID of the window
+	%S		The length of the string returned by %n.
+
+accept parameters:
+	%f		id of message sender, as used in m_sendto()
+	%m		text of message sent by m_sendto().
+	%s		length (in chars) of the %m string

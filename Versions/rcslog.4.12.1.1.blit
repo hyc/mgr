@@ -1,0 +1,26 @@
+bitmap/bit_alloc.c  sorts the includes
+linux/vga_cmap.c, colorport/vga_cmap.c, colorport/sun_cmap.c
+  get the same rescale() fix for zero division case.
+colorport stuff:
+  Semantics added appendix on 8bit color ops
+  sun.c .h, remove unneeded prototypes
+  vga.c .h, banking counts bytes, not DATA, passes void *, not DATA *.
+	    dont set bank in hw if unchanged.
+  bit_blit.c  include memory.h, no check for fg==bg, SET_DIRTY(dst) after blit.
+colorport/mem_rop.C stuff:
+  add NOMASK mode
+  add check for rmask==lmask==~0 for setting NOMASK
+  duplicate aligned cases for aligned+nomask cases with mask ops removed.
+  adjust some values of d_skip,s_skip for to simplify endofline incrementing.
+  made PROJ1 case a noop.
+  or-ed in the SRC_COLOR mode.
+  moved up the tests for zapping an irrelevant src_map and testing for
+    incompatible map depths.
+
+  (at work)
+  simplified cases with SMALL, because words==1.
+  combined up and down cases so each Rop macro is called once.
+  clarified nosrc/mono case for collapsing the bitop and setting SRC_COLOR.
+  Changed UP|LEFT|ALIGNED cases to read "(count-1)" instead of "count"
+    by analogy with other cases.  Seems to be a very old typo.
+    Could not find a simple way to get the server to test it.

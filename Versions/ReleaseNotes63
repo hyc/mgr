@@ -1,0 +1,94 @@
+These are the changes from MGR v4.10-4.11 or Linux MGR v0.62-0.63.
+Vincent Broman     broman@nosc.mil
+
+Compilation with gcc 2.5.8 under SunOS 4.1.3
+and gcc 2.5.8 under Linux v1.0.9
+
+MGR-HOWTO clean up and SGML translation.  LSM entry.
+various Makefile fixes.  Linted ANSI/POSIX problems various places.
+doc updates for new functions, a few corrections.
+Configfile entries for:  TeX printer font resolution, several screen hardware
+  choices, more server build options incl. window borderwidth.
+include files: more prototypes and usage of unsigned char types,
+  Define m_getpalette, m_setpalette,
+  small fixes for fractional char motion.
+  Define m_fracup, m_fracdown, m_fracright, m_fracleft motion by characters.
+  Define m_halfwinft like m_halfwin, setting the font.
+  Define m_fgbgcolor which does not mess with the bitop.
+  Clients #define OLDMGRBITOPS if using B_CLEAR not BIT_CLR, etc.
+misc/terminfo more complete, as also TERMCAP entry from server.
+clients:
+  mgrmag fixed for color and speed.
+  pgs portability and lint
+  mless and mvi preserve current font and run in background.
+  font2text gets correct char count.
+  pilot portability
+  set_termcap support rc shell, not just sh and csh, syntax.
+  texmgr shrinkratio setting fix, configurable printer font resolution
+  Supplied client code adjusted for server/library interface backtracking.
+libbitblit:
+  stubs added to some libbitblit drivers enabling compile/link.
+  colorport/bit_on.c rewrite
+  colorport fixes if DATA not 32-bit.
+  get/set palette functions impl in server via pixrect or VGA port io.
+libmgr:
+  permit NULL pointers passed to inquiry functions.
+  define m_bitcld, m_bitcldto, m_getdepth supporting color.
+  old get_param without depth arg revived.
+  Added m_parse to libmgr from client code, also m_getfontid.
+server:
+  command line arg for runtime choice of mouse interface protocol.
+  fix cut/paste for color.
+  optional function in main menu for window-stretching by pulling a corner 
+  provisional protocol for get/set palette
+  Backed out server interface incompatibilities introduced for color support.
+  Bugfixes:
+      colliding use of memory, put_window:buff.
+      conform m_linecolor function to doc.
+      fix some off-by-1 range checks.
+      getshell doesnt open and close the tty_fd to test availability.
+      some lint, style, ansi, and posix fixes
+
+8 fonts deleted as redundant:
+art-8x16 scrwl----8x16 scrwl~~~-8x16 standard-8x14
+standard-8x16 swissbox-8x16 vga-8x16 wiggly-8x16
+
+127 new fonts added.
+
+Repaired damaged fonts cour48x66, cour65x89, cour75x103, cour95x132.
+Minor changes in extra chars in block-8x14, broadway-8x14, cmr14x25,
+  computer-8x14, lcd-8x14, octal-7x14, thincaps-8x14.
+Fixed baseline parameter in many fonts, and underline height in a few.
+
+icons added:
+chess conch1 conch2 debug emacs foldergroup gnu gnumacs
+graphics lock mouse_cut_lh penciledit penedit shell x.
+The default mouse_cut scissors icon is now appropriate for right-handed people.
+
+clients deleted:
+set_emacs, combined into set_termcap
+
+clients added:
+ghostscript patches for v2.6.1.4 and v3.0 supporting the previewer.
+mphoon, mgrfont2vga, and pbm/pbmstream.
+set_colormap2 using server.
+
+libbitblit drivers:
+added partial, experimental colormap support to server for Linux and Sun.
+added unintegrated Pixrect, dec3100, newport1, newport8, oblit, stub_lib drivers
+The newport? drivers come from Bellcore and haven't been integrated in,
+  but a semi-careful look at newport8 suggests any improvements in it
+  already were present in the colorport driver.
+
+moves:
+set_termcap from src/clients/misc to src/clients/portable/simple
+programmers manual in doc/ split out into doc.[1-9] as before and updated.
+
+----- Remaining problems ------
+
+The VGA colormap setting works, but fg color is nbr 63!
+
+On Linux (with my mouse), a window created in the .mgrc file appears empty
+on startup, until the mouse is first moved.  Then the shell prompt appears.
+
+At random times, pty's fail to be opened, but repeating the op succeeds.

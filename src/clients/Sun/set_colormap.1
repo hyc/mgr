@@ -1,0 +1,39 @@
+'\"
+'\"
+'\"
+'\"                        Copyright (c) 1988 Bellcore
+'\"                            All Rights Reserved
+'\"       Permission is granted to copy or use this program, EXCEPT that it
+'\"       may not be sold for profit, the copyright notice must be reproduced
+'\"       on copies, and credit should be given to Bellcore where it is due.
+'\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+'\"
+'\"	$Header: set_colormap.1,v 4.1 88/06/29 14:06:19 bianchi Exp $
+'\"	$Source: /tmp/mgrsrc/doc/RCS/set_colormap.1,v $
+.TH set_colormap 1L "November 15, 1987"
+.SH NAME
+set_colormap \- initialize colormap entries suitable for 
+.B MGR .
+.SH SYNOPSIS
+set_colormap
+.SH DESCRIPTION
+.B Set_colormap
+initializes the first and last 24 colormap entries suitably for color 
+.B MGR .
+The first 8 colors are set to
+white, black, red, green, blue, yellow, cyan, and magenta.
+The second 8 colors are 
+.I dark
+versions of the first 8 colors, whereas the third 8 colors are
+.I bright
+versions of the first 8 colors.
+The last 24 colors are set to the inverse of the first 24 colors.
+.SH SEE ALSO
+mgr(1L)
+overlay(1L)
+.SH BUGS
+.B Set_colormap
+is Sun specific, and no provision is made to set the remainder of the
+colormap.
+.SH AUTHOR
+S. A. Uhler

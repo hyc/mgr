@@ -1,0 +1,36 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH TO_ASCII 1 "June 20, 1993" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+to_ascii \- convert a MOVIE MGR video script to ASCII format
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.B to_ascii
+.RB [ \-x ]
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B to_ascii
+converts a MOVIE MGR video script into an ASCII format.  Each video
+script command is printed on a single line.  The first character, in the
+set of "B D K L M P S T W C" represent Bitblts, Data, Kill-image, Line,
+Mark, Point, Screen-size, Time, Write-only bitblt and byte sCroll.  The command
+letter is followed by the numerical data for that command.  In the case
+of
+.I Data ,
+which represents image data, the succeeding lines starting with "." contain
+a hexidecimal representation of the data for the image.  If the 
+.B \-x
+flag is used, the image data is supressed.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1), play_data(1), to_binary(1)
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+S. A. Uhler
+.\"}}}

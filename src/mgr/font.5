@@ -1,0 +1,44 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH FONT 5 "April 30, 1986" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+font \- MGR font file format
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+#include "font.h"
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.IR mgr (1)
+font files consist of a font header followed by the bitmap data for each
+character.  The header format is:
+.RS
+.nf
+
+struct font_header {
+	unsigned char type;		/* font type */
+	unsigned char wide;		/* character width in pixels */
+	unsigned char high;		/* char height in pixels */
+	unsigned char baseline;		/* pixels from bottom of glyph */
+	unsigned char count;		/* number of chars in font */
+	char start;			/* starting char in font */
+   };
+
+.fi
+.RE
+All of the characters in the font are are stored in a single bitmap,
+.I wide
+x
+.I count
+pixels wide,
+and
+.I high
+pixels high.  The bitmap is 32 bit aligned in width.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1), bitmap(5)
+.\"}}}

@@ -1,0 +1,126 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH FADE 1 "April 30, 1990" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+fade \- fade a $HOME MOVIE script from one scene to another
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B fade
+.RB [ \-b
+.IR image ]
+.RB [ \-m
+.IR drawing_mode ]
+.RB [ \-f
+.IR bitblt_function ]
+.RB [ \-r
+.IR random_delay ]
+.RB [ \-r
+.IR delay [ \fB/\fPstep "] ]"
+.RB [ \-x
+.IR x-rects ]
+.RB [ \-y
+.IR y-rects ]
+.RB [ \-t
+.IR begin_pause [ \fB/\fPend_pause "] ]"
+.RB [ \-z ]
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B fade
+fades from one display image to another in MGR-Movie format.
+The display is broken into a grid of rectangles.  Each rectangle
+is faded from one image to the next in one of several different orders.
+.\"}}}
+.\"{{{  Options
+.SH OPTIONS
+.\"{{{  -b image
+.TP
+\fB\-b\fP \fIimage\fP
+Blend mode.  
+.I image
+is a display image in MGR format that the current screen image will be
+faded to.
+If not specified, no final image is displayed, typically the display
+is faded to black or white.
+.\"}}}
+.\"{{{  -m drawing_mode
+.TP
+\fB\-m\fP \fIdrawing_mode\fP
+The
+.I "drawing mode"
+indicates the order in which the screen patches are faded.
+Modes 0-5 represent random, scanning left to right, scanning
+top down, semi-random left to right, semi-random top down, and
+inside-out respectively.
+Modes 6-11 are the same, only right and left reversed.
+Modes 12-17 have up and down reversed, and 18-23 have everything reversed.
+.\"}}}
+.\"{{{  -f bitblt_function
+.TP
+\fB\-f\fP \fIbitblt_function\fP
+Specifies the blit operation to use for fading.  Useful values are:
+0-fade to black, 15-fade to white, 12-change to 
+.I image
+and
+14- paint on image.
+.\"}}}
+.\"{{{  -r random_delay
+.TP
+\fB\-r\fP \fIrandom_delay\fP
+adds a random amount of delay aftert each patch, up to
+.I random_delay
+100ths of seconds.
+The default is zero.
+.\"}}}
+.\"{{{  -r delay
+.TP
+\fB\-r\fP \fIdelay\fP
+Adds
+.I delay
+100ths of seconds of delay after each rectangle.
+The default is 3.
+If
+.I step
+specifies the delay happens after every 
+.I step patches.
+.\"}}}
+.\"{{{  -x x-rects
+.TP
+\fB\-x\fP \fIx-rects\fP
+Specifies the # of patches across the display.
+The default is 10.
+.\"}}}
+.\"{{{  -y y-rects
+.TP
+\fB\-y\fP \fIy-rects\fP
+Specifies the # of patches down the display.
+The default is 10.
+.\"}}}
+.\"{{{  -t begin_pause/end_pause
+.TP
+\fB\-t\fP \fIbegin_pause\fP\fB[/\fP\fIend_pause\fP]
+A pause of
+.I begin_pause
+seconds is added before and a pause of
+.I end_pause
+seconds is added after fade is finished.
+.\"}}}
+.\"{{{  -z
+.TP
+\-z
+activates logging to standard output.
+.\"}}}
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+S. A. Uhler
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+roll(1), mgr(1), play_data(1), vcr(1)
+.\"}}}

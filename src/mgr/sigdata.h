@@ -1,0 +1,1 @@
+void catch(int sig);

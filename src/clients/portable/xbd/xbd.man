@@ -1,0 +1,182 @@
+.TH Boulder-dash l "April 1 1990"
+.UC 4
+.SH NAME
+Boulder-dash (v1.2) - Collect diamonds, kill monsters, close in blob etc. etc.
+.SH SYNOPSIS
+.B xbd
+[
+.B \-l
+.I level
+]
+.br
+.B mgrbd
+[
+.B \-l
+.I level
+]
+[
+.B \-r
+]
+.br
+.B xbde
+.B \-l
+.I level
+[
+.B \-w
+.I width
+]
+[
+.B \-h
+.I height
+]
+.SH DESCRIPTION
+.PP
+.I xbd
+is a game designed for X windows/MGR (originally a similar game with the same name
+ran on CBM64).
+.I xbde
+is used to create and edit new levels which can be used by
+.I Boulder-dash.
+.PP
+The goal in
+.I Boulder-dash
+is to collect a certain number
+.I (ds)
+of diamonds per level
+.I (lv)
+and then enter the next level by moving to the blinking exit-field, thus incrementing your number of lives
+.I (ls).
+A diamond is worth
+.I (dp)
+points. Normally extra diamonds are worth more.
+.SH OPTIONS
+The
+.B "\-l"
+option sets the level number for editing or for starting the game.
+This may be any integer greater than 0.  By default, the game starts
+at level 1. The
+.B "\-w"
+and
+.B "\-h"
+options set the width and height of a newly created level.
+.B \-r
+uses reverse display for MGR.
+.SH USAGE
+When playing
+.I Boulder-dash
+the following keyboard commands may be used:
+.PP
+SPACE,R11		\- 		stop
+.br
+h,left arrow 	\- 		move left
+.br
+l,right arrow 	\- 		move right
+.br
+k,up arrow 	\- 		move up
+.br
+j,down arrow 	\-		move down
+.PP
+.br
+?			\-		help
+.PP
+When used in combination with the 
+.I control key,
+the direction keys make the player 
+.I 'steal'
+instead of 
+.I 'go'.
+In addition, some other control key combinations can be used:
+.PP
+^C		\- 		kill the game
+.br
+^D		\-		give dutch act
+.br
+^R 		\- 		redraw the level
+.PP
+The mouse must be placed in the game window to use the keyboard
+commands.  When the game starts or a level is finished , everything is frozen, and any key will
+start/continue the game.
+.PP
+.I xbde
+can be used to edit levels.  Levels are stored in ASCII files. The
+first line in a level file contains level specific parameters that
+should be edited by hand. The parameters are:
+
+.br
+height width speed 
+.I dp
+.I extra-dp
+blob-brake
+tinkle-dur
+.I ti name
+
+.br
+Where blob-brake indicates how strongly blob propagation is slowed down.
+tink-dur is the time tinkle-walls will keep their magic power. 
+.I ti 
+is the time permitted to complete this level. 
+.I name
+is the name of the level.
+.br
+Blocks are painted by pressing the left mouse button.  Spaces are 
+painted by pressing the right mouse button.  A new block type is 
+selected by one of the following keys:
+.PP
+<space> \- draw spaces
+.br
+b \- draw boulder
+.br
+d \- draw diamond
+.br
+e \- draw eater (initial speed: 0)
+.br
+g \- draw grass
+.br
+l \- draw left-monster (initial direction: NORTH)
+.br
+p \- draw player
+.br
+r \- draw right-monster (initial direction: NORTH)
+.br
+t \- draw tinkle wall
+.br
+w \- draw wall
+.br
+x \- draw explosion (SPACEEXPLO)
+.br
+B \- draw blob
+.br
+E \- draw exit
+.br
+N \- draw nuclear balloon
+.br
+S \- draw steel
+.br
+W \- draw magic wall
+.PP
+.br
+Other commands are:
+.PP
+.br
+^c \- Quit
+.br
+^E \- Erase level
+.br
+^w \- Save level and quit
+.SH AUTHOR
+Jeroen Houttuin, Informatikdienste, ETH Zurich 1990.
+.SH CREDITS
+CBM64 for the idea. Alexander Siegel (Cornell University)
+for example X-programming in 
+.I 'golddig'.
+Christos S. Zoulas (Cornell University) for Imakefile and bug fixes.
+.SH FILES
+xbd - Boulder-dash executable
+.br
+xbde - Boulder-dash editor executable
+.br
+scores - high score list
+.br
+default - default level
+.br
+xbdlev### - levels

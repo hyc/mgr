@@ -1,0 +1,459 @@
+#!/bin/sh
+
+#{{{}}}
+#{{{  check for m4
+if (m4 </dev/null 2>/dev/null)
+then
+#  {{{  intro
+  echo "Hi, to configure MGR you will have to answer a few questions."
+  echo
+#  }}}
+else
+#  {{{  abort
+  echo "Eeeek, you don't have m4!"
+  echo "You will have to install it first, bye."
+  exit 1
+#  }}}
+fi
+#}}}
+#{{{  check for mkdep
+if (sh -c "mkdep -h" >/dev/null 2>/dev/null)
+then
+  M4FLAGS="$M4FLAGS -Dmkdep"
+else
+  M4FLAGS="$M4FLAGS -Dnomkdep"
+fi
+#}}}
+
+#{{{  OS
+#{{{  ask OS
+echo "1) Linux 0.99.14+"
+echo "2) SunOS 4.1.2+"
+echo "3) HP-UX 8.07"
+echo "4) Coherent 4.0.[01]*"
+echo "5) FreeBSD 2.0"
+echo
+echo -n "What OS do you use? "
+read OS
+echo
+#}}}
+case $OS in
+#  {{{  linux
+  [15])
+  M4=m4
+  case $OS in
+    1) OSNAME="linux" ;;
+    *) OSNAME="freebsd" ;;
+  esac
+  M4FLAGS="$M4FLAGS -Dsys$OSNAME"
+#  {{{  graphics card
+  echo "0) Hercules graphics card"
+  echo "1) generic VGA or dont know"
+  echo "2) Tseng ET-4000 VGA"
+  echo "3) Trident VGA"
+  echo "4) S3 VGA"
+  echo
+  echo -n "What graphics card do you use? "
+  read CARD
+  echo
+  case $CARD in
+    0) M4FLAGS="$M4FLAGS -Dhgc" ;;
+    1) M4FLAGS="$M4FLAGS -Dhwvga" ;;
+    2) M4FLAGS="$M4FLAGS -Dhwvga -Dtseng4k" ;;
+    3) M4FLAGS="$M4FLAGS -Dhwvga -Dtrident" ;;
+    4) M4FLAGS="$M4FLAGS -Dhwvga -Ds3vga" ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+  echo "0) Hercules monochrome mode"
+  echo "1) 640x480 monochrome (2-color) VGA mode (generic)"
+  echo "2) 320x200 256-color VGA mode (generic)"
+  echo "3) 640x480 256-color VGA mode (Tseng ET-4000 only)"
+  echo "4) 800x600 256-color VGA mode (Tseng ET-4000 only)"
+  echo "?) some valid VGA mode you type in"
+  echo
+  echo -n "Desired default screen mode? "
+  read SCREENDEV
+  echo
+  case $SCREENDEV in
+    0) M4FLAGS="$M4FLAGS -DSCREENDEV=720x348 -DBITBLITPKG=$OSNAME" ;;
+    1) M4FLAGS="$M4FLAGS -DSCREENDEV=640x480 -DBITBLITPKG=$OSNAME" ;;
+    2) M4FLAGS="$M4FLAGS -DSCREENDEV=320x200x256 -Dsmallbanner -DBITBLITPKG=colorport" ;;
+    3) M4FLAGS="$M4FLAGS -DSCREENDEV=640x480x256 -DBITBLITPKG=colorport -Dbanking" ;;
+    4) M4FLAGS="$M4FLAGS -DSCREENDEV=800x600x256 -DBITBLITPKG=colorport -Dbanking" ;;
+    [1-9]*x256) M4FLAGS="$M4FLAGS -DSCREENDEV=$SCREENDEV -DBITBLITPKG=colorport" ;;
+    [1-9]*x*[0-8]) M4FLAGS="$M4FLAGS -DSCREENDEV=$SCREENDEV -DBITBLITPKG=$OSNAME" ;;
+    *) "Invalid answer, bye :("; exit 1 ;;
+  esac
+#  }}}
+#  {{{  mouse
+  echo '0) serial Microsoft mouse'
+  echo '1) Mouse Systems 3 byte (as used in Suns)'
+  echo '2) serial Mouse Systems 5 byte (as often used in PCs)'
+  echo '3) serial MMSeries mouse'
+  echo '4) serial Logitech mouse'
+  echo '5) PS/2 mouse'
+  echo '6) Bus mouse'
+  echo
+  echo -n "What mouse do you use? "
+  read MOUSE
+  echo
+  case $MOUSE in
+    [0-6]) M4FLAGS="$M4FLAGS -DMOUSE=$MOUSE" ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+#  }}}
+#  {{{  movie mgr
+  echo
+  echo '1) Compile without the MOVIE option'
+  echo '2) Try the MOVIE option'
+  echo
+  echo -n 'Do you want to use MOVIE MGR functions? '
+  read MOVIE
+  echo
+  case $MOVIE in
+    1) ;;
+    2) M4FLAGS="$M4FLAGS -Dmovie" ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+#  }}}
+  ;;
+#  }}}
+#  {{{  sunos
+  2)
+  M4=/usr/5bin/m4
+  M4FLAGS="$M4FLAGS -Dsunos"
+  echo "1) bwtwo0 monochrome"
+  echo "2) cgtwo0 color (code untested)"
+  echo "3) cgthree0 color"
+  echo "4) cgsix0 color"
+  echo "5) unknown, but try monochrome anyway"
+  echo
+  echo -n "Which video display controller do you have? "
+  read VIDEO
+  echo
+  case $VIDEO in
+    [15]) M4FLAGS="$M4FLAGS -Dbwtwo" ;;
+    2) M4FLAGS="$M4FLAGS -Dcgtwo" ;;
+    3) M4FLAGS="$M4FLAGS -Dcgthree" ;;
+    4) M4FLAGS="$M4FLAGS -Dcgsix" ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+  echo
+  echo "0) omit colormap capabilities in the server"
+  echo "1) use pixrect library for colormap manipulation in server"
+  echo
+  echo -n "Use pixrect library in server? "
+  read UPIXRECT
+  echo
+  case $UPIXRECT in
+    0) ;;
+    1) M4FLAGS="$M4FLAGS -Dupixrect";;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+  ;;
+#  }}}
+#  {{{  hp-ux
+  3)
+  M4=m4
+  M4FLAGS="$M4FLAGS -Dhpux" ;;
+#  }}}
+#  {{{  coherent
+  4)
+  M4=m4
+  M4FLAGS="$M4FLAGS -Dcoherent"
+#  {{{  graphics card
+  echo "1) Hercules graphics card"
+  echo "2) VGA 640x480"
+  echo "3) SVGA 800x600"
+  echo "4) SVGA 1024x768 (Trident SVGA only) - not tested"
+  echo
+  echo -n "What graphics card do you use? "
+  read CARD
+  echo
+  case $CARD in
+    1) M4FLAGS="$M4FLAGS -Dhgc" ;;
+    2) M4FLAGS="$M4FLAGS -Dhwvga" ;;
+    3) M4FLAGS="$M4FLAGS -Dsvga1" ;;
+    4) M4FLAGS="$M4FLAGS -Dsvga2" ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+#  }}}
+#  {{{  mouse
+  echo "1) microsoft (2 button)"
+  echo "2) mousesystems (3 button)"
+  echo
+  echo -n "What mouse do you use? "
+  read MOUSE
+  echo
+  case $MOUSE in
+    1) M4FLAGS="$M4FLAGS -Dmicrosoft" ;;
+    2) M4FLAGS="$M4FLAGS -Dmousesystems" ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+#  }}}
+#  {{{  movie mgr
+  echo "MOVIE MGR crashes the server, so only select it for debugging it."
+  echo
+  echo -n "Do you want to use MOVIE MGR (logging) functions? (y/n) "
+  read MOVIE
+  echo
+  case $MOVIE in
+    y) M4FLAGS="$M4FLAGS -Dmovie" ;;
+    n) ;;
+    *) echo "Invalid answer, bye :("; exit 1 ;;
+  esac
+#  }}}
+  ;;
+#  }}}
+#  {{{  *)
+  *)
+  echo "Invalid answer, bye :("; exit 1 ;;
+#  }}}
+esac
+#}}}
+#{{{  mgr home directory
+#{{{  ask WHEREHOME
+echo "1) /usr/mgr"
+echo "2) "$HOME"/mgr"
+echo
+echo -n "Where shall MGR live (or type alternate path)? "
+read WHEREHOME
+echo
+#}}}
+case $WHEREHOME in
+#  {{{  /usr/mgr
+  1) M4FLAGS="$M4FLAGS -DWHEREHOME=/usr/mgr" ;;
+#  }}}
+#  {{{  $HOME/mgr
+  2) M4FLAGS="$M4FLAGS -DWHEREHOME=$HOME/mgr" ;;
+#  }}}
+#  {{{  other choice
+  *) M4FLAGS="$M4FLAGS -DWHEREHOME=$WHEREHOME" ;;
+#  }}}
+esac
+
+echo '1) one button mouse from the dark ages'
+echo '2) two button mouse'
+echo '3) three or more buttons on mouse'
+echo
+echo -n "How many buttons on your mouse? "
+read MOUSEB
+case $MOUSEB in
+  1) echo "mouse with more buttons needed.  Buy one or pretend."
+     exit 1 ;;
+  2) M4FLAGS="$M4FLAGS -Dtwobuttons"
+     echo "chording the left+right buttons simulates a middle button." ;;
+  3) ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+
+echo
+echo "0) do not care"
+echo "1) is8859-1-8x14  complete, rather bold, like a VGA font"
+echo "2) ser7x12        compact, faint, misc extras"
+echo "3) lucidQRS-8x14  Lucida typewriter med normal sansserif, tweaked"
+echo "4) gacha-8x16     readable, faint, good for large black on white screen"
+echo "5) ScleanR-6x11   tiny, ascii-only, for very low-resolution"
+echo
+echo -n "Which font should be the default, built-in font for MGR? "
+read FONT
+echo
+case $FONT in
+  [01]) M4FLAGS="$M4FLAGS -DDEFFONT=is8859-1-8x14" ;;
+  2) M4FLAGS="$M4FLAGS -DDEFFONT=ser7x12" ;;
+  3) M4FLAGS="$M4FLAGS -DDEFFONT=lucidQRS-8x14" ;;
+  4) M4FLAGS="$M4FLAGS -DDEFFONT=gacha-8x16" ;;
+  5) M4FLAGS="$M4FLAGS -DDEFFONT=ScleanR-6x11" ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+
+echo
+echo "0) thin three pixel wide window borders for low-res"
+echo "1) normal five pixel wide window borders"
+echo
+echo -n "Normal or thin window borders? "
+read FATBORDER
+echo
+case $FATBORDER in
+  0) M4FLAGS="$M4FLAGS -Dthinborder" ;;
+  1) ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+
+echo
+echo "1) no debugging code, to save memory"
+echo "2) include debugging code in the server for the -d option"
+echo
+echo -n "Should optional debugging code be present in the server? "
+read DEBUGSERVER
+echo
+case $DEBUGSERVER in
+  1) ;;
+  2) M4FLAGS="$M4FLAGS -Ddebugserver" ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+echo
+echo "0) reshape windows only by dragging from corner to corner"
+echo "1) add support for stretching windows by their corners with the mouse"
+echo
+echo -n "include support for stretching windows? "
+read STRETCH
+echo
+case $STRETCH in
+  0) ;;
+  1) M4FLAGS="$M4FLAGS -Dstretchserver" ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+echo
+echo "0) support vanilla menu ops"
+echo "1) support extended menu operations used by 1 or 2 clients"
+echo
+echo -n "support extended menu ops in server? "
+read XMENU
+echo
+case $XMENU in
+  0) ;;
+  1) M4FLAGS="$M4FLAGS -Dextendedmenus" ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+echo
+echo "1) no hotkey functions, no 8-bit-dirty meta bit response by server"
+echo "2) support hotkey functions activated by the 8th bit of keyboard input"
+echo
+echo -n "support hotkey functions in server? "
+read HOTKEY
+echo
+case $HOTKEY in
+  1) ;;
+  2) M4FLAGS="$M4FLAGS -Dhotkeys" ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+echo
+echo "0) no cut/paste function on the command menu on the left mouse button"
+echo "1) support cut/paste between windows and the global snarf buffer"
+echo
+echo -n "support cut/paste by server? "
+read CUTPASTE
+echo
+case $CUTPASTE in
+  0) ;;
+  1) M4FLAGS="$M4FLAGS -Dcutpaste" ;;
+  *) echo "Invalid answer, bye :("; exit 1 ;;
+esac
+#}}}
+#{{{  examples
+#{{{  ask EXAMPLES
+echo "0) Don't install client programming examples"
+echo "1) Do install them"
+echo
+echo -n "Do you want the programming examples to be installed? "
+read EXAMPLES
+echo
+#}}}
+case $EXAMPLES in
+  0) M4FLAGS="$M4FLAGS -DEXAMPLES=" ;;
+  1) M4FLAGS="$M4FLAGS -DEXAMPLES=examples" ;;
+  *)
+  echo "Invalid answer, bye :("; exit 1 ;;
+#}}}
+esac
+#}}}
+#{{{  groff font directory
+#{{{  ask WHEREGROFFFONT
+echo "1) /usr/groff/font"
+echo "2) /usr/lib/groff/font"
+echo "3) "$HOME"/groff/font"
+echo "4) No groff installed"
+echo
+echo -n "Where is groff's font directory (or type alternate path)? "
+read WHEREGROFFFONT
+echo
+#}}}
+case $WHEREGROFFFONT in
+#  {{{  /usr/groff/font
+  1) M4FLAGS="$M4FLAGS -Dgropbm -DWHEREGROFFFONT=/usr/groff/font -DROFFMS=-mgs" ;;
+#  }}}
+#  {{{  /usr/lib/groff/font
+  2) M4FLAGS="$M4FLAGS -Dgropbm -DWHEREGROFFFONT=/usr/lib/groff/font -DROFFMS=-mgs" ;;
+#  }}}
+#  {{{  $HOME/groff/font
+  3) M4FLAGS="$M4FLAGS -Dgropbm -DWHEREGROFFFONT=$HOME/groff/font -DROFFMS=-mgs" ;;
+#  }}}
+#  {{{  nothing
+  4) M4FLAGS="$M4FLAGS -DWHEREGROFFFONT= -DROFFMS=-ms" ;;
+#  }}}
+#  {{{  other choice
+  *) M4FLAGS="$M4FLAGS -Dgropbm -DWHEREGROFFFONT=$WHEREGROFFFONT -DROFFMS=-mgs" ;;
+#  }}}
+esac
+#}}}
+#{{{  tex font directory
+#{{{  ask WHEREFONTDESC
+echo "0) No TeX installed"
+echo "1) /usr/TeX/lib/tex/fontdesc"
+echo "2) /usr/lib/tex/fontdesc"
+echo
+echo -n "Where is TeX's fontdesc file (or type alternate name)? "
+read WHEREFONTDESC
+echo
+#}}}
+case $WHEREFONTDESC in
+#  {{{  nothing
+  0) M4FLAGS="$M4FLAGS -DWHEREFONTDESC=" ;;
+#  }}}
+#  {{{  /usr/TeX/lib/fontdesc
+  1) M4FLAGS="$M4FLAGS -Dtexmgr -DWHEREFONTDESC=/usr/TeX/lib/tex/fontdesc" ;;
+#  }}}
+#  {{{  /usr/lib/tex/fontdesc
+  2) M4FLAGS="$M4FLAGS -Dtexmgr -DWHEREFONTDESC=/usr/lib/tex/fontdesc" ;;
+#  }}}
+#  {{{  other choice
+  *) M4FLAGS="$M4FLAGS -Dtexmgr -DWHEREFONTDESC=$WHEREFONTDESC" ;;
+#  }}}
+esac
+#}}}
+#{{{  tex fonts resolution
+echo
+echo "1) 180 dpi"
+echo "2) 240 dpi"
+echo "3) 300 dpi"
+echo "4) 360 dpi"
+echo "5) 600 dpi"
+echo "0) dont care, no TeX or texmgr used"
+echo
+echo -n "What is the horizontal resolution of your TeX printer font files? "
+read FONTDPI
+echo
+case $FONTDPI in
+  1) M4FLAGS="$M4FLAGS -DDEFFONTDPI=180" ;;
+  2) M4FLAGS="$M4FLAGS -DDEFFONTDPI=240" ;;
+  3) M4FLAGS="$M4FLAGS -DDEFFONTDPI=300" ;;
+  4) M4FLAGS="$M4FLAGS -DDEFFONTDPI=360" ;;
+  5) M4FLAGS="$M4FLAGS -DDEFFONTDPI=600" ;;
+  0) M4FLAGS="$M4FLAGS -DDEFFONTDPI=300" ;;
+  *)
+  echo "Invalid answer, bye :("; exit 1 ;;
+esac
+
+echo 'Ok, building Configfile ...'
+
+$M4 $M4FLAGS < Configfile.m4 > Configfile
+
+#{{{  tell people what to do now
+echo "Ok, if you think you know what you are doing, then tweak the defaults in"
+echo "Configfile now.  In any case, the following steps are then necessary:"
+echo ""
+echo "-  check if your termcap/terminfo database contains the entries found"
+echo "   in misc/term*"
+echo "-  check that /dev/mouse is the device for or a link to your mouse."
+echo "-  create MGR paths using 'make first' if not already there."
+echo "-  run 'make depend' to create or update dependencies."
+echo "-  run 'make install' to build and install everything."
+echo ""
+echo "In each directory, you can do 'make [depend|all|install|clean|clobber]',"
+echo "in case you want to hack in the code."
+echo ""
+echo "Michael and Vincent"
+#}}}
+
+exit 0

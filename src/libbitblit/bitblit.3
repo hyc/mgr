@@ -1,0 +1,185 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH BITBLIT 5 "June 8, 1993" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+bit* \- MGR bit blit library functions
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B #include "bitblit.h"
+.sp
+.in +.5i
+.ti -.5i
+.B BITMAP *bit_load(
+.B int w, int h,
+.B unsigned char d, int size,
+.B unsigned char *src);
+.br
+.ti -.5i
+.B void *bit_save( BITMAP *bp);
+.br
+.ti -.5i
+.B BITMAP *bit_alloc(
+.B int wide, int high,
+.B DATA *data, unsigned char depth);
+.br
+.ti -.5i
+.B void bit_blit( BITMAP *dst, int dx,
+.B int dy, int width,
+.B int height, int func,
+.B BITMAP *src, int sx,
+.B int sy);
+.br
+.ti -.5i
+.B BITMAP *bit_create( BITMAP *map,
+.B int x, int y,
+.B int wide, int high);
+.br
+.ti -.5i
+.B void bit_destroy( BITMAP *map);
+.br
+.ti -.5i
+.B void bit_line( BITMAP *dst,
+.B int x0, int y0, int x1,
+.B int y1, int func);
+.br
+.ti -.5i
+.B int bit_on( BITMAP *bp,
+.B int x, int y);
+.br
+.ti -.5i
+.B BITMAP *bit_open( char *name);
+.br
+.ti -.5i
+.B int bit_point( BITMAP *map,
+.B int dx, int dy, int func);
+.br
+.ti -.5i
+.B int bit_size( int wide,
+.B int high, unsigned char depth);
+.br
+.ti -.5i
+.B void bit_grafscreen( void);
+.br
+.ti -.5i
+.B void bit_textscreen( void);
+.br
+.ti -.5i
+.B DATA *bit_initscreen( char *name,
+.B int *width, int *height,
+.B unsigned char *depth,
+.B void **devi);
+.br
+.ti -.5i
+.B void bit_bytescroll( BITMAP *map,
+.B int x, int y,
+.B int wide, int high, int delta);
+.br
+.ti -.5i
+.B int timestamp( void);
+.br
+.ti -0.5i
+.B int log_start( FILE *fp);
+.br
+.ti -0.5i
+.B void log_end( void);
+.br
+.ti -0.5i
+.B int log_noinitial;
+.br
+.in -.5i
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.\"{{{  Functions and variables
+.SS Functions
+.\"{{{  bit_load
+\fBbit_load()\fP converts \fIsize\fP bytes of memory starting from
+address \fIsrc\fP in external format to a bitmap in internal format,
+being \fIw\fP pixels wide, \fIh\fP pixels high and \fId\fP d pixels deep.
+\fBbit_load()\fP will return a pointer to the bitmap if it could be
+allocated, and \fB(BITMAP*)0\fP otherwise.  If \fIsize\fP was too small, the
+bitmap will not be completely filled, if \fIsize\fP was too big, the
+remaining bytes will be discarded.
+.\"}}}
+.PP
+.\"{{{  bit_save
+\fBbit_save()\fP converts a bitmap in internal format to external format
+and returns a pointer to memory allocated for the external data.
+.\"}}}
+.PP
+.\"{{{  bit_alloc
+\fBbit_alloc()\fP allocates memory for a bitmap of width \fIwide\fP,
+height \fIhigh\fP and depth \fIdepth\fP.  If \fIdata\fP is not 0, then
+it is assumed to contain the bitmap image data already and in the right
+format.  Warning: \fIdata\fP will be \fBfree()\fPed using \fBbit_destroy()\fP.
+.\"}}}
+.PP
+bit_blit: do bit blt operation
+.PP
+bit_create: create sub bitmap
+.PP
+bit_destroy: free allocated memory for bitmap
+.PP
+bit_line: draw a line in a bitmap
+.PP
+bit_on: find out if a dot in a bitmap is set
+.PP
+bit_open: open frame buffer bitmap
+.PP
+bit_point: set dot in bitmap
+.PP
+bit_size: return bitmap data size for entire bitmap (NOT parts of it!)
+.PP
+.\"{{{  bit_grafscreen
+\fBbit_grafscreen()\fP switches the graphics hardware to display graphics
+mode.  The contents of text mode do not need to be saved.
+.\"}}}
+.PP
+.\"{{{  bit_textscreen
+\fBbit_textscreen()\fP switches the graphics hardware to text mode.  The
+contents of graphics mode do not need to be saved.
+.\"}}}
+.PP
+.\"{{{  bit_initscreen
+\fBbit_initscreen()\fP initializes the frame buffer and returns a
+pointer to the data area.  The \fIheight\fP, \fIwidth\fP and \fIdepth\fP
+are filled with the frame buffer characteristics.
+Also, the pointer to any device-dependent data needed to manipulate
+the screen bitmap is set here.
+However, all accesses
+to the data area must be made using bit_* functions, so this
+function must not be used in application programs, it is only for
+implementing \fBbit_open()\fP on top of it, which should be used in
+application programs.
+.\"}}}
+.PP
+.\"{{{  bit_bytescroll
+\fBbit_bytescroll()\fP is a fast vertical scroll.  It is semantically
+equivalent to a copying \fBbit_blit()\fP but much faster.  Its
+coordinates must be parted by 8.
+.\"}}}
+.PP
+timestamp: set timestamp for bitblit logging
+.PP
+.\"{{{  log_noinitial
+If \fBlog_noinitial\fP is set to 1, then the initial state of the
+display is not logged after \fBlog_start()\fP is called.
+.\"}}}
+.\"}}}
+.\"{{{  Bitblit operators
+.SS "Bitblit operators"
+.\"}}}
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+S. A. Uhler, Thomas Heller
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+bitmap(5)
+.\"}}}

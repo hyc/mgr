@@ -1,0 +1,33 @@
+'\"
+'\"
+'\"
+'\"                        Copyright (c) 1988 Bellcore
+'\"                            All Rights Reserved
+'\"       Permission is granted to copy or use this program, EXCEPT that it
+'\"       may not be sold for profit, the copyright notice must be reproduced
+'\"       on copies, and credit should be given to Bellcore where it is due.
+'\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+'\"
+'\"	$Header: overlay.1,v 4.1 88/06/29 14:06:17 bianchi Exp $
+'\"	$Source: /tmp/mgrsrc/doc/RCS/overlay.1,v $
+.TH overlay 1L "November 15, 1987"
+.SH NAME
+overlay \- Enable or disable the overlay plane on a Sun 110.
+.B MGR .
+.SH SYNOPSIS
+overlay on|off
+.SH DESCRIPTION
+.B Overlay
+enables or disables the overlay plane on Sun's that have them.
+Setting the overlay plane 
+.I on
+causes the monochrome plane to obscure
+the color planes.
+Setting the overlay plane
+.I off
+turns off the monochrome frame buffer, permitting the color frame buffer to 
+be visible.
+.SH SEE ALSO
+mgr(1L)
+.SH AUTHOR
+S. A. Uhler

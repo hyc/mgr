@@ -1,0 +1,19 @@
+moved files to conform to names of functions...
+bitmap -> sun
+blit -> bit_blit
+fast_scroll -> bit_bytescroll
+line -> bit_line
+pixel -> bit_point
+rops -> test_randops
+dummy.c subsumed into sun.c
+bit_destroy.c new from part of bitmap.c
+
+Conform Makefile to expectations of superior Makefiles and to new names.
+#include screen.h not sun.h .
+lint bit_blit and fix the "src_map==BIT_NULL;" bug.
+lint bit_bytescroll
+sun.c and bit_on.c stripped down from the colorport code.
+sun.h adds prototypes.
+
+This versions lacks a flip() function and ignores the fg/bg
+colors encoded into the bitops.

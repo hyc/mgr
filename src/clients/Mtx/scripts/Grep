@@ -1,0 +1,13 @@
+#!/bin/csh
+
+# grep filter for MTX
+
+onintr done
+
+stty -echo nl
+echo "Grepping for $*"
+sleep 2
+grep $*
+
+done:
+stty echo -nl

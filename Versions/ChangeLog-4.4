@@ -1,0 +1,35 @@
+bug fixes for patch-2
+
+* Add current fg, bg, and drawing color to M_GETINFO
+* M_MAKEWIN with M_DUPKEY doesn't return M_DUP character properly
+* change all m_pop(0) to m_pop() in all demos
+* Apply cut.c fix to figure cuttability properly
+* Add m_setcursor(), %M, and button-up stuff to documentation
+* Makefile for doc/usrman fixed (again)
+* m_line() should update graphics point
+* _quit() should killpg() and b_destroy(screen) (for non-sun versions)
+* pixrect on sun 4.0 changed the internal alignment to 32 bits from 16 bits
+* missing "extern" for quit_menu[] in defs.h
+* mgrplot plots upside-down
+* set_{emacs,termcap} look for SHELL "*csh" instead of "csh" (so tcsh works)
+* timestamps avaliable for button hits (clients can detect double-clicking)
+* Stub bit-blit library included. (to aid in porting mgr)
+* m_push(P_CURSOR) handles the cursor style properly
+* loadfont: definition of ESC was wrong
+* get_info.c - didn't initialize *coords with no dupkey set
+* fix set_emacs to set "km" flag for gnu-emacs
+* move "resume" command after kbd reset to permit set_console as resume cmd
+* Application defined button activated text sweep  defaults to 0 chars (was 1)
+* Fix get_info to return a \n for an invalid get_info request
+* Fix win_stack to clear DUPKEY when push-clear'ing flags
+* don't use return value from sprintf in do_event.c
+* show uses bitmaphead, to handle all types of bitmap formats correctly
+* iconmail/iconmsgs now remember if their mail/msgs window was moved
+* All versions of MGR use a consolidated 32bit padded font format
+* Bug in clipping relative mode bitmapes was fixed
+
+Known bugs still remaining
+* put_window() sometimes sets the clipping regeon improperly during
+  bit-blt operations (i.e. obscured windows don't always get updated
+  properly).
+* There is no way to push the currently selected window on the stack

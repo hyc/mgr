@@ -1,0 +1,42 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH SCREENDUMP 1 "May 9, 1993" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+screendump \- write grafics screen dump to MGR bitmap file
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B screendump
+.RB [ \-s
+.IR screen ]
+.RB [ \-o
+.IR file ]
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B screendump
+reads the grafics screen contents and outputs them in MGR bitmap format.
+.\"}}}
+.\"{{{  Options
+.SH OPTIONS
+.IP "\fB\-s\fP \fIscreen\fP"
+Use another \fIscreen\fP than the default MGR screen.
+.IP "\fB\-o\fP \fIfile\fP"
+Write not to standard output but to \fIfile\fP.
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+Michael Haardt (u31b3hs@pool.informatik.rwth-aachen.de)
+.\"}}}
+.\"{{{  History
+.SH HISTORY
+This is a rewrite of the former gtscr program.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1)
+.\"}}}

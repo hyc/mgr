@@ -1,0 +1,76 @@
+'\"
+'\"                        Copyright (c) 1988 Bellcore
+'\"                            All Rights Reserved
+'\"       Permission is granted to copy or use this program, EXCEPT that it
+'\"       may not be sold for profit, the copyright notice must be reproduced
+'\"       on copies, and credit should be given to Bellcore where it is due.
+'\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+'\"
+'\"	$Header: set_termcap.1,v 4.1 88/06/21 13:52:03 bianchi Exp $
+'\"	$Source: /tmp/mgrsrc/doc/RCS/set_termcap.1,v $
+.TH set_termcap 1L "8 Feb 1994"
+.SH NAME
+set_termcap \- set the
+.B TERMCAP
+entry for an
+.I mgr
+window.
+.SH SYNOPSIS
+eval `\fBset_termcap \fP[\fB -v \fP]`
+.SH DESCRIPTION
+.B Set_termcap
+prints on 
+.I stdout
+the shell commands required to set the
+.B TERMCAP
+environment variable appropriately for the current window size of an
+.I mgr
+window.
+The
+.B COLUMNS
+and
+.B ROWS
+environment variables are also set.
+The TERM environment variable is set by the server at window creation,
+not by this program.
+.LP
+.I Set_termcap
+looks at the
+.B SHELL
+environment variable to decide whether the appropriate
+syntax to use is that of
+.I sh,
+.I csh,
+or
+.I rc.
+The default shell syntax is that of
+.I sh.
+.LP
+Adding the
+.I -v
+option to
+.I set_termcap
+changes the termcap entry to add the capability in vi of moving the cursor
+by clicking the right mouse button.
+If you do not require mousing in vi, then leaving off the option
+will lessen the chance of confusing other termcap-aware
+programs if you happen to click mouse buttons unexpectedly.
+.B GNU-emacs
+should be able to deal with either setup,
+as long as it has the
+.I mgr
+terminal handling code loaded.
+.SH BUGS
+.I Csh
+users may need to use:
+.B set noglob; eval `set_termcap`
+to keep
+.I csh
+from getting confused.
+.SH SEE ALSO
+csh(1)
+mgr(1L)
+rc(1)
+sh(1)
+.SH AUTHORS
+S. A. Uhler, Vincent Broman

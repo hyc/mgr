@@ -1,0 +1,33 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH MGRLOAD 1 "October 24, 1992" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+mgrload -\ Graph of system load average
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.B mgrload
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B Mgrload
+displays the current CPU load, which is defined as a floating point number
+greater than or equal to zero and represents the average number of processes
+which were on the run queue during the past 60 seconds.
+.B Mgrload
+represents this data as a scrolling bar graph with each bar
+representing the load during a 60 second interval.  The vertical scale of
+the graph is dynamically adjusted to account for changing load average
+values.
+.\"}}}
+.\"{{{  Authors
+.SH AUTHOR
+Original written by Mark Dapoz <mdapoz%hybrid@cs.toronto.edu>.
+Almost completely rewritten by Michael Haardt.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1)
+.\"}}}

@@ -1,0 +1,21 @@
+Wed Jan  3 21:13:37 1996  Tim Pierce  <twp@fence.queernet.org>
+
+	* vga.c: replaced ioperm calls with open ("/dev/io").
+
+Mon Sep 25 10:51:57 1995  Tim Pierce  <twp@fence>
+
+	* vga.c: moved <sys/types.h> to before <sys/mman.h>.
+
+	* vga.h: #ifdeffed out prototypes for standard library
+	functions.
+
+Thu Sep 21 02:31:32 1995  Tim Pierce  <twp@ntcs-10>
+
+	* Copied all files from ../linux.
+
+	* vga.c: replaced references to kd.h and vt.h with
+	machine/console.h, replaced sys/sysmacros.h with sys/types.h.
+
+	* ega.c: Ibid.
+
+	* hgc.c: Ibid.

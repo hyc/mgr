@@ -1,0 +1,48 @@
+#!/bin/sh
+#                        Copyright (c) 1988 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+#	$Header: c_menu,v 1.1 88/07/07 14:34:11 sau Exp $
+#	$Source: /tmp/mgrsrc/demo/sh/RCS/c_menu,v $
+
+
+#	filter cc error messages into mgr menus
+
+#	look for error messages of the form:
+#	"foo.c", line 19: word undefined
+
+sed -n -e 's/^"\([^"]*\)", line \([0-9]*\): \(.*\)/\1@\2@\3/p' | \
+
+#	turn the error message into menus
+
+awk -F@ '
+BEGIN	{	SEP=""	# menu field seperator
+		ESC=""	# mgr escape char
+		MAX=15		# max errors per file
+		}
+
+	{ if (file == $1 && i++ <= MAX) {	# at error to current file name
+		item[menu] = item[menu] SEP $3 
+		action[menu] = action[menu] SEP $2 "G"
+		}
+	else if (file != $1) {			# get new file name
+		menu++;  i=0;  file=$1
+		main_item=main_item $1 SEP
+		main_action=main_action ":n " $1 "\\r" SEP
+		}
+	}
+
+END	{	text = SEP main_item main_action
+		printf "%s%d,%dm%s",ESC,1,length(text),text	# main menu
+		for(i=1;i<=menu;i++) {
+			text=item[i] action[i] SEP
+			printf "%s%d,%dm%s",ESC,i+1,length(text),text # errors
+			printf "%s%d,%d,%d,15m",ESC,1,i-1,i+1	# menu links
+			}
+		printf "%s1m",ESC		# select menu
+	}
+'

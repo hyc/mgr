@@ -1,0 +1,137 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH MGRSKETCH "1"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+mgrsketch \- a mgr windowing system sketching program
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.B mgrsketch
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+\fIMgrsketch\fR is a sketching program that runs on the mgr windowing
+system.  Lines, freehand curves, and text are drawn on a window using
+the mouse and the keyboard.  Images may be saved as mgr bitmap files,
+and may be loaded and edited as well.  The operation of the program is
+controlled by a menu that is activated by the middle mouse button.  For
+some menu items a dialog box pops up asking for supplementary
+information.  The right mouse button is used to draw lines on the
+window.  Depressing this button starts the drawing activity, while
+lifting terminates it.
+.LP
+The individual menu entries have the following actions:
+.\"{{{  Line
+.SS Line
+Pressing the right button starts a straight line at the current location
+of the mouse cursor.  Move the mouse cursor to the desired location of
+the end of the line and release the button.  The line will appear.
+.\"}}}
+.\"{{{  X-line, Y-line
+.SS "X-line, Y-line"
+These work like \fBline\fR, except that the resulting line will not end
+at the mouse button release point, but will either be horizontal or
+vertical.
+.\"}}}
+.\"{{{  Box
+.SS "Box"
+This works like \fBline\fR, except that a box will appear with diagonal
+corners located at the mouse press and release points.
+.\"}}}
+.\"{{{  Arrowhead
+.SS "Arrowhead"
+This sets the length in pixels of the arrowhead drawn at the end of a
+line, x-line, or y-line.  A length of zero (the default) means that no
+arrowhead is drawn.
+.\"}}}
+.\"{{{  Circle
+.SS "Circle"
+This makes a circle with the center at the mouse press position and the
+mouse release position defining a point on the circle.
+.\"}}}
+.\"{{{  Paint
+.SS "Paint"
+This command allows freehand sketches to be made.  The mouse cursor
+draws when the right button is depressed, and stops drawing when it is
+released.
+.\"}}}
+.\"{{{  Brushsize
+.SS "Brushsize"
+This command allows the x and y dimensions (in pixels) of the square
+paintbrush that draws all lines to be set.  Enforced limits are 1 to 12
+pixels.
+.\"}}}
+.\"{{{  Text
+.SS "Text"
+After selecting this command, depress and release the right mouse button
+at the location where text is to begin.  Type the desired text at the
+keyboard and terminate with a carriage return.
+.IP "Warning"
+If \fBtext\fR is selected, the right mouse button is pushed, and another
+menu item is immediately selected, strange messages will appear as text
+on the image.  Avoid this by typing carriage return to terminate an
+unwanted text entry before doing anything else.
+.sp
+Typing anything on the keyboard when text is not expected will confuse
+\fImgrsketch\fR when the next menu item is selected.  Reselecting the
+desired menu item will then work, however.
+.\"}}}
+.\"{{{  New font
+.SS "New font"
+This selects one of mgr's loaded fonts (0\(en14).  A dialog box allows
+you to type in the desired font.
+.\"}}}
+.\"{{{  Erase
+.SS "Erase"
+This command allows you to erase with the mouse cursor when the right
+button is held down.  The eraser size is the same as the size of the
+paintbrush.
+.\"}}}
+.\"{{{  Load file
+.SS "Load file"
+This command allows you to load a bitmap file in mgr bitmap file format.
+A dialog box asks for the file name.  The bitmap image is immediately
+displayed on the window.  If the file can't be found, or if it isn't an
+mgr bitmap file, a dialog box will complain.
+.IP "Warning"
+Loading a bitmap bigger than the current window will result in the
+bitmap being truncated.
+.sp
+The environment variable "PWD", containing the current working
+directory, is expected to exist.  If it doesn't, mgrsketch may have
+trouble finding an image to load.
+.\"}}}
+.\"{{{  Save file
+.SS "Save file"
+This command allows you to save the image in the window to mgr bitmap
+file format.  A dialog box asks for a file name, or if a previous file
+has been loaded, asks if it is OK to overwrite that file with the
+current image.
+.IP "Warning:"
+When saving a file, it is first written to /tmp by mgr, and then moved 2
+seconds later by mgrsketch to the specified location.  This is done
+since mgr runs suid root, and may not be able to write on a NFS-mounted
+file system.  However, this opens two additional error possibilities: 1)
+If for some reason mgr is very slow to write the file, mgrsketch will
+try to move it before it is written.  2)  For some UNIX systems, it may
+not be allowed to "mv" a file across file system boundaries.
+.\"}}}
+.\"{{{  Quit
+.SS "Quit"
+This terminates the program.  Control-C has the same effect.  Note that
+the current image is not saved unless you do it explicitly with the
+above command.
+.\"}}}
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+David J. Raymond, Physics Department,
+.br
+New Mexico Institute of Mining and Technology,
+.br
+Socorro, NM 87801 USA
+.br
+raymond@kestrel.nmt.edu
+.\"}}}

@@ -1,0 +1,62 @@
+Mgr version 0.68
+
+FreeBSD port donated by Tim Pierce.
+
+Screen saver and locker built in to the server, on the quit menu.
+
+Emacs support has new calls for creating windows attached to new ptys,
+and this is used in new MIME support under Emacs Rmail and metamail.
+
+Made the shape of the mouse cursor an attribute of the active window,
+and change the cursor when a window is activated or the active window
+changes this attribute.  Added a macro to the interface to copy
+a scratch bitmap in a window to be the window's mouse cursor.
+Deleted the experimental E_CURSOR symbol.
+
+The width of a window border is now an attribute of that window, not global,
+but there is no interface for changing that border width.
+
+New fonts: betagreek-8x16 calligraf-8x14 calligraf-8x16
+Old font deleted as duplicate: unknown9x16
+added new icons icon/www/*
+
+Add deviceinfo field to BITMAP, reordering some fields.
+Add a void *devi argument to bit_initscreen(), usually
+  NULL, but the Sun Pixrect driver stores a pixrect there.
+The implementation of bit_static changed, requiring recompiling if you relink.
+Add a BITMAP *bm argument to getpalette and setpalette.
+
+Define interface macro m_findcolorrgb and change semantics of m_alloccolor.
+
+New clients:  mnew pgmrawtomgr ppmrawtomgr vgafont2mgr mgrfont2vga ismgrterm
+The colormap client can run a script from a file or stdin.
+
+Various bug fixes, linting, and upgrades to clients.
+Clients use is_mgr_term(), m_getdepth(), and strerror() instead
+  doing those things by hand.
+Mgrbd fix pointed out by pierce.
+
+Experiments with the BANKED VGA blitting code.
+Colorport driver simplified by combining cases.
+New freebsd video driver derived from linux code.
+Rescaling of color indices tweaked.
+Some moribund screen drivers made available.
+Linkage to linux asm code made ELF compatible.
+Made blits without source bitmap do set/clear with default colors.
+
+Moved dependencies files to ".depend"
+
+Server colors are found among those existing, not grabbed.
+Server option to initialize or not initialize the colormap.
+Menu colors dont depend on active window colors.
+Bug fix in .mgrc file setting of window sizes.
+Bug fix in turning mouse on/off properly remembering state.
+Bug fix in waiting for processes dying, when job control available.
+Fix in calculating minimum window size.
+Bug fix in initializing a Microsoft mouse, eliminate the initial  hang.
+Made a number of BIT_SRC and BIT_NOT(BIT_SRC) into BIT_SET and BIT_CLR
+  when there is no source bitmap.
+Window border drawing is cleaner and faster.
+
+README files updated.
+

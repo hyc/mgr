@@ -1,0 +1,11 @@
+Mgr version 0.69
+
+FreeBSD port of Tim Pierce combined with linux code and
+a few ifdefs, not retested by Pierce, yet.
+
+Screen saver and locker (using your login password)
+built in to the server, on the quit menu.
+
+Fixes to the pilot image viewer.
+
+The bitblit treatment of color inversions is more consistent.

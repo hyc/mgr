@@ -1,0 +1,6 @@
+#	MTX script example - add a "grep" tap to a process
+K: Grepf %s
+P: tap
+W: tap_window	14 405 640 384 
+C: tap	tap_window
+C: $P		tap

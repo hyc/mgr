@@ -1,0 +1,48 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH MGRVIEW 1 "October 11, 1992"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+mgrview \(em view MGR bitmap images
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B mgrview
+.RB [ \-s
+.IR file
+|
+.BI \-o file
+]
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+\fBmgrview\fP reads a MGR bitmap (or standard input if none given) and
+displays it.  The right mouse button is used to move the displayed area,
+if the image is too small for the window.  If pressed inside the window,
+it moves the displayed area in the specified direction (viewed from the
+middle), if it is pressed outside, the displayed area will be moved to
+the margin of the image.  The middle button brings up a menu which
+allows to switch between normal and reverse display and also to quit
+\fBmgrview\fP.
+.\"}}}
+.\"{{{  Options
+.SH OPTIONS
+.IP "\fB\-s\fP \fIfile\fP"
+The bitmap is in the same file system which the server uses.
+This usually is faster than:
+.IP "\fB\-o\fP \fIfile\fP"
+The bitmap is in another file system than the server.
+.IP "\fB\-r\fP"
+Use reverse display initially.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1), bitmap(5)
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+Michael Haardt
+.\"}}}

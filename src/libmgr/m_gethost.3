@@ -1,0 +1,37 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH M_GETHOSTNAME 3 "September 1, 1993" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+m_gethostname \- return hostname of MGR server
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B #include <mgr/mgr.h>
+.sp
+.B int m_gethostname(char *name, size_t len);
+.br
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B m_gethostname()
+stores up to \fIlen\fP characters of the hostname of the machine where
+the MGR server is running in \fIname\fP.  This can be used to find out
+if a program runs in the same file system namespace as the server or
+not.
+.\"}}}
+.\"{{{  Return value
+.SH "RETURN VALUE"
+On success, 0 is returned.
+.\"}}}
+.\"{{{  Errors
+.SH ERRORS
+If a protocol error happened, \-1 is returned.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1)
+.\"}}}

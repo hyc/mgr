@@ -1,0 +1,18 @@
+#	$Header$
+#	$Source$
+
+#                        Copyright (c) 1987 Bellcore
+#                            All Rights Reserved
+#       This document contains proprietary information that shall
+#       be distributed or routed only within Bellcore and its
+#       authorized clients, except with written permission of Bellcore.
+
+#! /bin/sh
+# do more in a window
+#
+ESC=""
+cat /usr/sau/mgr/menu/more_menu.out
+eval "`set_termcap -b`" 
+/usr/ucb/more $*
+echo "${ESC}imore${ESC}n of $* ${ESC}icomplete${ESC}n, hit RETURN to exit"
+read dummy

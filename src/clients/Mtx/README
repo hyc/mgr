@@ -1,0 +1,19 @@
+This is a simple multiwindow multiplexor for MGR.
+It permits the creation and manipulation of multiple shells and windows using
+only one MGR connection.  This is useful when only one connection is avaliable,
+as is the case for dialup lines.
+
+Each window emulates (suprise) an MGR window, with a few exceptions.
+Currently and alternate window creation and M_DUPKEY mode are not
+supported, although this limitation may be lifted in the future.
+
+The simplest way to use MTX is as follows.
+- Start MGR and create a window.
+- Using tip, kermit, or cu, make a connection to a remote machine.
+- Start MTX on the remote machine (remote doesn't have to be able to run MGR)
+- Select "make a window" from the MTX main menu several times
+- Each of the windows has a shell on the remote machine, the connections
+  are multiplexed over the single serial line.
+
+Stephen A Uhler
+sau@bellcore.com

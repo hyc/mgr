@@ -1,0 +1,19 @@
+Article 602 of unix-pc.sources:
+Xref: laidbak unix-pc.sources:602 comp.sys.att:10286
+Path: laidbak!tellab5!nucsrl!accuvax.nwu.edu!mailrus!news-server.csri.toronto.edu!torsqnt!geac!sq!hybrid!mdapoz
+From: mdapoz@hybrid.uucp (Mark Dapoz)
+Newsgroups: unix-pc.sources,comp.sys.att
+Subject: mgrload - an mgr client to graphically display the system load average
+Keywords: mgr system load
+Message-ID: <1990Jun22.055017.20122@hybrid.UUCP>
+Date: 22 Jun 90 05:50:17 GMT
+Sender: mdapoz@hybrid.UUCP (Mark Dapoz)
+Organization: The Home for Unemployed Basselopes, Toronto, Ontario, Canada
+Lines: 1589
+
+Here's a little program I whipped up which is similar to the X windows client
+xload, but written for specifically for mgr, enjoy..... mark
+
+--- snip --- snip --- snip --- snip --- snip --- snip --- snip --- snip --- 
+
+# This is a shell archive.  Remove anything before this line,

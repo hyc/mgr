@@ -1,0 +1,7 @@
+#!/lbin/rc
+cd bitmap.orig
+for (i in *.bits) {
+file=`{basename $i .bits}
+echo $file
+xbmtopbm $file.bits | pnmscale -xsize $1 -ysize $2 | pgmtopbm | pbmtoxbm | sed 's/noname/'^$file^'/' >../bitmap/$file.bits
+}

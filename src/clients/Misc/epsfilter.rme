@@ -1,0 +1,61 @@
+Article 559 of unix-pc.sources:
+Path: laidbak!mcdchg!att!dptg!rutgers!mephisto!ncsuvx!news
+From: fried-d@cscosl.ncsu.edu (Darren Friedlein)
+Newsgroups: unix-pc.sources
+Subject: epfilter - print mgr bitmaps on a Star (and maybe an Epson!)
+Message-ID: <1990Mar16.052220.4327@ncsuvx.ncsu.edu>
+Date: 16 Mar 90 05:22:20 GMT
+Organization: Operating Systems Laboratory (OSL), NCSU, Raleigh NC
+Lines: 218
+
+I modified the tjfilter program and came up with epfilter - a program
+to print mgr bitmaps on an Epson.  The name is misleading because I'm
+only sure that it runs on a Star (NX-2400) and I don't have an Epson
+or IBM Graphics Printer to test it on. I would like it to work on all
+of them, though, so if it doesn't work on your printer, get in touch
+with me and see if it's possible to make one version that fits all.
+
+Epfilter is slow.  The problem is that a bitmap is stored in bytes
+composed of bits from left to right and the Epson uses bytes of
+verticle dots.  To filter a whole screen takes 1m3s when nothing else
+is eating processor time.  I tried hard to optimise my conversion
+routine, but it only made 4secs difference, so I'm convinced there's
+more to the problem than my bit-twiddling code.
+
+One of the advantages of the graphics mode I chose is that it
+exactly the same size as the image on the screen.  Print out a window and
+place it over the screen.  Neat, huh!
+
+Uses: I use this to print windows with the window_dump routine.  Since
+the UNIXpc uses lp instead of lpr, link /bin/lp to /bin/lpr (retain
+set-uid).  window_dump can be invoked from .mgrc with an entry like:
+
+window X       Y       142     18      1
+shell window_print -f epfilter -p Epson_R
+
+where X and Y are the upper left coordinates of the window.  If you
+change the font, be sure to adjust the window size appropriately.
+Likewise if the name of your printer is longer than "Epson."
+
+This would also work for clip, but it would have to be worked into the
+printer driver script and might require the creation of a whole new
+printer class.
+
+Go into /wherever/mgr/is/misc and add this to the Makefile (if you
+want it to be compiled from the Makefile:
+
+epfilter:	epfilter.o $(MGR)/bitmaphead.o
+		$(SHLD) -o epfilter epfilter.o $(MGR)/bitmaphead.o
+
+The program's after the signature...
+
+-darren
+         ____
+        /    \
+       |                                 Rt 4, Box 416, Durham, NC 27703
+  _____|_____     Darren G. Friedlein             bacchus : 919/596-8715
+ /     |     \                                      voice : 919/596-9492
+(      |      )
+ \____/    __/   {mcnc|numen|dukcds}!bacchus!darren
+
+----

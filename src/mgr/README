@@ -1,0 +1,33 @@
+This is the MGR server, the result of merging the old Linux server with
+Stephen Uhler's last private version which was never released to the
+net, plus debugging and rewriting some smaller parts.  It also contains
+a patch for bold and underlined text from Stephen Uhler which he never released,
+plus uncounted amounts of bug fixes and patches.
+
+The following MGRFLAGS can be used:
+
+  BELL                ring the noisy bell
+  BUCKEY              for keyboard operated "mouse" commands
+  COLORSTANDOUT       do standout mode by complementing colors
+  CUT                 enable cut/paste between screen and snarfbuffer
+  DEBUG               turns on lots of debugging code (for -d option)
+  EMUMIDMSBUT         fake a middle mouse button with left and right button
+  FASTMOUSE           xor mouse cursor
+  FRACCHAR            fractional movement of cursor to place chars
+  KBD                 mess the kbd up (SunOS only)
+  KILL                kills windows upon tty i/o errors
+  MGR_ALIGN           align windows on byte boundaries for monochrome scrolling
+  MOUSE_DEV="xxx"     usually /dev/mouse
+  MOVIE               Movie extension
+  NOSTACK             don't permit event stacking
+  PRIORITY            for priority window scheduling instead of round-robin;
+  REGION_HACK         set window size when using text regions
+  SCREEN_DEV="xxx"    name or device of screen buffer
+  SHRINK              use only part of the screen for MGR management
+  STRETCH             implement mouse reshaping windows by stretching a corner
+  VI                  code for vi mouse hack
+  WHO                 make utmp entries for windows
+  XMENU               advanced menu operations
+
+Michael Haardt
+Vincent Broman

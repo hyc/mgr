@@ -1,0 +1,6 @@
+bitmapread() and bitmapwrite() assume that the internal memory format is
+similar to the external format, only padding may be different.  If you
+intend to write functions for internal bitplane grafics, then you have
+to write new bitmapread() and bitmapwrite() functions as well.
+
+Michael

@@ -1,0 +1,2 @@
+groff -Tps -mgs -rI0 macros abstract.ms > abstract.ps
+tbl  macros doc.1 doc.2 doc.3 doc.4 doc.5 doc.6 tocindex doc.9 | croff/croff -k '' '' -c '\fI' '\fP' | groff -Tps  -mgs -rI0 > body.ps

@@ -1,0 +1,774 @@
+  The MGR Window System HOWTO
+  Vincent Broman
+  Draft 30 May 1996
+  ______________________________________________________________________
+
+  Table of Contents:
+
+  1.      This HOWTO
+
+  1.1.    Archiving
+
+  1.2.    Authentication
+
+  1.3.    Credit for the HOWTO
+
+  2.      What is the MGR window system?
+
+  2.1.    Function
+
+  2.2.    Requirements
+
+  2.3.    How do MGR, X11, and 8.5 compare?
+
+  3.      Installing MGR
+
+  4.      Running MGR
+
+  4.1.    Applications not aware of MGR
+
+  4.2.    MGR Applications (clients) distributed with the server
+
+  4.3.    MGR-aware clients distributed separately, see "SUPPORT" file
+
+  5.      Programming for MGR
+
+  6.      More documentation
+
+  7.      Credit for MGR
+  ______________________________________________________________________
+
+  11..  TThhiiss HHOOWWTTOO
+
+                      Copyright Vincent Broman 1995.
+         Permission granted to make and distribute copies of this HOWTO
+            under the conditions of the GNU General Public License.
+
+  11..11..  AArrcchhiivviinngg
+
+  This HOWTO is archived in ffttpp::////aarrcchhiimmeeddeess..nnoosscc..mmiill//ppuubb//MMggrr//MMGGRR--
+  HHOOWWTTOO..ssggmmll, and also distributed from
+  ffttpp::////ssuunnssiittee..uunncc..eedduu//ppuubb//LLiinnuuxx//ddooccss//HHOOWWTTOO//MMGGRR--HHOOWWTTOO.  In nearby
+  directories the same document may appear in alternate formats like
+  MMGGRR--HHOOWWTTOO..ttxxtt.
+
+  11..22..  AAuutthheennttiiccaattiioonn
+
+  Copies of the MGR distribution due to Broman should be accompanied by
+  PGP signature files, signed by "Vincent Broman <broman@nosc.mil>".
+
+  11..33..  CCrreeddiitt ffoorr tthhee HHOOWWTTOO
+
+  While Vincent Broman first put together this HOWTO, much of the
+  information and text was obtained from FAQs, READMEs, etc. written by
+  Stephen Uhler, Michael Haardt, and other public-spirited net-persons.
+  Email corrections and suggested changes to bbrroommaann@@nnoosscc..mmiill.
+
+  Uhler was the main architect of MMGGRR -- see the Credit section below.
+
+  22..  WWhhaatt iiss tthhee MMGGRR wwiinnddooww ssyysstteemm??
+
+  22..11..  FFuunnccttiioonn
+
+  MMGGRR (ManaGeR) is a graphical window system.  The MMGGRR server provides a
+  builtin window manager and windowed graphics terminal emulation on
+  color and monochrome bitmap displays.  MMGGRR is controlled by mousing
+  pop-up menus, by keyboard interaction, and by escape sequences written
+  on pseudo-terminals by client software.
+
+  MMGGRR provides each client window with: termcap-style terminal control
+  functions, graphics primitives such as line and circle drawing;
+  facilities for manipulating bitmaps, fonts, icons, and pop-up menus;
+  commands to reshape and position windows; and a message passing
+  facility enabling client programs to rendezvous and exchange messages.
+  Client programs may ask to be informed when a change in the window
+  system occurs, such as a reshaped window, a pushed mouse button, or a
+  message sent from another client program.  These changes are called
+  events.  MMGGRR notifies a client program of an event by sending it an
+  ASCII character string in a format specified by the client program.
+  Existing applications can be integrated into the windowing environment
+  without modification by having MMGGRR imitate keystrokes in response to
+  user defined menu selections or other events.
+
+  22..22..  RReeqquuiirreemmeennttss
+
+  MMGGRR currently runs on Linux, FreeBSD, Sun 3/4 workstations with SunOS,
+  and Coherent.  Various older versions of MMGGRR run on the Macintosh,
+  Atari ST MiNT, Xenix, 386-Minix, DEC 3100, and the 3b1 Unix-pc.  Many
+  small, industrial, real-time systems under OS9 or Lynx in Europe use
+  (another variant of) Mgr for their user interface.  The programming
+  interface is implemented in C and in ELisp, although supporting
+  clients written in other languages is quite easy.
+
+  Running MMGGRR requires much less in resources than X, or even gcc.  It
+  does not have the user-base, software repertory, or high-level
+  libraries of X or MS-Windows, say, but it is quite elegant and
+  approachable.
+
+  It has been said that MMGGRR is to X as Unix was to Multics.
+
+  22..33..  HHooww ddoo MMGGRR,, XX1111,, aanndd 88..55 ccoommppaarree??
+
+  MMGGRR consists of a server with builtin window manager and terminal
+  emulator, and clients which run in this terminal emulator and use it
+  to communicate with the server.  No resource multiplexing is done.
+
+  X11 consists of a server and clients, which usually connect to the
+  server using a socket.  All user visible things like terminal
+  emulators, window managers etc are done using clients.  No resource
+  multiplexing is done.
+
+  8.5, the Plan 9 window system, is a resource multiplexer, as each
+  process running in a window can access //ddeevv//bbiittbblltt, //ddeevv//mmoouussee and
+  //ddeevv//kkbbdd in its own namespace.  These are multiplexed to the
+  //ddeevv//bbiittbblliitt, //ddeevv//mmoouussee and //ddeevv//kkbbdd in the namespace of 8.5.  This
+  approach allows one to run 8.5 in an 8.5 window, a very clean design.
+  8.5 further has an integrated window manager and terminal emulator.
+
+  33..  IInnssttaalllliinngg MMGGRR
+
+  The latest source distribution can be FTPed from the directory
+  ffttpp::////aarrcchhiimmeeddeess..nnoosscc..mmiill//ppuubb//MMggrr//6699 or Mosaiced from
+  hhttttpp::////aarrcchhiimmeeddeess..nnoosscc..mmiill//MMggrr//6699.  The same should be found at
+  ffttpp::////ssuunnssiittee..uunncc..eedduu//ppuubb//LLiinnuuxx//aappppss//MMGGRR and its mirrors.  Older
+  versions of this distribution from Haardt can be found on
+  ttssxx--1111..mmiitt..eedduu and perhaps elsewhere.  Pre-Linux versions of MMGGRR from
+  Uhler and others have been found at ffttpp::////bbeellllccoorree..ccoomm//ppuubb//mmggrr, but I
+  think they are gone now.  I have saved a copy of everything about MMGGRR
+  seen on the Internet, but I am not aware of anything weighty that is
+  missing from this Linux/Sun distribution.  MMGGRR has been through a lot
+  of versions and releases, but the current *Linux* version number is
+  0.69.  This version number could jump to 1.0 when stable 256-color VGA
+  code for Linux appears (for more than one video card type).  RCS
+  version numbers have increased from Bellcore's 4.3 up to our 4.13 now.
+
+  Required tools to build this distribution of MMGGRR are m4 (GNU, or
+  perhaps another supporting the -D option), make (GNU, or perhaps
+  another supporting include) and *roff for the docs.  Also sh, awk, and
+  POSIX install.  Binary distributions are not assembled often so you
+  need an ANSI C compiler environment, e.g. gcc.
+
+  A Linux installation requires Linux 0.99.10 or better (1.2.13 is what
+  I actually test on now), an HGC, EGA, VGA, or SVGA graphics card, and
+  a mouse.  Mouses supported are: serial Microsoft mouse, serial
+  MouseSystems 3 and 5 byte mouse, serial MMSeries mouse, serial
+  Logitech mouse, PS/2 mouse, or a bus mouse.  With Buckey (Meta) hot
+  keys enabled, even a mouseless system could do a certain amount of
+  useful work under MMGGRR.  The VGA 640x480 monochrome graphics mode is
+  supported out of the box, as is 640x350 and 640x200.  To run 800x600,
+  or other modes that your BIOS can initialize and which do not require
+  bank-switching, you need to run a small program (supplied as
+  ssrrcc//vvggaammiisscc//rreeggss..eexxee) under DOS or an emulator to read the VGA
+  registers and write a header file which you place in the directory
+  ssrrcc//lliibbbbiittbblliitt//lliinnuuxx, so that it can be ##iinncclluuddee'd by the vvggaa..cc file
+  there.  Samples of these files are supplied, but please create your
+  own.  Some VGA cards can use 128k windows, and these might run higher
+  monochrome resolutions.
+
+  The Linux-colorport code also runs in the standard 320x200x256 color
+  VGA mode without difficulty, because no bank switching is required.
+  If you think of how few 64000 pixels is, you would realize this color
+  mode is quite limited.  Non-fast, but simple, bank-switching code has
+  been added in version 0.65, and it works with a Tseng ET4000 card in
+  640x480x256 and 800x600x256 modes.  The S3 code does not work in super
+  VGA resolutions, yet.  Supporting new super VGA cards requires writing
+  one function to switch banks and then making sure that the desired
+  screen mode can be initialized from a register dump, possibly with
+  hand-tweaking.  The Linux color servers generally mangle the screen
+  fonts, necessitating use of restorefont as in runx.  If someone were
+  to extract the VGA initialization code out of X, this might make MGR
+  work on a lot more color systems.
+
+  Suns with SunOS 4.1.2+ and bbwwttwwoo, ccggtthhrreeee, or ccggssiixx frame buffers are
+  supported.  Their speed handling color is good.  Coherent
+  installations should refer to the VVeerrssiioonnss//RREEAADDMMEE..CCoohh file in the
+  source distribution.  Porting the latest-and-greatest MMGGRR to another
+  POSIX-like system which provides sseelleecctt(()) and pty's and direct access
+  to a bitmapped frame-buffer ought to be straightforward, just
+  implementing the lliibbbbiittbblliitt library based on the ssuunnmmoonnoo or ccoolloorrppoorrtt
+  code, say.
+
+  If you want to install everything, you need 7 MB disk space for
+  binaries, fonts, manual pages etc.  The sources are about 4.5 MB, plus
+  object files during compilation.
+
+  Normally, //uussrr//mmggrr should be either the directory or a link to the
+  directory where you install MMGGRR stuff for runtime use.  Typing
+
+       cd /usr/mgr; tar xvfz whereveryouputit/mgrusr-0.69.tgz
+
+  and optionally
+
+       cd /usr/mgr; tar xvfz wherever/morefonts-0.69.tgz
+
+  will unpack these.  The source can be put anywhere, e.g. typing
+
+       cd /usr/src/local/mgr; tar xvfz wherever/mgrsrc-0.69.tgz
+
+  to unpack the sources from aarrcchhiimmeeddeess..nnoosscc..mmiill.
+
+  The source tree can be compiled from one top-level Makefile which
+  invokes lower-level Makefiles, all of which "include" a ""CCoonnffiiggffiillee""
+  at the top level.  The CCoonnffiiggffiillee is created by an interactive sh
+  script named CCoonnffiigguurree, which asks you questions, then runs m4 on a
+  CCoonnffiiggffiillee..mm44.  So you type something like this:
+
+       chdir /usr/src/local/mgr
+       sh ./Configure
+       make first
+       make depend
+       make install
+       make clean
+
+  It might be wise, before running make, to eyeball the CCoonnffiiggffiillee
+  generated by the CCoonnffiigguurree script, checking that it looks reasonable.
+  (At least one m4 poops out (Sun //uussrr//bbiinn//mm44), creating a very short
+  CCoonnffiiggffiillee.  If this happens, try hand editing a copy of
+  CCoonnffiiggffiillee..ssuunn or CCoonnffiiggffiillee..llxx) One can also mmaakkee aallll in any
+  directory with a Makefile as soon as the libraries have been compiled
+  and installed.  The server, libraries, and some clients have been
+  linted, but several clients are K&R C code that generates many
+  compiler warnings.
+
+  Several flags in MGRFLAGS can be added/omitted in the Configfile to
+  change some optional features in the server, viz:
+
+     --DDWWHHOO
+        muck utmp file so "who" works
+
+     --DDVVII
+        code for clicking the mouse in vi moving the cursor
+
+     --DDDDEEBBUUGG
+        enable debugging output selectable with -d options.
+
+     --DDFFAASSTTMMOOUUSSEE
+        XOR the mouse track
+
+     --DDBBUUCCKKEEYY
+        for hot-key server commands without mousing
+
+     --DDPPRRIIOORRIITTYY
+        for priority window scheduling instead of round-robin; the
+        active window gets higher priority
+
+     --DDCCUUTT
+        for cut/paste between windows and a global snarf buffer
+
+     --DDMMGGRR__AALLIIGGNN
+        forces window alignment for fast scrolling (monochrome)
+
+     --DDKKIILLLL
+        kills windows upon tty i/o errors
+
+     --DDSSHHRRIINNKK
+        use only some of the screen ($MGRSIZE in environment)
+
+     --DDNNOOSSTTAACCKK
+        don't permit event stacking
+
+     --DDBBEELLLL
+        audibly ring the bell
+
+     --DDKKBBDD
+        read mmggrr input from the sun kbd, instead of stdin.  This permits
+        redirection of console msgs to a window.
+
+     --DDFFRRAACCCCHHAARR
+        fractional character movement for proportional fonts
+
+     --DDXXMMEENNUU
+        extended menu stuff (experimental)
+
+     --DDMMOOVVIIEE
+        movie making extension which logs all operations to a file for
+        later replay -- not quite working under Linux
+
+     --DDEEMMUUMMIIDDMMSSBBUUTT
+        Emulate a missing middle mouse button by chording
+
+  Not all combinations of these options have been tested on all systems.
+
+  The BITBLITFLAGS macro should contain --DDBBAANNKKEEDD if you're trying out
+  the super VGA color.
+
+  C code for the static variables in the server containing icons and
+  fonts is generated by a translator from icon and font files.
+
+  Not all the clients are compiled and installed by the Makefiles.
+  Clients found under ssrrcc//cclliieennttss having capitalized names or not
+  compiled by the supplied Makefiles may have problems compiling and/or
+  running, but they may be interesting to hack on.  Most of the screen
+  drivers found under the lliibbbbiittbblliitt directory are of mainly
+  archeological interest. Grave robbing can be profitable.
+
+  At some point check that your //eettcc//tteerrmmccaapp and/or tteerrmmiinnffoo file
+  contain entries for MMGGRR terminals such as found in the mmiisscc directory.
+  If all your software checks $TERMCAP in the environment, this is not
+  needed, as long as you run eevvaall ``sseett__tteerrmmccaapp`` in each window.
+
+  MMGGRR works better if run setuid root, because it wants to chown ptys
+  and write in the utmp file.  This helps the ify iconifier client work
+  better and the event passing mechanism be more secure.  On Linux, root
+  permissions are _r_e_q_u_i_r_e_d in order to do in/out on the screen device.
+  Otherwise, you decide whether to trust it.
+
+  In versions around 0.62 there are troubles on the Sun with using the
+  csh as the default shell.  Programs seem to run in a different process
+  group than the foreground process group of the window's pty, in
+  contradiction to man pages and posix specs.  There is no trouble with
+  bash, sh, or rc.  Ideas why?
+
+  44..  RRuunnnniinngg MMGGRR
+
+  The only file _r_e_q_u_i_r_e_d in an MMGGRR installation is the server itself.
+  That would give you terminal emulator windows with shells running in
+  them and cutting and pasting with the mouse, but no nice clocks, extra
+  fonts, fancy graphics, etc.  Depending on options, a monochrome server
+  needs about 200K of RAM plus dynamic space for windows, bitmaps, etc.
+
+  If //uussrr//mmggrr//bbiinn is in your PATH, then just type "mmggrr" to start up.
+  After enjoying the animated startup screen, press any key.  When the
+  hatched background and mouse pointer appear, hold down the left mouse
+  button, highlight the "new window" menu item, and release the button.
+  Then drag the mouse from corner to corner where you want a window to
+  appear.  The window will have your default shell running in it.  Hold
+  down the left mouse button over an existing window to see another menu
+  for doing things to that window.  Left-clicking on an obscured window
+  raises it to the top.  The menu you saw that pops-up over the empty
+  background includes the quit command.  For people with a two button
+  mouse: press both buttons together to emulate the missing middle
+  button used by some clients.
+
+  The quit submenu includes the "really quit" option, a suspend option
+  which should only be used if you run a job-control shell, and a screen
+  saver and locker option, which waits for you to type your login
+  password when you come back to your machine.
+
+  When trying to run MMGGRR, if you get:
+
+     ccaann''tt ffiinndd tthhee ssccrreeeenn
+        make sure you have a //ddeevv entry for your display device, e.g. on
+        a Sun //ddeevv//bbwwttwwoo00.  If not, as root cd to //ddeevv, and type
+        "MAKEDEV bwtwo0".  Otherwise, you might need the --SS//ddeevv//bbwwttwwoo00
+        or (on Linux) the --SS664400xx448800 command line option when starting
+        mmggrr.  On Linux, you might also make sure that //uussrr//mmggrr//bbiinn//mmggrr
+        was installed setuid root.
+
+     ccaann''tt ffiinndd tthhee mmoouussee
+        make sure //ddeevv//mmoouussee exists, usually as a symbolic link to the
+        real device name for your mouse.  If you haven't permission to
+        write in //ddeevv, then something like a --mm//ddeevv//ccuuaa00 option can be
+        given when starting mmggrr.  Also, make sure you've supplied the
+        right mouse protocol choice when you configured mmggrr.  The mouse
+        may speak Microsoft, even if that is not the brand name.
+
+     ccaann''tt ggeett aa ppttyy
+        make sure all of //ddeevv//[[ttpp]]ttyy[[ppqq]]??  are owned by root, mode 666,
+        and all programs referenced with the "shell" option in your
+        ..mmggrrcc startup file (if any) exist and are executable.
+
+     nnoonnee bbuutt tthhee ddeeffaauulltt ffoonntt
+        make sure MMGGRR is looking in the right place for its fonts.
+        Check the CCoonnffiiggffiillee in the source or see whether a
+        --ff//uussrr//mmggrr//ffoonntt option to mmggrr fixes the problem.
+
+     ccoommpplleetteellyy hhuunngg ((nnoott eevveenn tthhee mmoouussee ttrraacckk mmoovveess))
+        login to your machine from another terminal (or rlogin) and kill
+        the mmggrr process.  A buckey-Q key can quit MMGGRR if the keyboard
+        still works.
+
+  44..11..  AApppplliiccaattiioonnss nnoott aawwaarree ooff MMGGRR
+
+  Any tty-oriented application can be run in an MMGGRR window without
+  further ado.  Screen-oriented applications using termcap or curses can
+  get the correct number of lines and columns in the window by your
+  using sshhaappee((11)) to reshape the window or using sseett__tteerrmmccaapp((11)) to obtain
+  the correct termcap entry.
+
+  44..22..  MMGGRR AApppplliiccaattiioonnss ((cclliieennttss)) ddiissttrriibbuutteedd wwiitthh tthhee sseerrvveerr
+
+     bbddffttoommggrr
+        converts some BDF fonts to MGR fonts
+
+     bbrroowwssee
+        an icon browser
+
+     bbuurryy
+        bury this window
+
+     cc__mmeennuu
+        vi menus from C compiler errors
+
+     cclloocckk
+        digital display of time of day
+
+     cclloocckk22
+        analog display of time of day
+
+     cclloossee
+        close this window, iconify
+
+     ccoolloorr
+        set the foreground and background color for text in this window
+
+     ccoolloorrmmaapp
+        read or write in the color lookup table
+
+     ccuurrssoorr
+        change appearance of the character cursor
+
+     ccuutt
+        cut text from this window into the cut buffer
+
+     ccyyccllee
+        display a sequence of icons
+
+     ddmmggrr
+        crude ditroff previewer
+     ffaaddee
+        fade a home movie script from one scene to another
+
+     ffoonntt
+        change to a new font in this window
+
+     ggrrooppbbmm
+        a groff to PBM driver using Hershey fonts
+
+     hhppmmggrr
+        hp 2621 terminal emulator
+
+     iiccoo
+        animate an icosahedron or other polyhedron
+
+     iiccoonnmmaaiill
+        notification of mail arrival
+
+     iiccoonnmmssggss
+        message arrival notification
+
+     iiffyy
+        iconify and deiconify windows
+
+     llooaaddffoonntt
+        load a font from the file system
+
+     mmaazzee
+        a maze game
+
+     mmcclloocckk
+        micky mouse clock
+
+     mmeennuu
+        create or select a pop-up menu
+
+     mmggrr
+        bellcore window system server and window manager
+
+     mmggrrbbdd
+        boulder-dash game
+
+     mmggrrbbiiffff
+        watch mailbox for mail and notify
+
+     mmggrrllooaadd
+        graph of system load average
+
+     mmggrrlloocckk
+        lock the console
+
+     mmggrrllooggiinn
+        graphical login controller
+
+     mmggrrmmaagg
+        magnify a part of the screen, optionally dump to file
+
+     mmggrrmmaaiill
+        notification of mail arrival
+
+     mmggrrmmooddee
+        set or clear window modes
+
+     mmggrrmmssggss
+        message arrival notification
+
+     mmggrrpplloott
+        Unix "plot" graphics filter
+
+     mmggrrsscclloocckk
+        sandclock
+
+     mmggrrsshhoowwffoonntt
+        browse through mgr fonts
+
+     mmggrrsskkeettcchh
+        a sketching/drawing program
+
+     mmggrrvviieeww
+        view mgr bitmap images
+
+     mmlleessss
+        start up less/more in separate window, menu added for less
+
+     mmnneeww
+        startup up any program in a separate, independent window
+
+     mmpphhoooonn
+        display the current phase of the moon
+
+     mmvvii
+        start up vi in a separate window, with mouse pointing
+
+     oocclloossee
+        (old) close a window
+
+     oommggrrmmaaiill
+        (old) notification of mail arrival
+
+     ppbbmmrraawwttoommggrr,, ppggmmrraawwttoommggrr,, ppppmmrraawwttoommggrr
+        convert raw PBM/PGM/PPM image files to mgr bitmap format
+
+     ppbbmmssttrreeaamm
+        split out a stream of bitmaps
+
+     ppbbmmttoopprrtt
+        printer output from PBM
+
+     ppggss
+        ghostscript patch and front end, a PS viewer
+
+     ppiilloott
+        a bitmap browser, or image viewer
+
+     rreesseettwwiinn
+        cleanup window state after client crashes messily
+
+     rroottaattee
+        rotate a bitmap 90 degrees.
+
+     ssccrreeeenndduummpp
+        write graphics screen dump to a bitmap file
+
+     sseett__ccoonnssoollee
+        redirect console messages to this window
+
+     sseett__tteerrmmccaapp
+        output an appropriate TERM and TERMCAP setting
+
+     sseettnnaammee
+        name a window, for messages and iconifying
+
+     sshhaappee
+        reshape this window
+
+     ssqquuaarree
+        square this window
+
+     ssqquueeeezzee
+        compress mgr bitmap using run-length encoding
+
+     ssttaarrttuupp
+        produce a skeleton startup file for current window layout
+
+     tteexxmmggrr
+        TeX dvi file previewer
+
+     tteexxtt22ffoonntt,, ffoonntt22tteexxtt
+        convert between mgr font format and text dump
+
+     uunnssqquueeeezzee
+        uncompress mgr bitmap using run length encoding
+
+     vvggaaffoonntt22mmggrr,, mmggrrffoonntt22vvggaa
+        convert between mgr font format and VGA
+
+     wwiinnddooww__pprriinntt
+        print an image of a window
+
+     zzoooomm
+        an icon editor
+
+     bboouunnccee,, ggrraavv,, ggrriidd,, hhiillbbeerrtt,, mmggrreeyyeess,, ssttrriinnggaarrtt,, wwaallkk
+        graphics demos
+
+  44..33..  MMGGRR--aawwaarree cclliieennttss ddiissttrriibbuutteedd sseeppaarraatteellyy,, sseeee ""SSUUPPPPOORRTT"" ffiillee
+
+     ccaallccttooooll
+        on-screen calculator
+
+     cchheessss
+        frontend to //uussrr//ggaammeess//cchheessss
+
+     ggnnuu eemmaaccss
+        editor with lliisspp//tteerrmm//mmggrr..eell mouse & menu support
+
+     ggnnuupplloott
+        universal scientific data plotting
+
+     mmeettaaffoonntt
+        font design and creation
+
+     oorriiggaammii
+        folding editor
+
+     ppbbmmpplluuss
+        portable bitmap format conversions, manipulations
+
+     ppllpplloott
+        slick scientific data plotting
+
+  The Emacs support in mmiisscc//mmggrr..eell and mmiisscc//mmaaiillccaapp includes very usable
+  MIME support, via Rmail and metamail.
+
+  A general image viewer could be cobbled together from ppiilloott and the
+  netPBM filters, but I have not taken the time to do it.
+  55..  PPrrooggrraammmmiinngg ffoorr MMGGRR
+
+  The MMGGRR programmers manual, the C language applications interface, is
+  found in the doc directory in troff/nroff form.  It covers general
+  concepts, the function/macro calls controlling the server, a sample
+  application, with an index and glossary.
+
+  Porting client code used with older versions of MMGGRR sometimes requires
+  the substitution of
+
+           #include <mgr/mgr.h>
+
+  for
+
+           #include <term.h>
+           #include <dump.h>
+
+  and clients using old-style B_XOR, B_CLEAR, et al instead of BIT_XOR,
+  BIT_CLR, et al can be accommodated by writing
+
+           #define OLDMGRBITOPS
+           #include <mgr/mgr.h>
+
+  Compiling client code generally requires compiler options like the
+  following.
+
+           -I/usr/mgr/include   -L/usr/mgr/lib -lmgr
+
+  One can get some interactive feel for the MMGGRR server functions by
+  reading and experimenting with the mmggrr..eell terminal driver for GNU
+  Emacs which implements the MMGGRR interface library in ELisp.
+
+  The usual method of inquiring state from the server has the potential
+  of stumbling on a race condition if the client also expects a large
+  volume of event notifications.  The problem arises if an
+  (asynchronous) event notification arrives when a (synchronous) inquiry
+  response was expected.  If this arises in practice (unusual) then the
+  MMGGRR state inquiry functions would have to be integrated with your
+  event handling loop.
+
+  The only major drawing function missing from the MMGGRR protocol, it
+  seems, is an area fill for areas other than upright rectangles.  There
+  is new code for manipulating the global colormap, as well as
+  (advisory) allocation and freeing of color indices owned by windows.
+
+  If you are thinking of hacking on the server, you can find the mouse
+  driver in mmoouussee..** and mmoouussee__ggeett..**, the grotty parts of the keyboard
+  interface in kkbbdd..cc, and the interface to the display in the
+  ssrrcc//lliibbbbiittbblliitt//** directories.  The main procedure, much
+  initialization, and the top level input loop are in mmggrr..cc, and the
+  interpretation of escape sequences is in ppuutt__wwiinnddooww..cc.
+
+  66..  MMoorree ddooccuummeennttaattiioonn
+
+  The programmer's manual is essential for concepts.
+
+  Nearly all the clients supplied come with a man page which is
+  installed into //uussrr//mmggrr//mmaann//mmaann11 or mmaann66.  Other useful man pages are
+  bbiittbblliitt..33, ffoonntt..55, and bbiittmmaapp..55.  There is some ambiguity in the docs
+  in distinguishing the internal bitmap format found in your frame-
+  buffer and the external bitmap format found in files, e.g. icons.
+
+  The mmggrr..11 man page covers command line options, commands in the
+  ~~//..mmggrrcc startup file, mouse and menu interaction with the server, and
+  hot-key shortcuts available on systems with such hot-keys.
+
+  Many of the fonts in //uussrr//mmggrr//ffoonntt//** are described to some extent in
+  //uussrr//mmggrr//ffoonntt//**..ttxxtt, e.g. //uussrr//mmggrr//ffoonntt//FFOONNTTDDIIRR..ttxxtt gives X-style font
+  descriptions for the fonts obtained in .bdf format.  Font names end in
+  WWxxHH, where WW and HH are the decimal width and height in pixels of each
+  character box.
+
+  77..  CCrreeddiitt ffoorr MMGGRR
+
+  Stephen Uhler, with others working at Bellcore, was the original
+  designer and implementer of MMGGRR, so Bellcore has copyrighted much of
+  the code and documentation for MMGGRR under the following conditions.
+
+      * Permission is granted to copy or use this program, EXCEPT that it
+      * may not be sold for profit, the copyright notice must be reproduced
+      * on copies, and credit should be given to Bellcore where it is due.
+
+  One required showing of the copyright notice is the startup title
+  screen.
+
+  Other credits to:
+
+  ·  Stephen Hawley for his wonderful icons.
+
+  ·  Tommy Frandsen for the VGA linux library.
+
+  ·  Tom Heller for his Gasblit library.
+
+  ·  Andrew Haylett for the Mouse driver code.
+
+  ·  Dan McCrackin for his gasblit->linux patches.
+
+  ·  Dave Gymer, dgymer@gdcarc.co.uk, for the Startrek effect fix.
+
+  ·  Alex Liu for first releasing a working Linux version of MMGGRR.
+
+  ·  Lars Aronsson (aronsson@lysator.liu.se) for text2font and an
+     ISO8859-1 8-bit font.
+
+  ·  Harry Pulley (hcpiv@grumpy.cis.uoguelph.ca,
+     hcpiv@snowhite.cis.uoguelph.ca) for the Coherent port.
+
+  ·  Vance Petree & Grant Edwards & Udo Munk for their work on Hercules.
+
+  ·  Udo Munk for his work on serial mouse initialization & select.
+
+  ·  Norman Bartek & Hal Snyder at Mark Williams Co.  for their help
+     with some bugs & with Coherent device drivers.
+
+  ·  Extra thanks to Zeyd Ben Halim for lots of helpful patches,
+     especially the adaptation of selection.
+
+  ·  Bradley Bosch, brad@lachman.com, for lots of patches from his 3b1
+     port, which fix bugs and implement new and desirable features.
+
+  ·  Andrew Morton, applix@runxtsa.runx.oz.au, who first wrote the cut-
+     word code.
+
+  ·  Kapil Paranjape, kapil@motive.math.tifr.res.in, for the EGA
+     support.
+
+  ·  Michael Haardt for MOVIE support fixes, bug fixes, separation of
+     the libbitblit code into output drivers, expansion of the libmgr,
+     and origami folding of the code.
+
+  ·  Yossi Gil for many fonts.
+
+  ·  Carsten Emde, carsten@thlmak.pr.net.ch, for mphoon.
+
+  ·  Vincent Broman for middle mouse-button emulation, linting, Sun
+     cgsix support, VGA colormap acess, integration of the sunport code
+     into Haardt's layering scheme, font gathering, the screen saver,
+     and continued maintenance.
+
+  ·  Kenneth Almquist, ka@socrates.hr.att.com, for helpful bug reports.
+
+  ·  Tim Pierce, twpierce@midway.uchicago.edu, for the port to FreeBSD
+     2.0R with Trident VGA.
+
+  All bitmap fonts from any source are strictly public domain in the
+  USA.  The 583 fixed-width fonts supplied with MMGGRR were obtained from
+  Uhler, the X distribution, Yossi Gil, and elsewhere.  The Hershey
+  vector fonts and the code for rendering them are probably freely
+  redistributable.
+

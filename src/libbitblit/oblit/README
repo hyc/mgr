@@ -1,0 +1,15 @@
+#                        Copyright (c) 1988 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+#	$Header: /files/src/linuxmgr/src/libbitblit/oblit/RCS/README,v 4.4 1994/01/28 21:37:55 broman Stab $
+#	$Source: /files/src/linuxmgr/src/libbitblit/oblit/RCS/README,v $
+
+old 16 bit (i.e. worksd on 680[012]0's) bitblit code
+
+* mem_rop(dst,x_dst,y_dst,w,h,op,src,x_src,y_src) /* bit-blt */
+* bit_line(dst,x,y,op)	/* lines (clipped) */
+* bit_point(dst,x,y,op) /* a point (clipped) */

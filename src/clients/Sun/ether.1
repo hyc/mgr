@@ -1,0 +1,90 @@
+'\"
+'\"
+'\"
+'\"                        Copyright (c) 1988 Bellcore
+'\"                            All Rights Reserved
+'\"       Permission is granted to copy or use this program, EXCEPT that it
+'\"       may not be sold for profit, the copyright notice must be reproduced
+'\"       on copies, and credit should be given to Bellcore where it is due.
+'\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+'\"
+'\"	$Header: ether.1,v 4.1 88/06/21 13:51:30 bianchi Exp $
+'\"	$Source: /tmp/mgrsrc/doc/RCS/ether.1,v $
+.TH ether 1L "April 30, 1985"
+.SH NAME
+ether \- Display a strip chart of network traffic.
+.SH SYNOPSIS
+.B ether
+[ \fB\-c<color_map_indexes>\fP ]
+[ \fB\-f<freq>\fP ]
+[ \fB\-m<max>\fP ]
+.SH DESCRIPTION
+.B Ether
+is a graphical version of
+.I netstat
+that runs on
+.I mgr
+terminals.
+.B Ether,
+displays the number of input packet, 
+output packets, and collisions on the first network interface reported by
+.I netstat.
+.LP
+The following options are recognized on the command line:
+.TP
+.B \-f<freq>
+The display is updated every
+.I freq
+seconds, instead of the default 3 seconds.
+.TP
+.B -m<max>
+specifies the maximum number of packets counted per update.
+The default is 15.
+.TP
+.B \-c
+If ether is run on a color version of MGR, various parts of the display are
+shown in different colors.  This option alters the colormap index values
+used.  The 
+.B \-c
+is immediately followed by a string of characters in the range of [0-9a-z]
+where each color represents a colormap index from 0 to 36 respectively.
+The position in the string determines what portion of the display is affected
+as follows:
+.sp
+.nf
+#	use
+.sp
+0	unused
+1	background 
+2	title
+3	axis labels
+4	grid lines
+5	values that exeed the maximum
+6	color for plots
+.sp
+.fl
+.TP
+.SH "SEE ALSO"
+mgr(1L)
+netstat(1)
+.SH DIAGNOSTICS
+.TP
+Window is not wide enough
+Make the window wider and the graph will continue.
+.TP
+Window is not high enough
+Make the window taller and the graph will continue.
+.SH BUGS
+If the window is reshaped,
+.I ether
+requires up to
+.B freq
+(usually 3)
+seconds to learn about the new window size.
+.LP
+.I Ether
+calls
+.I netstat(1) and assumes a particular output format from it
+(i.e. 4.2 BSD).
+.SH AUTHOR
+S. A. Uhler

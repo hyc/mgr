@@ -1,0 +1,40 @@
+Standard color VGA 320x200x256 mode now supported on Linux.
+SuperVGA color modes requiring bank switching supported on Tseng ET-4000 only.
+  This is slow but works. Simple to port, too. Hard part is mode initialization.
+
+Bank-switching code added for tseng4k(working), s3 and tvga(speculative).
+The src/libbitblit/colorport code no longer assumes 32-bit DATA in framebuffer.
+VGA register info for monochrome modes removed from colorport directory.
+Subdirectories of src/libbitblit/colorport created for chip-dependent .h files.
+
+Hercules mono code in libbitblit cleaned up, but not known to still work.
+The src/libbitblit/sunmono code brought up-to-date with colorport code,
+  with renamed files.  It compiles but I cannot test how it runs.
+
+New code in the server for colormap setting/getting/allocating/freeing.
+Colors sent to the colormap may be scaled arbitrarily, but they are
+  read out using the hardware scaling.
+The server grabs a few colormap colors for its own use on startup.
+Default bitops in windows can be pushed/popped on window state stack.
+Server dprintf dribble code made clean-looking.
+Ptys for windows given mode 0600 instead of 0622 by server.
+
+New libmgr routines m_getpalette and m_localsrv.
+Three routines m_bitc_send* in libmgr transfer bitmaps transparently from
+  client to server: through the filesystem if server local and bitmap large,
+  otherwise through the tty.
+
+A new client "colormap" written for setting/getting the global color palette.
+The snap client moved from src/clients/icon to src/clients/bitmap/simple.
+The name of our ghostscript device is now "mgrmono".
+The resetwin client tries to get the right fg/bg color indices restored.
+A terminfo file, some libbitblit code, and a few untested clients taken from
+  the 3b1 unix-pc Mgr distribution.
+
+Documentation, configuration, and HOWTO updated.
+Moved version and configuration clutter to directory named Versions.
+Added a few new fonts and icons.
+The startup rotating globes inverted B<->W to harmonize color and mono use.
+The startup screen may look funny on mono white-on-black screen, e.g. sun bw2.
+Icons for very-low-res startup screen created in icon/smallserver.
+

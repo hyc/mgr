@@ -1,0 +1,32 @@
+This is an updated release of PGS a postscript previewer for MGR
+PGS uses Ghostscript for its postscript interpreter.
+
+PGS was written by Stephen Uhler, but updated by Vincent Broman.
+The Alladin ghostscript version 3.0 has mgr support built-in and
+does not need patching to run under pgs.  Look on ftp.cs.wisc.edu.
+
+Installation instructions:
+  * obtain Ghostscript release 2.6.1.4 from your favorite GNU archive.
+    (try gatekeeper.dec.com for starters).
+
+  * apply the diffs contained in "gs.patch.2614mono" to add support
+    for the MGR device.
+    (cd to the gs2.4.1 distriburion, and run: "patch < gs.patch.2614mono")
+
+  * Build a new "gs" with the MGR driver.  Make sure you also include any
+    other drivers required for your system (the MGR driver needn't be first).
+    Install the new "gs" somewhere in your PATH.
+
+  * Build pgs.  You will need the MGR client library "libmgr.a" and
+    "include/mgr/mgr.h" supplied with the MGR distribution.
+    You may need to change the first few lines of the Makefile to find them.
+    run "make".
+
+  * copy pgs and pgs.1 to the appropriate places.
+
+
+Send any questions or comments to:
+Stephen A Uhler
+sau@bellcore.com
+
+Alternatively to Vincent Broman, broman@nosc.mil

@@ -1,0 +1,40 @@
+DEBUG  =
+
+CC     =        cc
+HOME   =        /dd
+CFLAGS =        -ixt=$(HOME)/TMP $(DEBUG) \
+                -v=$(HOME)/MGR/DEFS -v=$(HOME)/OS9LIB/DEFS \
+                -DENHANCED -DVIAFILE 
+
+RDIR   =        RELS
+ODIR   =        $(HOME)/MGR/CMDS
+LDFLAGS=        $(DEBUG) -l=$(HOME)/MGR/LIBS/mgrtrap.l \
+                         -l=$(HOME)/LIB/os9lib.l -ix
+
+OBJS   =        mphoon.r phase.r dtime.r atan2.r
+SMALL  =        smallmoon.r $(OBJS)
+NORMAL =        moon.r      $(OBJS)
+BIG    =        bigmoon.r   $(OBJS)
+
+all:            mphoon_small mphoon mphoon_big
+  @echo "Mphoon programs (mphoon_small, mphoon, mphoon_big) made"
+
+mphoon_small: $(SMALL)
+  chd $(RDIR); $(CC) $(SMALL)  $(LDFLAGS) -e=10 -f=$(ODIR)/$@ $(DEBUG)
+  @attr $(ODIR)/$@ -ape
+
+mphoon:       $(NORMAL)
+  chd $(RDIR); $(CC) $(NORMAL) $(LDFLAGS) -e=10 -f=$(ODIR)/$@ $(DEBUG)
+  @attr $(ODIR)/$@ -ape
+
+mphoon_big:   $(BIG)
+  chd $(RDIR); $(CC) $(BIG)    $(LDFLAGS) -e=10 -f=$(ODIR)/$@ $(DEBUG)
+  @attr $(ODIR)/$@ -ape
+
+mphoon.r:       mphoon.c
+moon.r:         moon.c      moon.xbm
+bigmoon.r:      bigmoon.c   bigmoon.xbm
+smallmoon.r:    smallmoon.c smallmoon.xbm
+phase.r:        phase.c
+dtime.r:        dtime.c
+atan2.r:        atan2.c

@@ -1,0 +1,40 @@
+#                        Copyright (c) 1988 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+#	$Header: README,v 4.1 88/06/21 13:14:24 bianchi Exp $
+#	$Source: /tmp/mgrsrc/src/blit/RCS/README,v $
+
+This is the 68020 bit-blit code using bit field instructions.  The 3
+source files are:
+
+* blit.C		for bit-blts
+* line.C		for lines
+* pixel.C	for bliting 'points'
+
+Strategy:
+This is an attempt to build *fast* 68020 specific bit-blit code in an
+operating environment independent fashion. Although the bit-blit code is
+written in a combination of C and assembler, the compiler and assembler
+specific parts are parameterized.
+
+* The files m4.h and asm.h contain the assembler specific syntax for the 
+  required asms.  It would be nice to do this all with cpp, but cpp won't
+  do the substitutions inside quoted strings.
+
+* sym - The SYMbolic asm processor permits the reference to C register
+  variables from within asm statements.  Thus the C compiler is free to
+  assign registers as it wishes.  Sym filters the "cc -S -g" output
+  replacing the symbolic names from the asm's with the proper register
+  names by interpreting the symbol table entries grenerated by -g.
+  Sym is symbol table entry specific.
+
+* The result asm file is run through the optimizer, which doesn't
+  do much, especially as it things all memory references have side-effects.
+
+
+Stephen A. Uhler
+

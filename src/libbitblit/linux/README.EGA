@@ -1,0 +1,47 @@
+Extra steps required for making your own ega.c
+
+1. Boot to DOS (sorry about that!).
+
+2. Run debug and give the command "d 40:a8" to dump some memory startin
+at this point. This should give you a screen like
+			xx yy 00 0C ..................
+
+3. Give the command "d c000:yyxx" to dump the EGA environment pointer
+table. This should give you something like
+		zz ww 00 0C ................
+
+4. You need to copy ROM BIOS memory locations starting from C000:wwzz.
+The table has length 1472 = 23 x 64 = 5C0 (hex). This is the table of
+all the mode register settings for your adapter. One way of accomplishing
+this copying is to run debug again with the command
+	debug > egamode.hex
+Now you get no prompt but just type "d C000:wwzz l 5C0<enter>"
+followed by "q<enter>"
+Then egamode.hex will have the info.
+
+5. Boot back to Linux (sigh of relief). Use mtools (or whatever) to copy
+the file egamode.hex in *text* mode and editt it as follows.
+
+The format of the table is:
+
+	1. The 23 modes are kept in blocks of 64 bytes (4 lines of debug
+	information). The list of modes in order is:
+
+	0 1 2 3 4 5 6 7 8 9 A B C D E F- 10- F 10 0* 1* 2* 3*
+	
+	F- and 10- are the modes for machines with only 64K of vieo memory.
+	0* 1* 2* 3* are the enhanced text modes.
+
+	2. You most probably need modes D E 10 and 3* (text). If you have
+	only 64K of video memory then you need 10-.
+
+	3. Each of the 64 byte tables is to be broken up as
+		5 + 4 + 1 + 25 + 20 + 9
+
+	4. The table in ega.c is (for historical reasons of similarity
+	with vga.c) broken up as (25-1) + (20+1) + 9 + (1+4) + 1.
+
+	This means that the last 0xFF (or some such) of the 25 byte part
+	has to be dropped; an extra (0x00) has to be added at the *end*
+	of the 20 byte part and an extra (0x03) has to be added to the
+	*start* of the 5 byte part.

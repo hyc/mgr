@@ -1,0 +1,21 @@
+MGR, version 0.53 for Linux and SunOS (Coherent unfinished yet).
+Linux 0.99.2 and GCC 2.3.3.  Much by M Haardt.
+
+MGR now compiles even with -DMOVIE, but it crashes at start.  Logging
+itself however works now, and the log created by lines can be replayed
+using play_data.  Look at the test directory in libbitblit and at
+play_data in clients.  I decided to use machine dependent log files for
+now because bitmaps are machine dependent anyway.
+You also see that problem when uploading bitmaps to the server, they are
+not in independent extern format ... :(
+
+The new portable sun bitblit library almost works now, there only seems
+to be a problem with line drawing.  To see it, compile it, link the MGR
+server with sunport and start a big clock.
+
+Zeyd and Tommy Frandsen VGA linux library.
+Tom Heller Gasblit library.
+Andrew Haylett Mouse driver code.
+dgp@cs.nott.ac.uk's Startrek effect fix.
+Harry Pulley, Vance Petree, Grant Edwards & Udo Munk work on Hercules.
+Udo Munk for his work on serial mouse initialization & select

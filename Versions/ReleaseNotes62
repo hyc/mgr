@@ -1,0 +1,85 @@
+These are the changes from MH's version 0.60 of dec 93 to my 0.62
+Vincent Broman     broman@nosc.mil
+
+Compilation with gcc 2.4.5 under SunOS 4.1.3
+and gcc 2.4.x under Linux Slackware 1.0.3 
+
+Linted server and bitblit library, adding many prototypes.
+Added several, but not all, dec93 fixes from SAU --  and from MH.
+Did not add SAU's code to allow operation with no mouse.  too dangerous.
+Iconmail and a few other clients have extra options.
+Fake a middle mouse button with -DEMUMIDMSBUT, mouse bug fixes.
+Standout mode in color made like mono.  An inverted color was often invisible.
+Colors in copyright screen < 24.
+Add lots of parentheses.
+Posixized some code, but #ifdef'ed on appropriate symbols.
+Use ANSI/ISO memset, memcmp, memcpy, strchr, strrchr.
+Use fd_set, FD_ISSET, etc for select code.
+Some systems might need -DNO_STRCHR or -DNO_SETSID in Configfile MGRFLAGS
+Some chars made unsigned.
+Made -DDEBUG work again.  debug_flags updated.
+A few source formatting problems fixed, particularly if caused by
+  someone uncharitably using hardware tabs set at 3 spaces.
+Fixed or removed some inappropriate/incorrect casts of 0.
+Substituted O_RDONLY for 0 in open, etc.
+Fixed include file names in several clients.
+
+Integrated src/libbitblit/sunport with other blit drivers as colorport.
+  One bug fix in src/libblit/colorport/blit.C, unimportant?
+     No-op statement "src_map == BIT_NULL;"  made == into = .
+  (colorport appears to work, line drawing problem in clock client
+  may be due to semantics of erasing using xor bitblit.)
+Added working cg6 support and untested cg2 support.
+  Configfile needs BITBLITFLAGS to include -DCG6 or -DCG3 or -DCG2
+320x200x256 VGA modes ought to be almost ready to work,
+  if you can get packed mode addressing.  Bank switching needed
+  to support super-vga 256-color modes.
+Added colormap setting/getting to the server interface and VGA support.
+Altered fast_scroll interface, so byte-alignment happens in device driver.
+  fast_scrolling is still slow, however.
+Moved src/libbitblit/sunport/generic.c to generic.c.old
+Fixed a libbitblit bug, the def of BIT_Size, which might have
+  given problems to MOVIE MGR.
+
+Added many fonts from Yossi Gil, the X distribution, and elsewhere.
+repaired a few fonts with corrupted bits.
+added an MGR-HOWTO.
+added tex icons and a soundeditor icon.
+
+Updated programming manual.  man page for spot.
+New man pages for some minor programs that missed manuals.
+
+New clients mless, mvi, chess, nonmgrterm, pilot, set_colormap2, pgs,
+  vgafont2mgr, xbdftomgr.
+nonmgrterm used in shell scripts.
+Restored snap and c_menu.
+C code for resetwin written, and shell script generalized.
+
+set_termcap recognizes the rc shell.
+Texmgr bug fixes. not speedy, yet.
+bitblit.3 correctly boldened.
+
+----- Remaining problems ------
+
+The VGA colormap setting does not yet work for colors != 0, I think.
+
+On Linux (with my mouse), a window created in the .mgrc file appears empty
+on startup, until the mouse is first moved.  Then the shell prompt appears.
+
+The halfwin code doesn't seem to work right.  (in a system dependent way)
+This breaks mless and mvi.
+It seems to be related to a problem visible in mgr.c
+where we loop through the windows to
+find a file descriptor that select says is ready to read.
+Despite the claim of select, sometimes the read fails with "I/O error",
+errno == EIO.  This happens when a halfwindow is first opened,
+and also happens when a ^D makes a shell exit.  The man pages for read(2) and
+the POSIX specs say this error return indicates either a hardware error
+or (under certain conditions) a read from one's controlling tty while in
+a background process group.  But I've checked that mgr is in the foreground
+process group for it's controlling terminal, and what it was reading was
+not a tty, but a pty.
+
+On the Sun, files which include both <termios.h> and <sys/ioctl.h>
+have many clashing cpp definitions.  I don't know whether this
+is a real problem.

@@ -1,0 +1,58 @@
+VERSION=	0.68
+
+INCLUDEDIR=	/usr/mgr/include
+BINDIR=	/usr/mgr/bin$(ARCHITECTURE)
+SHBINDIR=	/usr/mgr/bin
+FONTDIR=	/usr/mgr/font
+HFONTDIR=	/usr/mgr/hfont
+ICONDIR=	/usr/mgr/icon
+SERVERICONDIR=	/usr/mgr/icon/server
+LIBDIR=	/usr/mgr/lib$(ARCHITECTURE)
+MANDIR=	/usr/mgr/man
+XBDDIR=	/usr/mgr/mgrbd
+
+DEFAULT_FONT=	$(FONTDIR)/ser7x12
+EXAMPLES=	examples
+
+GROPBM=	gropbm
+GROFFFONTDIR=	/usr/lib/groff/font
+MS=		-mgs
+TEXMGR=	texmgr
+FONTDESC=/usr/TeX/lib/tex/fontdesc
+FONT_DPI_DEF=   -DFONT_DPI=300
+ZILCH=		>
+RMF=		rm -f
+DEPFILE=	.depend
+
+LEX=		flex
+CC=		gcc
+CCFLAGS=	-Wall -O2
+CPPFLAGS=	-I$(INCLUDEDIR) 
+MKDEP=		gcc -MM -w
+MKDEPOUT=	$(DEPFILE)
+AWK=		awk
+ROFF=		groff
+ROFFDEVICE=	-Tascii
+ROFFONLY=	-Z
+TBL=		tbl
+LNS=		ln -s
+MKDIR=         install -d
+
+MOUSE_DEV=	/dev/mouse
+MGRFLAGS=	-DWHO -DVI -DKILL -DMGR_ALIGN -DMOUSE=0 -DTERMNAME=\"mgr-linux\" -DSTRETCH -DXMENU -DCUT -DSUM_BDR=3
+BITBLIT=	linux
+SYSTEM=	linux
+BLITLIBFLAGS=	-fomit-frame-pointer -fexpensive-optimizations -frerun-cse-after-loop -fstrength-reduce -DS3
+
+SERVER=		mgr
+SERVER_PERM=	4755
+BITBLIT_PERM=	4755
+
+
+SCREEN=		vga
+SCREEN_DEV=	640x480
+
+
+
+
+

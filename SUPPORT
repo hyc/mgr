@@ -1,0 +1,61 @@
+This distribution contains all known useful MGR clients and some useless ones.
+However, some big software packages support MGR, but only as a minor feature.
+Some of these are listed here.
+
+  PLPLOT library, does very professional looking graphics with scaling
+fonts and many special characters etc.  Until the MGR driver is part of
+that package, patches can be obtained from fanchiot@nxth04.cern.ch.
+
+Main source available from: ftp://dino.ph.utexas.edu/plplot
+
+
+  Origami, the folding text editor.  If you are not member of a fanclub
+for GNU Emacs, vi or something else yet, then give it a try.  Origami
+supports browsing through a text with opening/closing folds and
+positioning the text cursor, MGR menus are being worked on.  If you
+intend to hack in MGR, Origami will help you a lot, because MGR server source
+is folded using it.  Origami supports bindings similar to Emacs, vi and
+MultiTool.
+
+Available from: ftp://ftp.thp.uni-koeln.de/pub/linux/origami/origami.tz
+
+
+  GNU EMACS elisp code, supporting resizable MGR windows, mouse pointing,
+extensive menus and a full mgr library.
+
+Available from: archimedes.nosc.mil, in the MGR distribution.
+
+
+  GNUPlot is currently being ported, a patch is available from
+fanchiot@nxth04.cern.ch.
+
+Available from archimedes.nosc.mil (another port)
+
+
+  PBMPLUS is a package to convert graphics from one format into another,
+using a portable intermediate format.  MGR bitmaps are supported, so you
+can use PBMPLUS together with the client mgrview to view all kinds of
+pictures, or to print MGR bitmaps.  I use it to watch GIFs on our Suns
+and to create the screen.gif.  This is monochrome.
+
+Available from: all over, try archie.
+
+
+  PBMTOPRT and PBMSTREAM are not MGR related in any way, but neccessary
+if you ever want to print something.  Pbmtoprt is far better than
+pbmtoepson, because it supports more printers and it is a lot faster.
+Pbmtoprt is used for printing bitmaps created by gropbm and works fine.
+Pbmstream can separate a stream of pbm bitmaps to single files, it is
+useful for things like ghostscript which outputs a stream of pbm
+bitmaps.
+
+Available from: ftp://ftp.thp.uni-koeln.de/pub/linux/mgr/pbmtoprt.tz
+Also in the MGR distribution.
+
+  GhostScript 2.4.1.6, 3.0 mgr patches are included in this distribution.
+GhostScript allows previewing and printing of PostScript files.
+
+Available from: each GNU archive
+
+
+Michael (& Vincent)

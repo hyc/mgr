@@ -1,0 +1,93 @@
+.\"{{{}}}
+.\"{{{  Notes
+.\"                        Copyright (c) 1988 Bellcore
+.\"                            All Rights Reserved
+.\"       Permission is granted to copy or use this program, EXCEPT that it
+.\"       may not be sold for profit, the copyright notice must be reproduced
+.\"       on copies, and credit should be given to Bellcore where it is due.
+.\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+.\"
+.\"}}}
+.\"{{{  Title
+.TH BITMAP 5 "April 30, 1986"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+bitmap \- bitmap header format for \fBmgr\fP
+bitmaps.
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+#include "bitmap.h"
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+There are two styles of bitmaps recognized by \fBMGR\fP, the old machine
+dependent format, and the new portable format.
+.LP
+.\"{{{  old format
+Old bitmap files are prepended with a 6 byte ascii header of type
+\fBold_b_header\fP which contains: 1) a two byte magic number, 2) a 2
+byte bitmap width, and 3) a two byte bitmap height.  The bitmap data
+follows the header in raster scan order.  There exist three kinds of
+bitmaps with 1 bit depth/16 bit alignment (zz), 1 bit depth/32 bit
+alignment (xz) and 8 bit depth/16 bit alignment (zy/xy?).
+.\"}}}
+.LP
+.\"{{{  new format
+The new, portable bitmap format consists of an 8 byte ascii header of
+type \fBb_header\fP containing: 1) a two byte magic number, 2) a 2 byte
+bitmap width, 3) a two byte bitmap height, a single byte bitmap depth,
+and 1 reserved byte.  The bitmap data follows the header in raster scan
+order, with each row padded to a 8 bit boundary (yz).
+.\"}}}
+.LP
+The following macros, defined in \fBbitmap.h\fP may be useful for
+dealing with bitmap headers:
+.\"{{{  B_GETOLDHDR, B_GETHDR8
+.IP "\fBB_GETOLDHDR(\fP\fIold_b_header\fP\fB,\fP\fIwidth\fP\fB,\fP\fIheight\fB)\fP"
+.IP "\fBB_GETHDR8(\fP\fIb_header\fP\fB,\fP\fIwidth\fP\fB,\fP\fIheight\fP\fB,\fP\fIdepth\fP\fB)\fP"
+extracts the \fIwidth\fP, \fIheight\fP and \fIdepth\fP from the
+\fIheader\fP.
+.\"}}}
+.\"{{{  B_PUTOLDHDR, B8_PUTOLDHDR, B_PUTHDR8
+.IP "\fBB_PUTOLDHDR(\fP\fIold_b_header\fP\fB,\fP\fIwidth\fP\fB,\fP\fIheight\fP\fB)\fP"
+produces a bitmap header for a bitmap \fIwidth\fP pixel wide and
+\fIheight\fP pixel high, 1 bit deep and 16 bit aligned.
+.IP "\fBB8_PUTOLDHDR(\fP\fIold_b_header\fP\fB,\fP\fIwidth\fP\fB,\fP\fIheight\fP\fB)\fP"
+produces a bitmap header for a bitmap \fIwidth\fP pixel wide and
+\fIheight\fP pixel high, 8 bit deep and 16 bit aligned.
+.IP "\fBB_PUTHDR8(\fP\fIb_header\fP\fB,\fP\fIwidth\fP\fB,\fP\fIheight\fP\fB,\fP\fIdepth\fP\fB)\fP"
+produces a bitmap header for a bitmap \fIwidth\fP pixel wide and
+\fIheight\fP pixel high with a depth of \fIdepth\fP, 8 bi aligned.
+.\"}}}
+.\"{{{  B8_ISHDR, B_ISHDR16, B_ISHDR32, B_ISHDR8
+.IP "\fBB8_ISHDR(\fP\fIold_b_header\fP\fB)\fP"
+.IP "\fBB_ISHDR16(\fP\fIold_b_header\fP\fB)\fP"
+.IP "\fBB_ISHDR32(\fP\fIold_b_header\fP\fB)\fP"
+.IP "\fBB_ISHDR8(\fP\fIb_header\fP\fB)\fP"
+returns true if the header is of the checked format.
+.IP "\fBBS_ISHDR(\fP\fIb_header\fP\fB)\fP"
+returns true for a squeezed \fBB_ISHDR8\fP bitmap.
+.\"}}}
+.\"{{{  B_SIZE, B8_SIZE, B_SIZE8, B_SIZE16, B_SIZE32
+.IP "B_SIZE8(w,h,d)"
+.IP "B_SIZE16(w,h,d)"
+.IP "B_SIZE32(w,h,d)"
+.IP "B8_SIZE(w,h)"
+returns size of bitmap data (excluding header) for bitmaps.
+.\"}}}
+.\"}}}
+.\"{{{  Notes
+.SH NOTES
+The existence of two different bitmap formats is unfortunate.
+The old format should go away when the programs that use it are
+rewritten.
+.LP
+These bitmap formats are external bitmap formats, the internal
+represantation may be different.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1)
+.\"}}}

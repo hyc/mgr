@@ -1,0 +1,66 @@
+.ds v \fBV\s-2cr\s+2\fP
+.TH \*v 1L "April 30, 1990"
+.SH NAME
+\*v \- Provide a user interface to the $HOME MOVIE system.
+.SH SYNOPSIS
+\*v
+<script1> [<script2> ...] | play_data
+.SH DESCRIPTION
+Vcr
+is an MGR
+program that provides a user interface to the
+$HOME MOVIE
+playback system.
+It simulates the look and feel of a typical \*v, presenting (from left to right)
+buttons that represent the functions
+rewind, stop, pause, slow motion, play, fast forward, volume down, 
+volume up, and program.
+The program button can be used to cycle through the list of scripts
+provided on the command line, the other buttons are obvious.
+The command line scripts are of the form
+.br
+	name=script1,script2,...scriptn
+.br
+where the script[i] are files containing MGR-A-Matic scripts, that are concatenated
+together on playback.
+.I Name
+is the name that appears on the
+.I program
+button.
+Vcr
+simply passes the script names to 
+.I play_data
+(and possibly
+.I play_sound)
+for playback.
+.LP
+If VCR receives a hangup signal, it assumes the "tape" is finished, and
+automatically rewinds.
+.LP
+Typically MGR is started on the Sun console restricted to the top 64 pixels
+of the display, as in
+.br
+	export MGRSIZE="0 0 1152 64";mgr
+.br
+and \*v emits commands on its standard output
+.SH BUGS
+.TP
+*
+As there is no feedback from the playback program to \*v,
+\*v doesn't know when the script is finished.
+.TP
+*
+Stop should be pressed when changing "tape" speed or the sound synchronization 
+is lost.
+.TP
+*
+Since the User interface, video playback, and audio playback are all 
+separate processes, exact synchronization is impossible.
+.SH SEE ALSO
+do_data(1L)
+mgr(1L)
+play_sound(1L)
+movie(1L)
+roll(1L)
+.SH AUTHOR
+S. A. Uhler

@@ -1,0 +1,27 @@
+#!/bin/sh
+#                        Copyright (c) 1987 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+#  $Header: font,v 4.1 88/06/21 14:0
+
+#	start a server
+
+DO=do
+chmod go-w `tty`  || echo "MGR not suid-root, fatal error"
+
+case $1 in
+   oldvi )   exec $DO -i -c vi eye_bld3 eye_bld1;;
+   vi | edit ) exec $DO -i -c do_vi eye_bld3 eye_bld1;;
+   hm )      exec $DO -i -W -n hm -c "hm -s" file_shut file_open;;
+   remove )  exec $DO -i -W -c remove gcan_shut gcan_open;;
+   print )   exec $DO -i -W -n print -c "lpr -P$2 " ptr_laser ptr_laseron;;
+   oldmore ) exec $DO -i -p -c more scroll_1 thinker;;
+   more )    exec $DO -i -c do_more scroll_1 thinker;;
+   file )    exec $DO -i -p -c do_file frog1 frog2;;
+   ls )      exec $DO -i -p -c do_ls frog1 frog2;;
+   * )	     echo "try one of vi,hm,remove,more,file,ls,print <printer>";;
+esac

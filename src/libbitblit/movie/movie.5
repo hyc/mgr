@@ -1,0 +1,21 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH MOVIE 5 "June 26, 1993" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+movie \- $HOME Movie MGR script file format
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+The $HOME Movie MGR script format is a stream of tagged records,
+consisting of signed short integers (high byte first, in two's
+complement) for tags and values, and bytes (for bitmap data).  The
+bitmap data is still in the internal machine format, but this will be
+changed in future to be the external bitmap format as defined in
+\fIbitmap\fP(5).
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1), bitmap(5)
+.\"}}}

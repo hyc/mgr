@@ -1,0 +1,38 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH M_GETBORDERSIZE 3 "March 23, 1996" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+m_getbordersize \- return window border size
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B #include <mgr/mgr.h>
+.sp
+.B int m_getbordersize(void);
+.br
+.B int m_dflbordersize(void);
+.br
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B m_getbordersize()
+returns the current window's border size.
+.B m_dflbordersize()
+returns the default window border size, which is a constant of the server.
+.\"}}}
+.\"{{{  Return value
+.SH "RETURN VALUE"
+The window border size in pixels.
+.\"}}}
+.\"{{{  Errors
+.SH ERRORS
+\-1 is returned if a protocol error happened.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+mgr(1)
+.\"}}}

@@ -1,0 +1,32 @@
+This is the combined 1 bit/pixel and 8 bits/pixel BitBlt code.
+(It would be easy to change 8 into 2 or 4).
+It seems to have had a bug in the line drawing code. (ever fixed?)
+
+README.port   This file
+README.VGA    details about vga color
+Semantics     Description of BitBlt semantics
+Makefile      guess
+320x200x256.h
+bit_blit.c    blit operation
+bit_bytescr.c scrolling
+bit_destroy.c finalizing BITMAPs
+bit_line.c    Bresenham line drawing code
+bit_on.c      read single pixels
+bit_point.c   blit single pixels
+bit_size.c    calculate storage for BITMAP data
+colors.c      color calculations
+colors.h
+mem_rop.C     lower level imp of blit op
+s3            headers for some S3 cards
+sun.c         sun-dependent initialization/finalization
+sun.h
+sun_cmap.c    sun access to colormap through pixrect
+test_exp.c    test expansion of depth of BITMAPs
+test_randops.c test random blit ops
+test_rop.c    test blit ops
+test_shrink.c test shrinking of depth of BITMAPs
+tseng4k       headers for some Tseng ET4000 cards
+tvga          headers for some Trident cards
+vga.c         vga-dependent initialization/finalization
+vga.h
+vga_cmap.c    vga access to colormap

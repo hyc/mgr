@@ -1,0 +1,21 @@
+My first implementation tried to be clean and used the MGR server and
+the Hershey font functions from libmgr.  It was clean, but awful slow.
+This implementation is a few hundred times faster.  It doesn't use the
+server or even the MGR bitblit library at all, so it being portable is
+not an issue.  It does however use some code from graph_subs.c in the
+MGR server, written by Stephen A. Uhler.
+
+The driver isn't finished yet, arcs and splines are missing yet.  The
+created pbm files can be printed with pbmtoprt, written by Guido Muesch,
+see the SUPPORT file.
+
+Special characters not not completely supported and font remounting is
+not supported at all.
+
+ISO support is restricted to ƒд÷ц№ья and quite a hack, but it works.
+
+The driver relies on getting correct input files.  I didn't have the
+time to make error checks because I *needed* it very much when I wrote
+it at first.
+
+Michael

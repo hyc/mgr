@@ -1,0 +1,8 @@
+#	MTX script example - add a "grep" to a pipeline
+K: Grep %s
+P: filter
+r: $^P to_filter
+r: $^W output_window
+c: to_filter output_window
+C: to_filter filter
+C: filter output_window

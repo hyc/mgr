@@ -1,0 +1,55 @@
+MGR, version 0.58 beta for Linux and SunOS (Coherent unfinished yet).
+
+Bradley Bosch fixed some more warnings by adding prototypes and made the
+following extensions to the server (with minimal amount of new code :).
+
+The cut changes allow visible text from any window to be cut instead of
+just the top window.
+
+Cut() has also been extended to allow fast single operation cut/paste of
+words from anyplace on the screen to the current window.  This is
+currently bound to alt-x.  To see how this works, configure Linux to
+generate the meta bit for alt and position the mouse over a word you
+want to type and press alt-x.  This is very handy for copying shell
+command arguments from ls output, etc.  The code for the word copy was
+first done by Andrew Morton (applix@runxtsa.runx.oz.au last time he
+knew) but got rewritten it a bit since then.
+
+The window placement for windows created with alt-n (and other cases
+which use default location) has been changed to:
+
+-  Adjust default position depending on screen size and window number.
+-  Leave a bit of room on bottom for closed windows.
+-  Ensure that the window will fit on the screen.
+
+The old code tended to create truncated windows as more windows were
+created on a small screen.
+
+The old code to transfer bitmaps to the server is removed now, after it
+was outcommented last time already.  All applications used the portable
+format in 0.58 alpha already and no problems were found.
+
+I started looking at libmgr, and provided some new interfaces which are
+easier to use than the existing functions.
+
+MGR knows a new mode, M_CONSOLE.  Only one window can have it at a time,
+setting it in one window clears it in all others.  If TIOCCONS is
+defined for the system, MGR will redirect console output to the window
+with the mode set.  Clearing the mode will disable redirection.  This
+makes set_console obsolete, so if no problems appear, I will delete it
+in the next release.  Use "mgrmode setmode console" instead.
+
+A silly bug in the copyright() function is fixed now, so the globe spins
+with a defined speed, not as fast as the machine allows.
+
+?  find out why the MOVIE code does not work with things like mgrbiff
+
+There is active work done on improving the library,
+like thinking about a better way to deal with events and
+getting a toolkit manager to work.
+
+Zeyd Ben Halim for lots of helpful patches,
+especially the adaption of selection.
+Bradley Bosch <brad@lachman.com> for lots of patches from his 3b1 port,
+which fix bugs and implement new and desirable features.
+Andrew Morton (applix@runxtsa.runx.oz.au) who first wrote the cut-word code.

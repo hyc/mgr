@@ -1,0 +1,18 @@
+.TH grav 1L "25 August 1993"
+.SH NAME
+grav \- Draw a ball bouncing under gravity
+.SH SYNOPSIS
+.B "grav [-s]"
+.SH DESCRIPTION
+.B Grav
+draws on the current Mgr window outlines of a ball bouncing
+under the influence of gravity, losing energy at each bounce.
+The
+.B -s
+option slows the drawing process by waiting 90 milliseconds between snapshots.
+.SH BUGS
+The program runs until interrupted,
+and then does not restore the foreground and background
+text colors to their previous values.
+.SH SEE ALSO
+bounce(1L)

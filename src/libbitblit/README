@@ -1,0 +1,16 @@
+The bitblit library is divided into
+	very machine-dependent bit blit code, e.g. colorport or linux,
+	almost machine-independent code to read and write bitmaps with a
+		portable format from a file, i.e. seqbitmap & bitmap,
+	and almost machine-independent functions for logging bit blit
+		operations, i.e. movie.
+
+These are all the bitblit libraries we are aware of.
+Most are of interest mainly for ideas or borrowing code.
+Only the Sun and Linux code is still fully integrated, maintained, and tested,
+although several other libraries were once production code.
+
+The bitblit.3 manual is only a starting point, the semantics esp. for color
+really need to be documented.
+
+Michael Haardt and Vincent Broman

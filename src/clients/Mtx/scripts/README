@@ -1,0 +1,12 @@
+Here are some simple command scripts for MTX
+Sorry, there is no documentation (yet) for the command language
+
+grep rexp
+	insert grep filter between last created process and window
+	Grep is a shell script wrapper for grep (included)
+
+tap  rexp
+	add a tap onto the last process
+
+split
+	make a process with 2 windows

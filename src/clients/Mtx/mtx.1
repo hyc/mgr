@@ -1,0 +1,71 @@
+.\"                           (c) 1988,1989 Bellcore
+.\"                            All Rights Reserved
+.\"       Permission is granted to copy or use this program, EXCEPT that it
+.\"       may not be sold for profit, the copyright notice must be reproduced
+.\"       on copies, and credit should be given to Bellcore where it is due.
+.\"       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+.\"
+.TH mtx 1L "March 1, 1989"
+.SH NAME
+mtx \- \fBM\fPul\fBt\fPiple\fBx\fP multiple
+.I MGR
+windows over a single connection
+.SH SYNOPSIS
+.B mtx
+.SH DESCRIPTION
+.B Mtx
+provides the ability to run multiple 
+.B MGR
+clients over a single communication channel.
+This is especially useful when only one channel is available, as is the
+usual case on dial-up lines.
+.PP
+.B Mtx
+starts by making a small window with 
+.I "MTX window server (\fBhostname\fP)"
+displayed in it.
+New windows with shells are created using the middle mouse button to select
+the
+.I "new window"
+option from the pop-up menu.
+Each window created by
+.B mtx
+emulates an
+.I MGR
+window, capable of running any
+.I MGR
+application.
+.PP
+The SHELL environment variable is consulted to determine the name of the
+shell to run in each window. Debugging output is available by setting
+the DEBUG environment variable to the file name on which the debug output
+will appear.
+.PP
+Many other capabilities are available through
+.I MTX 
+(accessed via the command menu), 
+including inter-host communication, and dynamic routing of process connections.
+These facilities are currently under development and still unstable so their
+use is not described here.
+.SH BUGS
+.IP *
+If 
+.I MTX
+is not run as set-uid to root,
+the shell's do not own their controlling terminals, so commands such as
+.I biff
+and
+.I mesg
+don't work properly.
+.IP *
+Uploading bitmaps and application initiated cut and paste are not yet
+implemented.
+.IP
+*
+The undocumented command script capabilities seem to have broken applications
+that use multiple MGR windows.
+.IP
+.SH SEE ALSO
+mgr(1L)
+.SH AUTHOR
+S. A. Uhler

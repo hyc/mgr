@@ -1,0 +1,63 @@
+#	$Header: Makefile,v 4.2 88/08/29 07:47:35 sau Exp $
+#	$Source: /tmp/mgrsrc/demo/msg/RCS/Makefile,v $
+
+#                        Copyright (c) 1987 Bellcore
+#                            All Rights Reserved
+#       Permission is granted to copy or use this program, EXCEPT that it
+#       may not be sold for profit, the copyright notice must be reproduced
+#       on copies, and credit should be given to Bellcore where it is due.
+#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+
+# makefile for message passing demo test routines
+
+START= .
+LIB= ../../lib/libmgr.a
+INCL= ../../lib
+CFLAGS=-g -I$(INCL)
+
+CFILES= do.c client.c send.c menus.c
+HFILES=	do.h
+OTHER=  Makefile README start do_file do_ls do_more do_vi 
+
+ALL =	do client menus send alias
+
+all small:	$(ALL)
+
+fast:		$(CFILES)
+		cc -c $(CFLAGS) $(CFILES)
+		make all
+
+client.o do.o:	do.h $(INCL)/term.h
+
+client:		client.o $(LIB)
+		cc $(CFLAGS) -o client client.o $(LIB)
+
+do:		do.o $(LIB)
+		cc $(CFLAGS) -o do do.o $(LIB)
+
+menus:		menus.o $(LIB)
+		cc $(CFLAGS) -o menus menus.o $(LIB)
+
+send:		send.o $(LIB)
+		cc $(CFLAGS) -o send send.o $(LIB)
+
+alias:
+		echo "alias cd 'chdir \!*;menus \`pwd\`'" >  alias
+		echo "echo '1,9esend %w\r'"		     >> alias
+		echo "set path=(`pwd` \$$path)"		     >> alias
+
+clean:		
+		rm -f *.o
+
+clobber:		
+		rm -f $(ALL)
+
+install smallinstall:
+
+list:
+		@for i in ${CFILES} ${HFILES} ${OTHER}; do \
+	 		echo "${START}/$$i"; \
+		done	
+
+cpio:
+		make -s list | cpio -ocv > ${CPIO}

@@ -1,0 +1,55 @@
+VERSION=	0.67
+
+INCLUDEDIR=	/usr/mgr/include
+BINDIR=	/usr/mgr/bin$(ARCHITECTURE)
+SHBINDIR=	/usr/mgr/bin
+FONTDIR=	/usr/mgr/font
+HFONTDIR=	/usr/mgr/hfont
+ICONDIR=	/usr/mgr/icon
+SERVERICONDIR=	/usr/mgr/icon/server
+LIBDIR=	/usr/mgr/lib$(ARCHITECTURE)
+MANDIR=	/usr/mgr/man
+XBDDIR=	/usr/mgr/mgrbd
+
+DEFAULT_FONT=	$(FONTDIR)/gacha-8x16
+EXAMPLES=	examples
+
+
+
+MS=		-ms
+TEXMGR=	texmgr
+FONTDESC=/files/src/lib/fontdesc
+FONT_DPI_DEF=   -DFONT_DPI=300
+
+
+
+LEX=		lex
+LEXLIB=	-ll
+CC=		gcc
+CPP=		$(CC) -E
+CCFLAGS=	-Wall -O2
+CPPFLAGS=	-I$(INCLUDEDIR) -I$(INCLUDEDIR)/sun -Dsun
+MKDEP=		gcc -MM -w
+AWK=		awk
+ROFF=		nroff
+ROFFDEVICE=
+ROFFONLY=
+TBL=		tbl
+LNS=		ln -s
+MACHDEPCLIENTS=Sun
+
+MOUSE_DEV=	/dev/mouse
+MGRFLAGS=	-DVI -DKBD -DKILL -DALIGN -DMOUSE=1 -DTERMNAME=\"mgr\" -DSTRETCH -DXMENU -DBUCKEY -DCUT
+EXTRALIBS=	-lpixrect
+
+BITBLIT=	colorport
+BLITLIBFLAGS=	-DUNROLL -DCG3 -DPIXRECT
+
+SCREEN=	sun
+SCREEN_DEV=	/dev/fb
+
+SERVER=		mgr
+SERVER_PERM=	755
+BITBLIT_PERM=	755
+
+

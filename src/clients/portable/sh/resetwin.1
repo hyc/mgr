@@ -1,0 +1,16 @@
+.TH resetwin 1L "25 August 1993"
+.SH NAME
+resetwin \- reset the Mgr window to a default state
+.SH SYNOPSIS
+.B resetwin
+.SH DESCRIPTION
+.B Resetwin
+resets most of the state of the current Mgr window
+to a reasonable default condition: no events, no menus,
+default font, etc.
+.SH BUGS
+The implementation is a shell script which echoes
+escape sequences, and which must be tweaked to
+switch between BSD and SYS5 style echo commands.
+.SH SEE ALSO
+mgr(1L)

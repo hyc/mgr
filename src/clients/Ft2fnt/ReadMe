@@ -1,0 +1,31 @@
+This is a quick little program to convert UNIXpc font(4) files (like
+those found in /usr/lib/wfont) to MGR font(5) files.  I'm not
+entirely sure why you might want to do this, but I must have had a
+reason when I started...
+
+Usage is:
+	ft2fnt ft_file > fnt_file
+
+where ft_file is a font(4) file and fnt_file is a font(5) file.
+(No, it can't read stdin; it wants to get the size, and I was too
+lazy to blow stdin to a temp file.)
+
+Since the UNIXpc font format allows characters to ``overlap'', and
+the MGR format doesn't, ft2fnt has to make larger character rasters
+than the original for some fonts, eg. /usr/lib/wfont/FANCY.I.E.24.A.
+This causes the font to look wider-spaced under MGR.  You win a few,
+you lose a few.
+
+Yes, it could have a prettier usage, but how often you plan on
+running it?  Yes, it could be faster, but how often do you plan on
+running it?
+
+There are no distribution restrictions; it's completely public
+domain.  I would appreciate it if you kept my name attached, and
+attached yours if you make changes so we don't get blamed for each
+other's bugs.
+
+And of course I'd like to hear about any bugs, enhancements, etc.
+
+John R. MacMillan
+john@chance.UUCP

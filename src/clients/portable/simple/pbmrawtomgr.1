@@ -1,0 +1,33 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH PBMRAWTOMGR 1 "July 4, 1993" "" "MGR Programmer's Manual"
+.\"}}}
+.\"{{{  Name
+.SH NAME
+pbmrawtomgr \- convert PBM raw bitmap to MGR bitmap format
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.ad l
+.B pbmrawtomgr
+.RI [ file ]
+\&...
+.ad b
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B pbmrawtomgr
+converts a portable bitmap in raw format to a MGR bitmap in modern
+format.  The more general
+.IR pbmtomgr (1)
+program is very inefficient in this case, because it does not make use
+of the fact that the both formats only have different headers.
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+Michael Haardt (u31b3hs@pool.informatik.rwth-aachen.de)
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+pbmtomgr(1), pbm(5)
+.\"}}}

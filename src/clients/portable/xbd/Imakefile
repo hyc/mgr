@@ -1,0 +1,55 @@
+#/*********************************************/
+#/* you just keep on pushing my luck over the */
+#/*           BOULDER        DASH             */
+#/*                                           */
+#/*Imakefile:christos@guillemin.EE.CORNELL.edu*/
+#/*********************************************/
+
+GAME            = xbd
+EDITOR          = xbde
+PROGRAMS        = ${GAME} ${EDITOR}
+CDEBUGFLAGS     = -O
+SCOREFONT       = -adobe-times-bold-r-normal--18-180-75-75-p-99-iso8859-1
+SCORESIZE       = 18
+MANDIR          = /usr/X386/man/man6
+BINDIR          = /usr/X386/bin
+LIBDIR          = /usr/X386/lib/xbd
+DEFINES         = -DLIB=\"${LIBDIR}\" \
+		  -DSCOREFONT=\"${SCOREFONT}\" \
+		  -DSCORESIZE=${SCORESIZE}
+LOCAL_LIBRARIES = $(XLIB)
+SYS_LIBRARIES   = -lm
+LEVELS          = xbdlev001 xbdlev002 xbdlev003 xbdlev004 xbdlev005 \
+		  xbdlev006 xbdlev007 xbdlev008 xbdlev009 xbdlev010 \
+		  xbdlev011 xbdlev012 xbdlev013 xbdlev014 xbdlev015 \
+		  xbdlev016 xbdlev017 xbdlev018 xbdlev019 xbdlev020 \
+		  xbdlev021 xbdlev022 xbdlev023 xbdlev024 xbdlev025 \
+		  xbdlev026 xbdlev027 xbdlev028 xbdlev029 xbdlev030 \
+		  xbdlev031 xbdlev032 xbdlev033 xbdlev034 xbdlev035 \
+		  xbdlev036 xbdlev037 xbdlev038
+
+OBJS1   = xbd.o shared.o field.o scores.o
+OBJS2   = xbde.o shared.o
+
+SRCS1   = xbd.o shared.o field.o scores.o
+SRCS2   = xbde.o shared.o
+
+AllTarget(${PROGRAMS})
+NormalProgramTarget(${GAME},${OBJS1},,$(LOCAL_LIBRARIES),)
+NormalProgramTarget(${EDITOR},${OBJS2},,$(LOCAL_LIBRARIES),)
+InstallProgramWithFlags(${GAME},${BINDIR}/${GAME},-s -m 4755 -o games)
+InstallProgramWithFlags(${EDITOR},${BINDIR}/${EDITOR},-s -o games)
+
+install.man:: xbd.man
+	${INSTALL} -c -m 0444 xbd.man ${MANDIR}/xbd.6
+
+install:: ${PROGRAMS}
+	-mkdir ${LIBDIR}
+	chown games ${LIBDIR}
+	touch ${LIBDIR}/scores
+	chown games ${LIBDIR}/scores
+	(cp ${LEVELS} ${LIBDIR})
+	cp default ${LIBDIR}
+	(cd ${LIBDIR}; \
+	 chown games ${LEVELS} default scores; \
+	 chmod 644   ${LEVELS} default scores;)

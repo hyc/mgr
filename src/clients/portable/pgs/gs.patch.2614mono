@@ -1,0 +1,180 @@
+diff -c devs.mak.orig devs.mak
+*** devs.mak.orig	Wed Mar  2 10:23:56 1994
+--- devs.mak	Wed Mar  2 10:52:28 1994
+***************
+*** 108,113 ****
+--- 108,114 ----
+  #	bmp16m	24-bit .BMP file format
+  #	gifmono	Monochrome GIF file format
+  #	gif8	8-bit color GIF file format
++ # *	mgrmono	(mono, preliminary)
+  #	pcxmono	Monochrome PCX file format
+  #	pcxgray	8-bit gray scale PCX file format
+  #	pcx16	Older color PCX file format (EGA/VGA, 16-color)
+***************
+*** 817,819 ****
+--- 818,828 ----
+  tiffg3.dev: $(tiffg3_)
+  	$(SHP)gssetdev tiffg3 $(tiffg3_)
+  gdevtiff.$(OBJ): gdevtiff.c $(GDEV) $(gdevprn_h) gdevdfg3.h gdevtiff.h
++ 
++ ### MGR, mono-only for now
++ 
++ mgr_=gdevmgr.$(OBJ) gdevprn.$(OBJ)
++ mgr.dev: $(mgr_)
++ 	$(SHP)gssetdev mgr $(mgr_)
++ 
++ gdevmgr.$(OBJ): gdevmgr.c $(PDEVH) $(gxlum_h)
+diff -c gdevmgr.c.orig gdevmgr.c
+*** gdevmgr.c.orig	Wed Mar  2 10:26:42 1994
+--- gdevmgr.c	Wed Mar  2 11:54:29 1994
+***************
+*** 0 ****
+--- 1,147 ----
++ /* Copyright (C) 1992 Aladdin Enterprises.  All rights reserved.
++    Distributed by Free Software Foundation, Inc.
++ 
++ This file is part of Ghostscript.
++ 
++ Ghostscript is distributed in the hope that it will be useful, but
++ WITHOUT ANY WARRANTY.  No author or distributor accepts responsibility
++ to anyone for the consequences of using it or for whether it serves any
++ particular purpose or works at all, unless he says so in writing.  Refer
++ to the Ghostscript General Public License for full details.
++ 
++ Everyone is granted permission to copy, modify and redistribute
++ Ghostscript, but only under the conditions described in the Ghostscript
++ General Public License.  A copy of this license is supposed to have been
++ given to you along with Ghostscript so you can know your rights and
++ responsibilities.  It should be in a file named COPYING.  Among other
++ things, the copyright notice and this notice must be preserved on all
++ copies.  */
++ 
++ /* gdevmgr.c converted from: gdevpbm.c (by S A Uhler, 7/92)
++  * Preliminary version
++  * TODO:
++  *  - add support for "scrunched" and "color" bitmaps
++  */
++ 
++ /* Portable Bit/Gray/PixMap devices for Ghostscript. */
++ #include "gdevprn.h"
++ #include "gxlum.h"
++ 
++ /* Thanks are due to Jos Vos (jos@bull.nl) for an earlier P*M driver, */
++ /* on which this one is based. */
++ 
++ /* Structure for P*M devices, which extend the generic printer device. */
++ 
++ struct gx_device_mgr_s {
++ 	gx_device_common;
++ 	gx_prn_device_common;
++ 	/* Additional state for MGR device */
++ 	const char *magic;		/* "yz" */
++ };
++ typedef struct gx_device_mgr_s gx_device_mgr;
++ 
++ /* ------ The device descriptors ------ */
++ 
++ /*
++  * Standard U.S. page width and height.  A4 paper is 8.4" x 11.7".
++  */
++ 
++ #define WIDTH_10THS 85
++ #define HEIGHT_10THS 110
++ 
++ /*
++  * Default X and Y resolution.
++  */
++ 
++ #define X_DPI 72
++ #define Y_DPI 72
++ 
++ /* Macro for generating MGR device descriptor. */
++ #define mgr_prn_device(procs, dev_name, magic, is_raw, num_comp, depth, max_gray, max_rgb, print_page)\
++ {	prn_device_body(gx_device_mgr, procs, dev_name,\
++ 	  WIDTH_10THS, HEIGHT_10THS, X_DPI, Y_DPI,\
++ 	  0, 0, 0, 0,\
++ 	  num_comp, depth, max_gray, max_rgb, max_gray + 1, max_rgb + 1,\
++ 	  print_page),\
++ 	magic\
++ }
++ 
++ #define gdev_mgr_open gdev_prn_open
++ private dev_proc_print_page(mgr_print_page);
++ 
++ private gx_device_procs mgr_procs =
++     prn_procs(gdev_mgr_open, gdev_prn_output_page, gdev_prn_close);
++ 
++ /* The device descriptors themselves */
++ gx_device_mgr gs_mgr_device =
++   mgr_prn_device(mgr_procs, "mgrmono", "yz", 0, 1, 1, 1, 0,
++ 	  mgr_print_page);
++ 
++ /* ------ Internal routines ------ */
++ 
++ /* Define a "cursor" that keeps track of where we are in the page. */
++ typedef struct mgr_cursor_s {
++ 	gx_device_mgr *dev;
++ 	int bpp;			/* bits per pixel */
++ 	uint line_size;			/* bytes per scan line */
++ 	byte *data;			/* output row buffer */
++ 	int lnum;			/* row within page */
++ } mgr_cursor;
++ 
++ /* Begin a MGR output page. */
++ /* Write the header information and initialize the cursor. */
++ private int
++ mgr_begin_page(gx_device_mgr *bdev, FILE *pstream, mgr_cursor _ss *pcur)
++ {	uint line_size =
++ 		gdev_mem_bytes_per_scan_line((gx_device_printer *)bdev);
++ 	byte *data = (byte *)gs_malloc(line_size, 1, "mgr_begin_page");
++ 	if ( data == 0 ) return -1;
++ 	fprintf(pstream, "%s%c%c%c%c%c%c", bdev->magic,
++    (((bdev->width)>>6)&0x3f) + ' ', ((bdev->width)&0x3f) + ' ',
++    (((bdev->height)>>6)&0x3f) + ' ', ((bdev->height)&0x3f) + ' ',
++    ((1)&0x3f) + ' ', ' ');
++ 
++ 	/* Initialize the cursor. */
++ 	pcur->dev = bdev;
++ 	pcur->bpp = bdev->color_info.depth;
++ 	pcur->line_size = line_size;
++ 	pcur->data = data;
++ 	pcur->lnum = 0;
++ 	return 0;
++ }
++ 
++ /* Advance to the next row.  Return 0 if more, 1 if done. */
++ private int
++ mgr_next_row(mgr_cursor _ss *pcur)
++ {	if ( pcur->lnum >= pcur->dev->height )
++ 	   {	gs_free((char *)pcur->data, pcur->line_size, 1,
++ 			"mgr_next_row(done)");
++ 		return 1;
++ 	   }
++ 	gdev_prn_copy_scan_lines((gx_device_printer *)pcur->dev,
++ 				 pcur->lnum++, pcur->data, pcur->line_size);
++ 	return 0;
++ }
++ 
++ /* ------ Individual page printing routines ------ */
++ 
++ #define bdev ((gx_device_mgr *)pdev)
++ 
++ /* Print a raw monobit page. */
++ private int
++ mgr_print_page(gx_device_printer *pdev, FILE *pstream)
++ {	/* All the print_page routines have the same structure; */
++ 	/* only the indicated section is different. */
++ 	mgr_cursor cur;
++ 	int code = mgr_begin_page(bdev, pstream, &cur);
++ 	if ( code < 0 ) return code;
++ 	while ( !(code = mgr_next_row(&cur)) )
++ 	   {
++ 		/* ---- This section changes. ---- */
++ 
++ 		fwrite(cur.data, 1, cur.line_size, pstream);
++ 
++ 		/* ---- End of changing section. ---- */
++ 	   }
++ 	return (code < 0 ? code : 0);
++ }

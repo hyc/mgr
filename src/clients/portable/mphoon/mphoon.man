@@ -1,0 +1,52 @@
+.TH mphoon 1 "7 October 1994"
+.SH NAME
+mphoon \- display the PHase of the mOON in an Mgr window
+.SH SYNOPSIS
+.in +.5i
+.ti -.5i
+mphoon  \%[ -b ]  \%[ -t <interval> ]
+.in -.5i
+.SH DESCRIPTION
+.I Mphoon
+displays in an Mgr window a picture of the moon in its current phase,
+including the partial lighting of the dark side by reflected earthlight.
+.LP
+The
+.I -b
+flag defeats the earthlight feature, forcing the dark side to be black.
+The
+.I -t
+flag can be used to have
+.I mphoon
+keep running and update the picture every
+.I <interval>
+minutes.
+(given no arguments,
+.I mphoon
+just displays the image and exits.)
+.SH NOTES
+The original motivation for this program, under X, was that xsetroot was
+.B too slow.
+Loading a full-screen bitmap took about 15 seconds.
+We made a trivial program that had fullmoon.bitmap compiled in, and
+it ran in less than a second.
+(And incidentally, the executable was smaller than fullmoon.bitmap.)
+Then later we came up with the cheapmoons, the phase hacking, and
+finally the earthlight.
+.SH "SEE\ ALSO"
+.IR phoon(1),
+.IR xphoon(1)
+.SH AUTHORS
+Copyright (C) 1988 by Jef Poskanzer and Craig Leres.
+
+Permission to use, copy, modify, and distribute this software and its
+documentation for any purpose and without fee is hereby granted, provided
+that the above copyright notice appear in all copies and that both that
+copyright notice and this permission notice appear in supporting
+documentation.  This software is provided "as is" without express or
+implied warranty.
+
+The moon-phase computation is from "moontool.c" by John Walker.
+
+Port of xphoon to the MGR window system by Carsten Emde, with Linux
+and SunOs porting help by Vincent Broman.

@@ -1,0 +1,29 @@
+.\"{{{}}}
+.\"{{{  Title
+.TH BITMAPTOC 1
+.\"}}}
+.\"{{{  Name
+.SH NAME
+bitmaptoc \(em convert a MGR bitmap file into C code
+.\"}}}
+.\"{{{  Synopsis
+.SH SYNOPSIS
+.B bitmaptoc 
+.IR icon-file ...
+.\"}}}
+.\"{{{  Description
+.SH DESCRIPTION
+.B Bitmaptoc
+converts a file in \fIbitmap(5)\fP format into a \fBBITMAP struct\fP in
+C code.  This \fBBITMAP struct\fP can be used like every other bitmap,
+e.g.\& one which got read from a file using \fBbitmapread\fP.  It is
+only suitable for bitblit applications, not for MGR client programs.
+.\"}}}
+.\"{{{  See also
+.SH "SEE ALSO"
+\fImgr(1)\fP, \fIfonttoc(1)\fP, \fIbitblit(3)\fP
+.\"}}}
+.\"{{{  Author
+.SH AUTHOR
+Stephen A. Uhler, Michael Haardt
+.\"}}}

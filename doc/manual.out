@@ -1,0 +1,4442 @@
+
+
+
+
+
+
+
+
+
+                     MGR - C Language Application Interface
+
+
+                                Stephen A. Uhler
+
+                          Bell Communications Research
+
+
+
+
+
+9 _I_n_t_r_o_d_u_c_t_i_o_n
+
+ MGR (manager) is a window system for Unix that currently runs on Sun  Worksta-
+ tions with SunOS and on Linux, the free i80386/i80486 PC UN*X.  Older versions
+ of MGR also run on Xenix, 386-Minix, Macintosh, DEC 3100, Atari ST  MiNT,  and
+ the  3b1 Unix-pc.  MGR manages asynchronous updates of overlapping windows and
+ provides application support for a heterogeneous  network  environment,  i.e.,
+ many  different  types of computers connected by various communications media.
+ The application interface enables applications (called client programs) to  be
+ written  in a variety of programming languages, and run on different operating
+ systems.  The client program can take full advantage of the windowing capabil-
+ ities regardless of the type of connection to the workstation running MGR.
+
+ Client programs communicate with MGR via _p_s_e_u_d_o-_t_e_r_m_i_n_a_l_s over a reliable byte
+ stream.   Each client program can create and manipulate one or more windows on
+ the display, with commands and data to the various  windows  multiplexed  over
+ the  same connection.  MGR provides ASCII terminal emulation and takes respon-
+ sibility for maintaining the integrity of the window contents  when  parts  of
+ windows become obscured and subsequently uncovered.  This permits naive appli-
+ cations to work without modification by providing a default  environment  that
+ appears to be an ordinary terminal.
+
+ In addition to terminal emulation,  MGR  provides  each  client  window  with:
+ graphics primitives such as line and circle drawing; facilities for manipulat-
+ ing bitmaps, fonts, icons, and pop-up menus; commands to reshape and  position
+ windows; and a message passing facility enabling client programs to rendezvous
+ and exchange messages.  Client programs may ask to be informed when  a  change
+ _________________________
+               Copyright (c) 1988 Bellcore
+                   All Rights Reserved
+ Permission is granted to copy or use this program,  EX-
+ CEPT  that it may not be sold for profit, the copyright
+ notice must be reproduced on copies, and credit  should
+ be  given  to Bellcore where it is due.  BELLCORE MAKES
+ NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS  PROGRAM.
+ This release of the software and documentation is modi-
+ fied relative to the  original  Bellcore  release,  and
+ they  are  currently  maintained  by Michael Haardt and
+ Vincent Broman.
+9
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 2 -                     Introduction
+
+
+ in the window system occurs, such as a reshaped window, a pushed mouse button,
+ or  a  message  sent  from  another  client program.  These changes are called
+ events.  MGR notifies a client program of an event  by  sending  it  an  ASCII
+ character string in a format specified by the client program.  Existing appli-
+ cations can be integrated into the windowing environment without  modification
+ by  having  MGR  imitate keystrokes in response to user defined menus or other
+ events.
+
+ The user interface provides a simple  point-and-select  model  of  interaction
+ using the mouse with pop-up menus and quick access to system functions through
+ meta-keys on the keyboard.  MGR also provides a _c_u_t and  _p_a_s_t_e  function  that
+ permits  a  user  to sweep out and copy text from any window and paste it into
+ any other.
+
+ This document describes the low level C interface  library  for  MGR.   The  _C
+ _I_n_t_e_r_f_a_c_e  _l_i_b_r_a_r_y  provides a set of macros and functions which implement the
+ stream protocol and provide clients written in _C with a function  call  inter-
+ face  to  MGR.  This library provides the lowest level access to MGR functions
+ and represents a direct mapping to the underlying protocol.   It  is  expected
+ that  a  higher level interface will evolve to support application development
+ at a higher level.  The library requires only the UNIX  _S_t_a_n_d_a_r_d  _I/_O  _L_i_b_r_a_r_y
+ for  its  operation  and  access  to  a byte sequential I/O interface from the
+ underlying operating system.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 3 -               Model of Interaction
+
+
+ _M_o_d_e_l _o_f _I_n_t_e_r_a_c_t_i_o_n
+
+ The basic unit within MGR is the window.  A window is a rectangular region  on
+ the  display,  surrounded  by  a  border,  with  a  single connection to other
+ processes.  All interactions among the client program, the user  and  MGR  are
+ defined  entirely  in terms of the state of a client's window or windows.  MGR
+ has no concept of window types; there are no separate _g_r_a_p_h_i_c_s  _w_i_n_d_o_w_s,  _t_e_x_t
+ _w_i_n_d_o_w_s, or _e_d_i_t _w_i_n_d_o_w_s.  Every window supports exactly the same set of capa-
+ bilities as every other window.  In addition, all windows  act  independently.
+ Client  programs need not know or care about the existence of other clients or
+ windows that happen to coexist on the same display.  The management  of  over-
+ lapping  windows  is  handled  entirely by MGR.  For example, when a window is
+ partially or totally obscured by another window, then subsequently  uncovered,
+ MGR  restores  the  integrity  of  the  window's  contents.  There are no _s_u_b-
+ _w_i_n_d_o_w_s, windows whose size or position are in some way restricted by a parent
+ window.  A client may create and manipulate many windows, each of which may be
+ positioned and sized independently on the display.
+
+ At any given time there is one special window on the display, the _a_c_t_i_v_e  win-
+ dow.   This is the window that receives keystrokes and mouse data.  It is dis-
+ tinguishable to the user from the other windows on the display by  its  embol-
+ dened  border.  The active window, in addition to receiving all mouse and key-
+ board data, is also logically in front of the other windows  on  the  display.
+ The  active  window  is, therefore, always completely exposed.  Any window can
+ become the active window, but there can only be one active window at a time.
+
+ A client program may change its window at any time, write text into  it,  draw
+ lines,  anything,  so  long as the change is _l_o_c_a_l, that is the change affects
+ just its window.  Only the active window may  effect  _g_l_o_b_a_l  changes  to  the
+ display,  such  as  changing  its shape or position.  The only global action a
+ _n_o_n-_a_c_t_i_v_e window may perform is to become the  active  window.   This  window
+ model  provides  both  the  user and application developer with a simple, con-
+ sistent model of interaction.
+
+9 _C_o_o_r_d_i_n_a_t_e _S_y_s_t_e_m_s
+
+ MGR uses four different coordinate systems,  _d_i_s_p_l_a_y  coordinates  ,  _a_b_s_o_l_u_t_e
+ _w_i_n_d_o_w  coordinates,  _r_e_l_a_t_i_v_e  _w_i_n_d_o_w coordinates, and _c_h_a_r_a_c_t_e_r coordinates.
+ The entire display is represented by _d_i_s_p_l_a_y _c_o_o_r_d_i_n_a_t_e_s whereas  each  window
+ has  its  own  _a_b_s_o_l_u_t_e _w_i_n_d_o_w, _r_e_l_a_t_i_v_e _w_i_n_d_o_w, and _c_h_a_r_a_c_t_e_r coordinate sys-
+ tems.
+
+ _D_i_s_p_l_a_y _c_o_o_r_d_i_n_a_t_e_s are in units of pixels.  The coordinate ( 0,0)is  the  top
+ left  pixel  on  the  display.  The _X coordinate increases to the right, the _Y
+ coordinate increases down.  The maximum _X and _Y  coordinate  depend  upon  the
+ particular display in use, for the SUN-3 they are 1152 by 900 .  Commands that
+ operate on the context of the entire display, such as reshaping a  window  are
+ specified  in  _d_i_s_p_l_a_y coordinates.  Windows, when measured in _d_i_s_p_l_a_y coordi-
+ nates include their borders.
+
+ _A_b_s_o_l_u_t_e _w_i_n_d_o_w _c_o_o_r_d_i_n_a_t_e_s, as with  _d_i_s_p_l_a_y  _c_o_o_r_d_i_n_a_t_e_s,  are  measured  in
+ units  of  pixels.   The X and Y values increase to the right and down respec-
+ tively.  The origin, coordinate ( 0,0)is at the top left corner of the window,
+ just inside the window border.
+
+
+9                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 4 -                Coordinate Systems
+
+
+ _R_e_l_a_t_i_v_e _w_i_n_d_o_w _c_o_o_r_d_i_n_a_t_e_s are measured as a fraction of  the  window's  size
+ and shape.  As with _a_b_s_o_l_u_t_e _w_i_n_d_o_w _c_o_o_r_d_i_n_a_t_e_s, each window has its origin, (
+ 0,0), at the top left corner of the window just inside the border, however the
+ lower right corner of the window is always at coordinate ( 999,999).  Graphics
+ commands to a window in _r_e_l_a_t_i_v_e _w_i_n_d_o_w _c_o_o_r_d_i_n_a_t_e_s are  automatically  scaled
+ to the size of the window.
+
+ _C_h_a_r_a_c_t_e_r _c_o_o_r_d_i_n_a_t_e_s are measured in rows and columns in  the  current  font,
+ just  like an ordinary terminal.  The coordinate ( 0,0)is the top left charac-
+ ter position in the window.  The maximum _r_o_w and _c_o_l_u_m_n in the window  depends
+ on both the window and font size.
+
+9 _F_u_n_c_t_i_o_n_a_l _O_v_e_r_v_i_e_w
+
+ The types of commands a client program may  issue  MGR  are  divided  into  14
+ categories:  _t_e_r_m_i_n_a_l _e_m_u_l_a_t_i_o_n, _g_r_a_p_h_i_c_s, _b_i_t-_b_l_i_t_s, _w_i_n_d_o_w _p_o_s_i_t_i_o_n_i_n_g, _f_o_n_t
+ _c_h_a_n_g_e_s, _s_t_a_t_e _i_n_q_u_i_r_y, _s_a_v_e_d _c_o_n_t_e_x_t_s, _m_e_n_u_s, _e_v_e_n_t_s, _s_w_e_e_p _f_u_n_c_t_i_o_n_s, _m_u_l_t_i_-
+ _p_l_e _w_i_n_d_o_w _m_a_n_i_p_u_l_a_t_i_o_n, _c_u_t _a_n_d _p_a_s_t_e, _m_e_s_s_a_g_e_s, and _w_i_n_d_o_w _m_o_d_e_s.  What fol-
+ lows is a brief description of those command categories, and some examples  of
+ specific  functions  within the category.  A detailed description of each com-
+ mand is provided in the following section.
+
+ _T_e_r_m_i_n_a_l _E_m_u_l_a_t_i_o_n
+ At its most basic level, every MGR window emulates a _C_R_T  terminal.   It  pro-
+ vides  functions for _i_n_s_e_r_t_i_n_g and _d_e_l_e_t_i_n_g lines and characters, highlighting
+ text, clearing areas and windows, and arbitrary  cursor  motion  capabilities.
+ Sample  MGR  _T_E_R_M_C_A_P  and _T_E_R_M_I_N_F_O descriptions are given in the tables below.
+ No entries are provided for keyboard key values, as they depend upon the  par-
+ ticular keyboard in use.
+
+8 ______________________________
+    Sample MGR _T_E_R_M_C_A_P Entry
+8 ______________________________
+  Px | MGR | MGR terminal:\
+    :am:bs:im=:ta=^I:\
+    :AL=\E%da:al=\Ea:\
+    :cd=\EC:ce=\Ec:cl=^L:\
+    :cm=\E%r%d,%dM:\
+    :co#80:li#24:\
+    :cs=\E%d,%dt:\
+    :DC=\E%dE:dc=\EE:\
+    :DL=\E%dd:dl=\Ed:\
+    :do=\Ef:up=\Eu:nd=\Er:\
+    :IC=\E%dA:ic=\EA:\
+    :se=\En:so=\Ei:\
+    :ve=\Ev:vs=\EV:
+8 ______________________________
+7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+                              |7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7777777777777777778
+
+8                               ________________________________________________
+                                          Sample MGR _T_E_R_M_I_N_F_O Entry
+8                               ________________________________________________
+                                Px | MGR | MGR Terminal,
+                                  cols#80, lines#24,
+                                  am, msgr, ht=^I,
+                                  clear=^L, cr=^M, bel=^G,
+                                  cub1=^H, cud1=\Ef, cuf1=\Er,
+                                  cuu1=\Eu, ind=^J,
+                                  cup=\E%p2%d;%p1%dM,
+                                  csr=\E%p1%d;%p2%dt,
+                                  wind=\E%p2%d;%p2%p4%+%d;%p1;%p1%p3%+%d;t,
+                                  el=\Ec, ed=\EC,
+                                  il1=\Ea, dl1=\Ed,
+                                  il=\E%p1%da, dl=\E%p1%dd,
+                                  smso=\Ei, rmso=\En,
+                                  smcup=\E1664P, rmcup=\Et\Ep,
+8                               ________________________________________________
+7                              |7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                                              |7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ MGR permits the client program to restrict the terminal emulator to  an  arbi-
+ trary  subrectangle  within  the window, called a _t_e_x_t _r_e_g_i_o_n.  For example, a
+ text editor wishing to provide scroll bars or banner lines can still  let  MGR
+ do  the  terminal  emulation by specifying a text region that excludes the top
+ and sides of the window.  This text region may be redefined or moved around at
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 5 -               Functional Overview
+
+
+ will, permitting multiple terminal sub regions in the same window.
+
+ _G_r_a_p_h_i_c_s
+ In addition to terminal emulation, MGR provides a suite of pen  plotter  style
+ graphics  primitives.  A client program may draw lines, circles, ellipses, and
+ elliptical arcs on a window.  The graphics objects may  either  be  completely
+ positioned,  or  located relative to an internal _g_r_a_p_h_i_c_s _p_o_i_n_t, maintained by
+ MGR.  The objects may also be drawn into undisplayed or _s_c_r_a_t_c_h_p_a_d areas, then
+ copied to the window as a single unit.  The _g_r_a_p_h_i_c_s _p_o_i_n_t may be aligned with
+ the character cursor, for locating graphic objects relative to character text.
+ Conversely, the character cursor may be aligned with the graphics cursor, per-
+ mitting character text to be placed at  arbitrary  positions  on  the  window.
+ Foreground  and  background  colors  for  text  and graphics operations can be
+ chosen from a color palette, and, at least on some systems, this  palette  can
+ be manipulated by commands to the server.
+
+ _B_i_t-_b_l_t_s
+ MGR provides a complete set of functions for dealing  with  bitmaps,  or  rec-
+ tangular  arrays of pixels.  Bitmaps may be combined with any of the 16 possi-
+ ble _b_i_t-_b_l_t operations.   Non-displayed  bitmaps  of  arbitrary  size  may  be
+ created  and  destroyed, and _b_i_t-_b_l_t_s may be performed on the window, within a
+ scratch-pad bitmap, between two scratch-pad  bitmaps, or between a scratch-pad
+ bitmap  and the window.  Bitmap images may be down-loaded from client programs
+ to MGR,  or up-loaded from MGR to the client program.   In  addition,  bitmaps
+ may  be  saved in files by MGR, or loaded into MGR from files.  These last two
+ capabilities permit client programs to manipulate large amounts of bitmap data
+ without the need to send the bits over the communication channel.
+
+ _W_i_n_d_o_w _P_o_s_i_t_i_o_n_i_n_g
+ Either the user or a client program running in the _a_c_t_i_v_e window may move  the
+ .I  active window around on the display.  Windows may be moved with their size
+ retained, reshaped but remain at the same  location,  or  be  both  moved  and
+ shaped anywhere on the display.  If the window is the _a_c_t_i_v_e window, it may be
+ _b_u_r_i_e_d (shoved to the back on the display).  If the window is not  the  _a_c_t_i_v_e
+ window,  it  can  become  the  active  window  and  then be moved about on the
+ display.
+
+ _F_o_n_t _C_h_a_n_g_e_s
+ Client programs may change character fonts at any time, even on a character by
+ character  basis.  MGR comes with hundreds of different fonts, ranging in size
+ from microscopic to viewgraph size.  Most fonts contain nearly 256 characters,
+ e.g.  the  default  font supplied by the server conforms to iso8859-1.  Client
+ programs are free to create and down-load their own fonts.  The fonts supplied
+ by  MGR are constant width, that is _i's take up the same amount of room as _m's
+ do.  There are commands to aid client programs that wish to  use  proportional
+ fonts.
+
+ _S_t_a_t_e _I_n_q_u_i_r_y
+ A client program may ask MGR about the state of its current  window,  such  as
+ its  size  and position on the display, the name and size of the current font,
+ the position and extent of the text region, and the state of various mode set-
+ tings.   The client may also inquire about the state of the window system as a
+ whole.  That includes the position and state of  the  mouse,  the  number  and
+ sizes  of the available fonts, and the organization of windows on the display.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 6 -               Functional Overview
+
+
+ The display organization may include the position, size, name, ownership,  and
+ spatial ordering for all windows on the display.
+
+ _S_a_v_e_d _C_o_n_t_e_x_t_s
+ Certain parts of the current window environment may be pushed on a stack, then
+ restored  at some later time.  Client programs rarely need to know the context
+ in which they are called.  They simply push those aspects of  the  environment
+ they  will  change, then restore them before exiting.  About a dozen different
+ parts of the window environment, such as menus, character fonts, window  posi-
+ tion, etc. may be stacked independently, or in any combination.
+
+ _M_e_n_u_s
+ MGR has built in support for pop-up menus.  Clients may arrange for  menus  to
+ pop-up in response to mouse button hits.  Up to 50 menus may be down-loaded at
+ once for each window.  The client _s_e_l_e_c_t_s which menu will pop-up when a  mouse
+ button  is  pushed.   When an item of a pop-up menu is chosen, MGR returns the
+ string previously put into the menu by the client program.  The client program
+ may  arrange  for  different  menus to pop up depending upon the current mouse
+ position.  Menus may also be linked together as a pop-up menu  tree.   Sliding
+ off  to  the  right of a menu (called a _p_a_r_e_n_t menu) while an item is selected
+ can cause another menu (called a _c_h_i_l_d menu) to  pop  up.   Any  item  of  the
+ _p_a_r_e_n_t menu may be specified as the entry item for a child menu.  Upon select-
+ ing an item of a _c_h_i_l_d menu, the client program may arrange for MGR to  return
+ ether  the  action  string  associated  with  just the _c_h_i_l_d menu item, or the
+ action strings for the selected items of all the menus.   Similar  to  _s_l_i_d_i_n_g
+ menus,  MGR  supports  _p_a_g_i_n_g  menus  as  well.  Long menus may be broken into
+ several pages by the client program.  MGR manages  the  paging  automatically,
+ popping up the next page as the user slides off the bottom of a paged menu.
+
+ _E_v_e_n_t_s
+ Client programs may arrange to be informed by MGR when some change, called  an
+ event,  happens to the state of the window system.  As with menus, the message
+ informing the client program of a change is  formatted  as  specified  by  the
+ client  program.   Examples of events include mouse buttons being depressed or
+ released, windows changing shape or moving, and the window becoming the _a_c_t_i_v_e
+ window  or being covered by another window.  Window state information, such as
+ the current cursor position, may be returned as part of an event string.
+
+ _S_w_e_e_p _F_u_n_c_t_i_o_n_s
+ It is often convenient for client programs to  _s_w_e_e_p,  or  _r_u_b_b_e_r-_b_a_n_d  simple
+ objects,  such  as  lines or boxes, in response to moving the mouse.  MGR pro-
+ vides client programs with a mouse activated sweep function.   MGR  tracks  an
+ edge  of  the  line  or  box with the mouse and reports the coordinates to the
+ client at the conclusion of the sweep operation, when the  user  releases  the
+ mouse.  As usual, the client program specifies the format of the data returned
+ by MGR.
+
+ _M_u_l_t_i_p_l_e _W_i_n_d_o_w _M_a_n_i_p_u_l_a_t_i_o_n
+ A single client program may create and manipulate additional  windows,  called
+ _a_l_t_e_r_n_a_t_e  windows.   The data destined for, or to be received from, an _a_l_t_e_r_-
+ _n_a_t_e window is multiplexed on the same channel as the main window.  The client
+ program  selects  a  window  to  receive  output,  and  all output goes to the
+ selected window until a different window is selected.  For input,  the  client
+ program uses the _e_v_e_n_t mechanism to determine from which window input arrived.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 7 -               Functional Overview
+
+
+ Alternate windows have the same capabilities as the  main  window.   There  is
+ currently  no  limit  to  the number of alternate windows a client program may
+ have.  Up to 100 windows may exist on the display at one time  before  perfor-
+ mance begins to degrade seriously.
+
+ _C_u_t _a_n_d _P_a_s_t_e
+ MGR provides a globally accessible _s_n_a_r_f buffer shared among all  client  pro-
+ grams.   Any  client  program may put data into or read data from this buffer.
+ MGR provides a user initiated _c_u_t and _p_a_s_t_e function from  the  command  menu.
+ MGR  extracts  character text from the window and places its ASCII representa-
+ tion into the _s_n_a_r_f buffer.  _P_a_s_t_e copies the contents of the _s_n_a_r_f buffer  to
+ the  input  stream of the active window.  Client programs, by manipulating the
+ data in the _s_n_a_r_f buffer, can interact with the system  _c_u_t  and  _p_a_s_t_e  func-
+ tions.
+
+ _M_e_s_s_a_g_e_s
+ Although the _s_n_a_r_f buffer gives client programs a simple  asynchronous  inter-
+ process  communication mechanism, MGR has a more general synchronous interpro-
+ cess message passing scheme.  A client program may send a message  to  another
+ client program, or broadcast the message to all client programs.  As a message
+ recipient, the client program may elect to receive messages as  an  _e_v_e_n_t  and
+ encapsulate the message and sender name in the format of its choice.  MGR pro-
+ vides the primitives needed to implement _s_e_r_v_e_r clients by permitting  _s_e_r_v_e_r_s
+ to register their names, services and protocols with MGR.  Client programs may
+ query MGR for a list of active _s_e_r_v_e_r_s.  _S_e_r_v_e_r  messages  may  be  associated
+ with  windows  by the _s_e_r_v_e_r client programs in such a way that the message is
+ automatically received by a client program as part of  a  _m_o_u_s_e  _b_u_t_t_o_n  event
+ whenever  the  mouse  button  is  pressed  on the _s_e_r_v_e_r's window.  Using this
+ mechanism, client programs  can  interact  with  _s_e_r_v_e_r  clients  without  any
+ advance  knowledge  of  which  _s_e_r_v_e_rs are available or what services they are
+ providing.
+
+ _W_i_n_d_o_w _M_o_d_e_s
+ Client programs may select various combinations of window modes.  These  modes
+ tailor  the  behavior of the macros described above.  Examples of window modes
+ include _a_u_t_o _l_i_n_e _w_r_a_p and _c_h_a_r_a_c_t_e_r _o_v_e_r_s_t_r_i_k_e that affect the terminal  emu-
+ lation, different coordinate system settings that affect _g_r_a_p_h_i_c_s commands, or
+ flags that set a window to _a_c_t_i_v_a_t_e automatically upon receiving input, ignore
+ all keyboard input, or suspend output while a window is obscured.
+
+9 _U_n_d_e_r_l_y_i_n_g _P_r_o_t_o_c_o_l
+
+ The purpose of this library package is both to provide a function call  inter-
+ face  to  the stream protocol, and to document each command understood by MGR.
+ There are two types of MGR commands, as summarized in the table below.
+
+8                    ________________________________________
+                              MGR command protocol
+8                    ________________________________________
+
+7                     _E_S_C X918, X928,..., X9n8 _c_o_m_m_a_n_d
+
+7                     _E_S_C X918, X928,..., X9n8 _l_e_n_g_t_h _c_o_m_m_a_n_d _d_a_t_a
+98                    ________________________________________
+7                   |8|7|7|7|
+
+
+9                                                           |8|7|7|7|
+
+
+
+
+9 In both cases, _E_S_C is the ASCII escape character or '\033', whereas  the  word
+ _c_o_m_m_a_n_d  represents  a  single  character  command  identifier.   The  _X's are
+
+
+9                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 8 -               Underlying Protocol
+
+
+ optional integers,  there can be as few as zero, as in the command
+
+8                                     ______
+                                      ESC_a
+8                                     ______
+7                                    |8|
+8                                          |8|
+
+9 which inserts a blank line in the window, or as many as  eight,  as  would  be
+ used by the command
+
+8                           __________________________
+                            ESC0,0,50,100,10,20,3,2_b
+8                           __________________________
+7                          |8|
+8                                                    |8|
+
+9 which is an example of a command to copy images between  bitmaps.   No  spaces
+ may  be  included between the _E_S_C character and the command identifier charac-
+ ter, but the argument separators may be either commas (,) or semicolons (;).
+
+ The function of the command is determined both by the command identifier char-
+ acter  and _n, the number of numeric arguments preceding the command identifier
+ character.  All of the commands with the same command identifier character are
+ closely  related  in function.  For example, all the commands in the following
+ table have the same command character, '_o', and all draw  ellipses,  but  have
+ different effects based upon the number of arguments.
+
+8                         _____________________________
+                          Commands that draw _e_l_l_i_p_s_e_s
+8                         _____________________________
+                          1     ESC100,200o
+                          2     ESC100,200,300,400o
+                          3     ESC100,200,300,400,2o
+8                         _____________________________
+7                        |7|7|7|7|
+
+
+
+                             |8|7|7|
+
+9                                                     |7|7|7|7|
+
+
+
+
+
+ All of the ellipses have major and minor axis lengths of  _1_0_0  and  _2_0_0  units
+ respectively.   Command  1 draws the ellipse at the current graphics location.
+ Command 2 draws the ellipse at the location specified by the third  and  forth
+ arguments,  at ( 300,400).  Command 3 draws the ellipse into scratchpad bitmap
+ number _2.
+
+ The second form of MGR command, which is a special case of the first form,  is
+ used  for downloading data from the client program to MGR.  The integer _l_e_n_g_t_h
+ specifies the number of bytes of data to  be  downloaded,  and  _d_a_t_a  are  the
+ _l_e_n_g_t_h number of data values downloaded.  An example of the second type of MGR
+ command is
+
+8                               _________________
+                                ESC11,7b_I-_m_o_v_e_d
+8                               _________________
+7                              |8|
+8                                               |8|
+
+9 which instructs MGR to send the client program the string _I-_m_o_v_e_d any time the
+ client's  window  is  moved  to  a  different location on the display.  The _1_1
+ refers to the number of the _m_o_v_e event and the _7 is the number  of  characters
+ in the event string, which in this case is _I-_m_o_v_e_d.
+
+ All of the command identifier characters are listed  in  _i_n_c_l_u_d_e/_m_g_r/_w_i_n_d_o_w._h.
+ The  command  actions, determined by the command identifier and number of com-
+ mand arguments, are described by the macros in this document.
+
+
+9
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 9 -           Conventions and Notation
+
+
+ _C_o_n_v_e_n_t_i_o_n_s _a_n_d _N_o_t_a_t_i_o_n
+
+ All functions and macros and programming examples are shown  in  a  typewriter
+ font  to  distinguish  them from ordinary text.  Similarly, function and macro
+ arguments are shown in a bold typewriter font.
+
+ The names of often-used arguments passed to macros  indicate  their  function,
+ and are defined below.
+
+ column,row
+      The integers column and row refer to a character  position  in  _c_h_a_r_a_c_t_e_r
+      coordinates even though characters may be placed at arbitrary pixel loca-
+      tions within a window and need not fall on column or row boundaries.
+
+ Dwidth,Dheight
+      The integers Dwidth and Dheight represent a width and height  in  _d_i_s_p_l_a_y
+      coordinates.
+
+ mode
+      The positive integer mode,  represents  the  bit  combination  of  window
+      modes.     Mode    is    usually   an   _o_red   list   of   constants   in
+      _i_n_c_l_u_d_e/_m_g_r/_w_i_n_d_o_w._h.  A typical use of mode is the argument  to  m_push(
+      mode) as in m_push( P_FLAGS | P_EVENT | P_MENU).
+
+ n
+      The small non-negative integer n represents a  resource  descriptor  when
+      describing objects such as windows, fonts, or menus.
+
+ name
+      Name is the file name of a bitmap image on the  _M_G_R-_h_o_s_t  machine.   File
+      names  given with no directory prefix are referenced relative to the _i_c_o_n
+      subdirectory of MGR's home directory.  The home directory is installation
+      dependent, and may be determined with the command _M_G_R -_V.
+
+ parent,child
+      The small positive integers parent and child represent  menus.   A  _c_h_i_l_d
+      menu is linked to a _p_a_r_e_n_t menu forming a tree of menus.
+
+ radius
+      The positive integer radius along with radius1 and  radius2  signifies  a
+      radius  when  referring to circles or major and minor axis when referring
+      to ellipses.  They are only referenced in respect to _w_i_n_d_o_w coordinates.
+
+ string
+      An array of characters, string  is  a  null  terminated  ASCII  character
+      string.   Except  where  noted,  several  ASCII control characters can be
+      included in strings by escaping them with \_X,  where  _X  is  one  of  the
+      characters shown in the following table.
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 10 -          Conventions and Notation
+
+
+
+8                       _______________________________________
+                         Character string control characters
+8                       _______________________________________
+                         escape     octal        Meaning
+                        character   value
+8                       ______________________________________________________________________________
+                               \b   010     Back space
+                               \E   033     Escape
+                               \e   033     Escape
+                               \f   014     Form feed
+                               \g   007     Bell
+                               \M   *       Turn on
+                                            8'th (parity) bit
+                               \n   012     New line
+                               \r   015     Return
+                               \s   040     Space
+                               \\   134     Back-slash (\)
+
+8                       _______________________________________
+7                      |8|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9                                 |7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                         |7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                                             |8|7|7|7|7|7|7|7|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9                  * (the next character has its 8'th bit turned on)
+
+ to,from
+      The small positive integers to and  from  identify  the  destination  and
+      source bitmaps for _b_i_t-_b_l_t operations.  The value 0 (zero) represents the
+      current window bitmap; positive integers name scratch-pad bitmap storage.
+
+ width,height
+      The integers width and height represent a  width  and  height  in  _w_i_n_d_o_w
+      coordinates.
+
+ X,Y
+      The integer pair ( X,Y) represents a point in _d_i_s_p_l_a_y  coordinates.   The
+      suffixes  src  and dst as in ( X_src,Y_src) or ( X_dst,Y_dst) are used to
+      indicate _s_o_u_r_c_e and _d_e_s_t_i_n_a_t_i_o_n coordinates respectively.  Similarly, the
+      suffixes  1 and 2 as in ( X1,Y1) refer generically to the first or second
+      coordinate.
+
+ x,y
+      The integers ( x,y) represent a point  in  _w_i_n_d_o_w  coordinates.   Whether
+      that  is _r_e_l_a_t_i_v_e (i.e. 0-999) or _a_b_s_o_l_u_t_e depends upon the current coor-
+      dinate setting of the window.  As with ( X,Y) above, the  modifiers  src,
+      dst,  1,  and 2 refer respectively to the _s_o_u_r_c_e, _d_e_s_t_i_n_a_t_i_o_n, _f_i_r_s_t, and
+      _s_e_c_o_n_d coordinates.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 11 -                          Macros
+
+
+ _M_a_c_r_o_s
+
+ The C library interface macros expand into  _p_r_i_n_t_f  expressions  that  convert
+ their  command  specification  into the MGR stream protocol.  Compile time and
+ run time options are available that globally alter the behavior of these  mac-
+ ros  to the specific needs of the client program.  The options are detailed in
+ the _U_s_i_n_g _t_h_e _L_i_b_r_a_r_y section of this document.  The macros should be regarded
+ as  statements,  not  as expressions returning values.  The macro descriptions
+ here attempt to reflect the actual state of the system, and may  include  some
+ inconsistencies  that should be cleaned up in future releases of the software.
+ Every MGR command (a command identifier - argument count combination) that  is
+ accepted by MGR has a macro which invokes that function.
+
+
+ m_addchar()
+      Inserts a space character at the current character cursor position.   The
+      remaining characters on the line, if any, are shifted to the right.
+
+ m_addchars( n)
+      Inserts n space characters at the current character cursor position.  The
+      remaining characters on the line, if any, are shifted to the right.
+
+ m_addline()
+      Inserts a blank line at current row. The current row, and any  below  it,
+      are  shifted  down one line.  The bottom line of text is scrolled off the
+      window.
+
+ m_addlines( n)
+      Inserts n blank lines at current row. The current row, and any below  it,
+      are  shifted  down.  The bottom n lines of text are scrolled off the win-
+      dow.  It is much more efficient to call m_addlines( n) once, than  it  is
+      to call m_addline()n times.
+
+ m_aligntext()
+      Moves the current character cursor coincident with the  current  graphics
+      point.   The current graphics point is set with m_go( x,y).  This permits
+      client programs to position characters at arbitrary  pixel  locations  on
+      the window.
+
+ m_arc( x,y,x1,y1,x2,y2)
+      An arc centered at ( x,y) is drawn counter clockwise from ( x1,y1)  to  (
+      x2,y2) using the current drawing function (see m_func()).
+
+ m_bell()
+      The window flashes and the bell, if there is one,  rings.   Even  if  the
+      window is totally obscured, its flashing is made visible to the user.
+
+ m_bcolor( color)
+      The background color for text operations is set to  color,  which  is  an
+      index into the color lookup table.  This command has no effect on a mono-
+      chrome display.  See also m_fcolor() and m_fgbgcolor().
+
+ m_bitccreate( n,wide,high,deep)
+      Create the scratchpad bitmap n of size wide by high with bit  depth  deep
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 12 -                          Macros
+
+
+      having   undefined   initial   contents.   This  macro  is  identical  to
+      m_bitcreate()except that if deep is specified to be other than one,  then
+      the  bitmap  is given the same bit depth as that of the window or screen,
+      generally eight on a color system.
+
+ m_bitcld( wide,high,x,y,deep,size)
+      Prepare MGR to download a color or monochrome bitmap to the window.  This
+      macro instructs MGR that the next size bytes received will be interpreted
+      as a bitmap image to be displayed on the window starting  at  location  (
+      x,y),  and  of  size  wide  by high by deep in bits.  Downloading bitmaps
+      requires an eight bit channel between MGR and the client program.   Large
+      bitmaps  are  best  sent  in  several  pieces.  The macro m_bitfromfile()
+      should be used instead, where possible, as it only requires a  seven  bit
+      data channel and avoids the movement of large amounts of data through the
+      channel.  If more bytes are specified than required by the  size  of  the
+      bitmap,  they are discarded.  If the number specified by size is insuffi-
+      cient to fill the entire bitmap, the remainder of the  bits  are  set  to
+      undetermined values.  The bitmap data is sent in external format.
+
+ m_bitcldto( wide,high,x_dst,y_dst,deep,to,size)
+      Prepare to download a bitmap to the scratchpad bitmap to.  If to does not
+      already exist, (see m_bitcreate()), it is created automatically with size
+      wide by high by deep in bits.  This function instructs MGR that the  next
+      size bytes received will be interpreted as a bitmap image to be copied to
+      scratchpad bitmap to at location x_dst,y_dst.  This function requires  an
+      eight  bit channel between MGR and the client program.  If more bytes are
+      specified than required by the size of the bitmap,  they  are  discarded.
+      If  the  number specified by size is insufficient to fill the entire bit-
+      map, the remainder of the bits are set to undetermined values.  The  bit-
+      map data is sent in external format.
+
+ m_bitcopy( x_dst,y_dst,wide,high,x_src,y_src)
+      Copy a rectangle from one place on the window to another  with  the  copy
+      function  set  by m_func( n). The rectangular area at x_src,y_src of size
+      wide by high is combined with the rectangle at x_dst,y_dst  according  to
+      the  last function set by m_func().  The resultant rectangle is placed at
+      x_dst,y_dst.
+
+ m_bitcopyto( x_dst,y_dst,wide,high,x_src,y_src,to,from)
+      Combine the rectangle at position x_src,y_src of size  wide  by  high  of
+      bitmap from with the rectangle of the same size at x_dst, y_dst of bitmap
+      to.  The bit-blt function used to combine the two rectangles  is  set  by
+      m_func().   From  and  to are scratch-pad bitmap descriptors.  Scratchpad
+      bitmap 0 (zero) represents the current window contents and  may  be  used
+      for  the  source, destination, or both.  If the scratchpad bitmap to does
+      not already exist, it is created with a size of wide+x_src by high+y_src.
+
+ m_bitcreate( n,wide,high)
+      Create the scratchpad bitmap n of size wide by high with bit  depth  one,
+      i.e.  monochrome.   The  contents of the bitmap are undefined.  The macro
+      m_bitwriteto() can be used to initialize the scratchpad bitmap.   If  the
+      bitmap  already  exists, the old one is first discarded.  Scratchpad bit-
+      maps may also be created implicitly by specifying a  non-existent  bitmap
+      as  the  destination  of  m_bitwriteto(),  m_bitcopyto(),  m_bitld(),  or
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 13 -                          Macros
+
+
+      m_stringto().
+
+ m_bitdestroy( n)
+      Destroys scratchpad bitmap n and frees all the resources associated  with
+      it.  If n does not exist, this macro has no effect.
+
+ m_bitfromfile( to,name)
+      Copy the file name on the _M_G_R-_h_o_s_t machine into the scratchpad bitmap to.
+      The  scratchpad  bitmap  to is created if it does not already exist.  _M_G_R
+      returns  a single line containing the _w_i_d_t_h and _h_e_i_g_h_t of the bitmap,  or
+      a _b_l_a_n_k if the file could not be found or loaded.  If name does not start
+      with / or ./, The file name is prefixed with  MGR's  home  directory  and
+      /_i_c_o_n/.   Names  starting with ./ are evaluated relative to the directory
+      current when _M_G_R was invoked.  The formats of bitmap files are  described
+      in the _i_n_c_l_u_d_e/_m_g_r/_m_g_r._h header file.
+
+ m_bitget( from,size,offset)
+      Upload part of a _s_c_r_a_t_c_h_p_a_d bitmap.   Size  bytes  of  _s_c_r_a_t_c_h_p_a_d  bitmap
+      from,  starting offset bytes from the beginning of the bitmap are sent to
+      the client program from _M_G_R.  After this call, the client is expected  to
+      read  size bytes from the input stream.  The image data is sent in exter-
+      nal bitmap format, i.e., raster scan order, 8 pixels to a bigendian byte,
+      padded  at  the right of every line to 8 bits.  Size should be kept small
+      (about 80 bytes), to avoid potential flow control problems, with  bitmaps
+      uploaded  in  multiple  passes.   The  data  sent  by  MGR for this macro
+      requires an eight bit data channel, so its use is discouraged.  The macro
+      m_bitsave() should be used instead when possible.
+
+ m_bitld( wide,high,x,y,size)
+      Prepare MGR to download a monochrome  bitmap  to  the  window.   This  is
+      identical to a call to m_bitcld with the parameter deep set to one.
+
+ m_bitldto( wide,high,x_dst,y_dst,to,size)
+      Prepare to download a monochrome bitmap  to  the  scratchpad  bitmap  to.
+      This  is identical to a call to m_bitcldto with the parameter deep set to
+      one.
+
+ m_bitsave( from,name)
+      Save a scratchpad bitmap from on the file name on the _M_G_R-_h_o_s_t file  sys-
+      tem.   If  name  does not start with / or ./, name is prefixed with MGR's
+      home directory and /_i_c_o_n/.  Names starting with ./ are evaluated relative
+      to  the  directory current when _M_G_R was invoked.  Specifying from to be 0
+      (zero) saves the entire display contents  to  the  file.   The  functions
+      m_windowsave() and m_othersave() are used to save contents of entire win-
+      dows.
+
+ m_bitset( map,x,y,v)
+      Set the value of the pixel _x, on the bitmap _m_a_p to the value given in  _v.
+      In  a  monochrome version of the MGR server you can only set or clear the
+      particular pixel. Use 1 to set, 0 to clear; any other value will have all
+      but the low order bit masked out.  A color server will accept values from
+      0 to 255.
+
+ m_bitvalue( map,x,y)
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 14 -                          Macros
+
+
+      Get the current value of the pixel x, y in the bitmap _b_i_t_m_a_p.  The  value
+      can  be  read using the m_gets macro.  The string is a newline-terminated
+      decimal integer.  A mono server only returns 1 for set, and 0 for  clear.
+      A color server may return values from 0 to 255.
+
+ m_bitwrite( x_dst,y_dst,wide,high)
+      The rectangular region of the window, starting at x_dst,y_dst  of  extent
+      wide  by  high, is set, cleared or inverted as determined by the previous
+      call to m_func().
+
+ m_bitwriteto( x_dst,y_dst,wide,high,to)
+      The rectangular region of _s_c_r_a_t_c_h_p_a_d bitmap to, starting  at  x_dst,y_dst
+      of  extent wide by high, is set, cleared or inverted as determined by the
+      previous call to m_func().  If the destination to does not exist,  it  is
+      created with the dimensions wide by high.
+
+ m_broadcast( string)
+      The message string is  broadcast  to  all  windows  that  are  _l_i_s_t_e_ning.
+      _L_i_s_t_e_ning  is  turned  on by setting the ACCEPT event for a window.  (See
+      m_setevent()).  Messages can only be sent to  windows  whose  controlling
+      terminals  have  general  write permission disabled (i.e. mode 0400) as a
+      security measure to prevent  malicious  foreign  processes  from  sending
+      _s_h_e_l_ls messages that get interpreted and executed as commands.
+
+ m_circle( x_dst,y_dst,radius)
+      A circle of radius radius is drawn, centered at x_dst,y_dst.  The  points
+      at the edge of the circle are set, cleared or inverted depending upon the
+      last call to m_func().  Circles are never scaled, they always  appear  as
+      circles  on  the  display, regardless of the window shape.  The radius is
+      scaled based upon the average  width  and  height  of  the  window.   Use
+      m_ellipse() to obtain a scaled circle.
+
+ m_clear()
+      The current _t_e_x_t _r_e_g_i_o_n is cleared, and the character cursor is moved  to
+      position  (  0,0).  If no _t_e_x_t _r_e_g_i_o_n is set, m_clear() clears the entire
+      window.
+
+ m_cleareol()
+      All of the characters on the current  line,  starting  with  the  current
+      character  to the end of the _t_e_x_t _r_e_g_i_o_n, are cleared.  If no _t_e_x_t _r_e_g_i_o_n
+      is set, m_cleareol() clears to the edge of the window.
+
+ m_cleareos()
+      All of the characters in the current _t_e_x_t _r_e_g_i_o_n, from the current  char-
+      acter  to  the end of the _t_e_x_t _r_e_g_i_o_n, are cleared.  If no _t_e_x_t _r_e_g_i_o_n is
+      set, m_clear() clears to the end of the window.
+
+ m_clearevent( n)
+      Event n is cleared.  The integer n is one of: ACCEPT, ACTIVATE, BUTTON_1,
+      BUTTON_1U,  BUTTON_2,  BUTTON_2U,  COVERED,  DEACTIVATE,  DESTROY,  MOVE,
+      NOTIFY, PASTE, REDRAW, RESHAPE, SNARFED, or UNCOVERED.  See  m_setevent()
+      for a description of the events.
+
+ m_clearmenu( n)
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 15 -                          Macros
+
+
+      If menu n exists, it is cleared.
+
+ m_clearmode( mode)
+      Clear one of the following window modes.  Except where noted,  these  are
+      the  default  settings.   The  mode  settings are more fully explained in
+      m_setmode().
+
+      M_ABS
+           _A_b_s_o_l_u_t_e window coordinate mode is turned off.  The window is now in
+           _r_e_l_a_t_i_v_e  window  coordinates.  All  window coordinates range from (
+           0,0) in the upper left corner to ( 999,999) at the lower right.
+
+      M_ACTIVATE
+           Bury the window. Unlike the other window modes, _b_u_r_y  has  no  state
+           associated  with  it, just a one time action.  A window is buried by
+           visually pushing it to the bottom of the display; any window  inter-
+           secting it will appear in front of it.
+
+      M_AUTOEXPOSE
+           Do not automatically activate the window the next time  it  receives
+           output.
+
+      M_BACKGROUND
+           MGR does not permit the window to  update  if  it  is  partially  or
+           totally  obscured.   Data  destined for the window is held until the
+           window is uncovered, or _M__B_A_C_K_G_R_O_U_N_D is turned on.
+
+      M_CONSOLE
+           This  window  is  not  the   destination   of   stuff   written   to
+           "/dev/console".
+
+      M_NOBUCKEY
+           Buckey keys, those with value from 128-255, can cause  server  func-
+           tions to be executed when typed at the keyboard, if the BUCKEY capa-
+           bility was configured into the server at compile time.
+
+      M_NOINPUT
+           Accept keyboard input if the window is active.
+
+      M_NOREPORT
+           Report changes in window sizes to the OS, if the OS  wants  to  know
+           the sizes of terminals attached to ttys.
+
+      M_NOWRAP
+           Wrap the character cursor to the next line when it reaches the right
+           margin of the _t_e_x_t _r_e_g_i_o_n.
+
+      M_OVERSTRIKE
+           Do not overstrike characters.  Text is copied to the  window  as  if
+           m_func( BIT_SRC) is set.
+
+      M_SNARFHARD
+           The system _c_u_t function fails if any errors are found. This is indi-
+           cated  by  flashing  the window.  The contents of the _c_u_t buffer are
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 16 -                          Macros
+
+
+           left undisturbed.  Normally this only happens if some  process  unk-
+           nown to MGR scribbles into the region being cut.
+
+      M_SNARFLINES
+           Sets the system _c_u_t function to cut individual  characters,  instead
+           of entire lines only.
+
+      M_SNARFTABS
+           The system _c_u_t function cuts text exactly as it appears on the  win-
+           dow.   All interior white space is converted to _s_p_a_c_es, all trailing
+           white space is treated as a _n_e_w _l_i_n_e.
+
+      M_STACK
+           Event stacking is turned off.  Event strings are only  returned  for
+           the  current  window  context  and not for any contexts stacked with
+           m_push().
+
+      M_STANDOUT
+           Characters are drawn in black with a white background.
+
+      M_WOB
+           The window foreground color is set to _b_l_a_c_k, and  the  window  back-
+           ground color is set to _w_h_i_t_e.
+
+      M_DUPKEY
+           The keyboard escape character is turned off.  This mode is turned on
+           by   calling   m_dupkey().    There  is  no  corresponding  call  to
+           m_setmode().
+
+ m_deletechar()
+      The character at the cursor position is deleted.  Any characters  on  the
+      line  to the right of the cursor are shifted left one character position.
+      The last character on the line is set to a _s_p_a_c_e.
+
+ m_deletechars( n)
+      The next n characters are deleted, starting at the character cursor posi-
+      tion.   Any characters on the line to the right of the cursor are shifted
+      left n character positions.  The last n characters on the line are set to
+      _s_p_a_c_e.
+
+ m_deleteline()
+      The line at the cursor position is deleted.  Any lines below  the  cursor
+      are shifted up one line.  The last line is cleared.
+
+ m_deletelines( n)
+      The next n lines starting at the cursor position and toward the bottom of
+      the  window are deleted.  Any lines below the deleted ones are shifted up
+      n lines.  The last n lines are cleared.  It is more efficient to make one
+      call to m_deletelines() than to call m_deleteline()n times.
+
+ m_destroywin( n)
+      Destroy alternate window n, created by calling m_newwin().  If output  is
+      currently directed to this window, it is automatically re-directed to the
+      _m_a_i_n window.  See also m_selectwin().
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 17 -                          Macros
+
+
+ m_down( n)
+      Move the character cursor down n tenths of a character height.  This  may
+      cause the window to scroll.  See also m_left(), m_right(), and m_up().
+
+ m_draw( x,y)
+      Draw a line from current _g_r_a_p_h_i_c_s _p_o_i_n_t to ( x,y).  The macro  m_go()  is
+      used  to  move the _g_r_a_p_h_i_c_s _p_o_i_n_t.  The _g_r_a_p_h_i_c_s _p_o_i_n_t is left at ( x,y),
+      the end point of the line.
+
+ m_dupkey( char)
+      Every time the character char is typed at the keyboard for  this  window,
+      it is sent to the client program twice.  This enables clients to reliably
+      distinguish keyboard input from that  generated  by  menu  selections  or
+      events.  The client begins every _e_v_e_n_t and _m_e_n_u string with a two charac-
+      ter code whose first character is char and whose second character is any-
+      thing  but  char  or  space.   When  this mode is set, all replies to MGR
+      queries, as with m_getinfo()are prepended by the two  character  sequence
+      char  followed  by  space.   For  multiline  requests, such as M_getinfo(
+      G_ALL)only the first line of the reply is affected.  These two characters
+      are  also  prepended  to  all  other MGR commands that return a character
+      string to the client program, such as m_newwin() or m_bitfromfile().
+
+ m_ellipse( x,y,radius1,radius2)
+      Draw an ellipse centered at ( x,y).  The values for radius1  and  radius2
+      are  the  major and minor axis radii.  The ellipse is either set, cleared
+      or inverted determined by the last call  to  m_func().   The  values  for
+      radius1 and radius2 are scaled based upon the average width and height of
+      the window.
+
+ m_ellipseto( to,x,y,radius1,radius2)
+      Draw an ellipse  on  scratchpad  bitmap  to  centered  at  (  x,y)  where
+      radius1,radius2  are  the  major  and  minor  axis radii.  The ellipse is
+      either set, cleared or inverted determined by the last call to  m_func().
+      The  values  for  radius1  and  radius2 are scaled based upon the average
+      width and height of the window.  If the  offscreen  bitmap  to  does  not
+      exist, this call has no effect.
+
+ m_fastdraw( x,y,count,data)
+      The next count bytes of data are sent to MGR are  to  be  interpreted  as
+      lines  drawn  in _f_a_s_t _d_r_a_w mode, starting at ( x,y).  _F_a_s_t _d_r_a_w mode per-
+      mits the rapid drawing of short vectors by encoding an  _x,_y  displacement
+      location  in  a  single  byte.  The _x coordinate is contained in the most
+      significant 4 bits, the _y coordinate in the  least  significant  4  bits.
+      Values  for  _x  and _y represent displacements from the previous location,
+      and range from +7 to -8.  A 7 is coded as _0_x_f_f, a -8 as _0_x_0_0.  If both  _x
+      and _y are zero (i.e.  _0_x_8_0_8_0).  The next coordinate is taken to be a _m_o_v_e
+      instead of a _d_r_a_w.  An eight bit channel between MGR and the client  pro-
+      gram is required for _f_a_s_t _d_r_a_w mode.  See also m_rfastdraw().
+
+ m_fcolor( color)
+      The foreground color for text operations is set to color ,  which  is  an
+      index into the color lookup table.  This command has no effect on a mono-
+      chrome display.  See also m_bcolor() and m_fgbgcolor().
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 18 -                          Macros
+
+
+ m_fgbgcolor( fg_color,bg_color)
+      The foreground and background colors for graphics operations are  set  to
+      fg_color  , and bg_color , which are indices into the color lookup table.
+      This command has no effect on a monochrome display.  If  either  argument
+      has  a  negative value, then the corresponding color (foreground or back-
+      ground) remains unchanged.  See also m_bcolor() and m_fcolor().
+
+ m_flush()
+      Flush the MGR output buffer.  This is equivalent to  the  stdio  function
+      _f_f_l_u_s_h() and is needed only when the M_FLUSH flag is _n_o_t specified in the
+      call to m_setup().
+
+ m_font( n)
+      Change to font n.  The line positioning is adjusted to keep the  baseline
+      of  the  new  and  old  fonts  the same.  Font numbers are small integers
+      (currently no more than 15).  Font 0 (zero) always refers to the built-in
+      or  _d_e_f_a_u_l_t  font.  The actual fonts associated with the font numbers may
+      be set in the MGR _s_t_a_r_t_u_p file, or changed by clients  on  the  fly  (see
+      m_loadfont()).
+
+ m_fracdown( numer,denom)
+      Move the character cursor down a distance of numer/denom times the height
+      of  characters  in the current font, rounded to a whole number of pixels.
+      The function m_down() is a special case of m_fracdown()  where  denom  is
+      ten.
+
+ m_fracleft( numer,denom)
+      Move the character cursor left a distance of numer/denom times the  width
+      of  characters  in the current font, rounded to a whole number of pixels.
+      The function m_left() is a special case of m_fracleft()  where  denom  is
+      ten.
+
+ m_fracright( numer,denom)
+      Move the character cursor right a distance of numer/denom times the width
+      of  characters  in the current font, rounded to a whole number of pixels.
+      The function m_right() is a special case of m_fracright() where denom  is
+      ten.
+
+ m_fracup( numer,denom)
+      Move the character cursor up a distance of numer/denom times  the  height
+      of  characters  in the current font, rounded to a whole number of pixels.
+      The function m_up() is a special case of m_fracup() where denom is ten.
+
+ m_func( mode)
+      Set the drawing mode.  This specifies the drawing mode in force  for  all
+      _g_r_a_p_h_i_c_s  and _b_i_t-_b_l_t operations.  The integer mode is one of 16 possible
+      boolean combinations of the _s_o_u_r_c_e and _d_e_s_t_i_n_a_t_i_o_n bit patterns.   Combi-
+      nations  of  bit  patterns  for  which there is no _s_o_u_r_c_e bitmap, such as
+      m_bitwrite() or m_line() use the modes shown in the middle column of  the
+      following table.  Several common modes are specified for the bit patterns
+      in which the source bitmap is relevant.
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 19 -                          Macros
+
+
+
+8                          _________________________________
+                               Names for bit-blt modes
+8                          _________________________________
+                            source    no source   comments
+8                          __________________________________________________________________
+                           BIT_SRC    BIT_INV
+                           BIT_OR     BIT_SET     default
+                           BIT_NOR    BIT_DST
+                           BIT_XOR    BIT_CLR
+                           BIT_AND
+                           BIT_NAND
+8                          _________________________________
+7                         |8|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+9                                   |7|7|7|7|7|7|7|
+
+
+
+
+
+
+                                               |7|7|7|7|7|7|7|
+
+
+
+
+
+
+                                                          |8|7|7|7|7|7|7|7|7|
+
+
+
+
+
+
+
+
+
+9      Alternately, mode may be derived with a boolean  combination  of  BIT_SRC
+      and   BIT_DST,   thus   BIT_OR   is   equivalent   to  BUILDOP(BIT_SRC  |
+      BIT_DST,BLACK,WHITE).  The default graphics mode in newly created windows
+      is BIT_OR .
+
+ m_getchar()
+      The macro m_getchar() is  equivalent  to  the  _s_t_d_i_o  routine  _g_e_t_c_h_a_r(),
+      except  the character is retrieved from MGR via the file pointer _m__t_e_r_m_i_n
+      instead of _s_t_d_i_n.
+
+ m_getinfo( mode)
+      This function requests MGR to return information back to the client  pro-
+      gram.    Mode   specifies  one  of  (currently)  15  different  requests.
+      Responses  are  always  terminated  with  a  _n_e_w  _l_i_n_e  for  single  line
+      responses, and with a pair of _n_e_w _l_i_n_e_s for multi-line responses.  Conse-
+      quently, clients can request and process information requests using  nor-
+      mal  line  mode  processing.   If  the mode requested is unsupported, the
+      response is empty except for the terminating newline.  The following list
+      of information requests is understood.
+
+      G_ALLMINE
+           Window status for own windows only.
+           Information about each window that may be written to by  the  client
+           program  is  returned, one line of information per window, as a list
+           of space separated items.  The format of the information is the same
+           as  that obtained from the G_ALL request below, but only a subset of
+           the windows is described.
+
+      G_ALL
+           Status of all windows.
+           Information about all windows is returned, one line  of  information
+           per window, as a list of space separated items.  The first two items
+           give the location of the top left corner of the  window  in  _d_i_s_p_l_a_y
+           coordinates.   The second two items give the _h_e_i_g_h_t and _w_i_d_t_h of the
+           window, also in _d_i_s_p_l_a_y coordinates.  The next  field  contains  the
+           last  two  characters  of the _p_s_e_u_d_otty associated with each window.
+           Normally the _p_s_e_u_d_otty is the same for each window controlled by the
+           same  client.   The  next  field  contains the _w_i_n_d_o_w _i_d, which is 0
+           (zero) for a primary window, and the value returned by the  call  to
+           m_makewindow()  for  alternate  windows.  The seventh field contains
+           the visual status of the window, which is either _C__E_X_P_O_S_E_D ('e')  if
+           the  window is completely visible, or _C__O_B_S_C_U_R_E_D ('o') if the window
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 20 -                          Macros
+
+
+           is partly or completely obscured.  The final  field  is  the  window
+           setid.   Windows  can  be uniquely identified by a pair of window id
+           and window setids.   The  window  information  for  each  window  is
+           printed  in  order from _f_r_o_n_t to _b_a_c_k.  Thus the first line returned
+           is currently the _a_c_t_i_v_e window.  A sample line might look  something
+           like:
+
+8                                 ________________________
+                                  492 2 652 570 p6 0 o 9
+8                                 ________________________
+7                                |8|
+8                                                        |8|
+
+9           Which indicates that the window at ( 492,2)is 652  pixels  _w_i_d_e  and
+           570  pixels  _h_i_g_h,  has  a controlling _p_s_e_u_d_otty of /_d_e_v/_t_t_yp6, is a
+           main window with a setid number of 9,  and  is  at  least  partially
+           obscured.
+
+      G_NOTIFY
+           List windows with notify strings.
+           Information about each window which  has  a  NOTIFY  string  set  is
+           returned as four fields terminated by a newline.  Each window report
+           is formed by concatenating the window  process  id,  a  period,  the
+           alternate window number, a space, the length of the NOTIFY string, a
+           space, and the NOTIFY string itself.  Line processing can be compli-
+           cated by NOTIFY strings which contain newlines.
+
+      G_COORDS
+           Window coordinates.
+           A single line is returned containing the location and  size  of  the
+           window  in  _d_i_s_p_l_a_y  coordinates.   The first pair of numbers is the
+           position of the top left corner of the window, the  second  pair  of
+           numbers is the window's _w_i_d_t_h and _h_e_i_g_h_t in pixels.
+
+      G_CURSOR
+           A single line is returned containing the position of  the  _c_h_a_r_a_c_t_e_r
+           and  the _g_r_a_p_h_i_c_s cursors and the type of the character cursor.  The
+           first pair of numbers is the current _c_o_l_u_m_n  and  _r_o_w  in  character
+           coordinates   and   the  second  pair  of  numbers  is  the  current
+           _g_r_a_p_h_i_c_slocation in window coordinates.  The graphics  cursor  loca-
+           tion  is reported in either _a_b_s_o_l_u_t_e or _r_e_l_a_t_i_v_e window coordinates,
+           depending upon the window coordinate mode setting.  The fifth number
+           encodes the cursor type.
+
+      G_FONT
+           A single line is returned which contains current  font  information.
+           The first pair of numbers is the character _w_i_d_t_h and _h_e_i_g_h_t, in pix-
+           els.  The next number is the _f_o_n_t _n_u_m_b_e_r as would be used in a  call
+           to  m_font,  and  the  final field is the ascii name of the font, or
+           _d_e_f_a_u_l_t if there is no name.
+
+      G_ID
+           Alternate window number.
+           A single line is returned containing the window's  alternate  window
+           id  ( 0 for the main window), followed by the number of windows con-
+           trolled by the client program.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 21 -                          Macros
+
+
+      G_MOUSE
+           Mouse coordinates.
+           The mouse position, in _d_i_s_p_l_a_y coordinates are returned, followed by
+           the  most  recent button transition, which is one of 1,-1,2,-2.  The
+           numbers 1 and 2 represent buttons _o_n_e and _t_w_o on the mouse,  respec-
+           tively,  counting  from  right  to  left.  The third mouse button is
+           reserved for system use and is not accessible to client programs.  A
+           negative value means the button was released; a positive value indi-
+           cates the button is still depressed.
+
+      G_MOUSE2
+           Scaled mouse coordinates.
+           The mouse coordinates, in _w_i_n_d_o_w coordinates are returned,  followed
+           by  the  most  recent  button transition, which is one of 1,-1,2,-2.
+           The numbers 1 and 2 represent buttons _o_n_e and _t_w_o  respectively.   A
+           negative  value means the button was last released; a positive value
+           indicates the button is still depressed.  If the mouse is  above  or
+           to  the left of the window, a negative coordinate value is returned.
+           In addition if the window is in _r_e_l_a_t_i_v_e coordinate mode, coordinate
+           values  between  0  and  999  will  be reported only if the mouse is
+           within the window.
+
+      G_STATUS
+           A line is returned containing a single character,  either  _C__E_X_P_O_S_E_D
+           ('e'),  _C__O_B_S_C_U_R_E_D  ('o'),  or _C__A_C_T_I_V_E ('a') depending upon whether
+           the window is exposed  but  not  the  _a_c_t_i_v_e  window,  partially  or
+           totally obscured, or exposed and the _a_c_t_i_v_e window.
+
+      G_SYSTEM
+           A single line  containing  constant  global  system  information  is
+           returned.  There are currently five fields:
+
+           1) The _h_o_s_t_n_a_m_e of the machine MGR is running  on,  as  returned  by
+              _g_e_t_h_o_s_t_n_a_m_e().
+
+           2) The width of the display in pixels.
+
+           3) The height of the display in pixels.
+
+           4) The size of the window borders in pixels.
+
+           5) The depth of the display in bits.  Currently, the depth  must  be
+              one or eight.
+
+      G_TERMCAP
+           A single line is returned which contains a _T_E_R_M_C_A_P  entry  for  MGR.
+           The  _T_E_R_M_C_A_P  entry is always the same, except for _l_i_n_e_s and _c_o_l_u_m_n_s
+           entries (li# and co#), which vary  to  reflect  the  current  window
+           size, and the am entry reflecting the state of the M_NOWRAP flag.
+
+      G_TEXT
+           A single line containing four integers is returned with the  current
+           text  region size.  The first pair of numbers is the top left corner
+           of the text region,  in  _w_i_n_d_o_w  coordinates,  the  second  pair  of
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 22 -                          Macros
+
+
+           numbers  is  the  _w_i_d_t_h  and  _h_e_i_g_h_t of the text region.  If no text
+           region is defined, implying the entire window is  the  text  region,
+           all four numbers are returned as 0 (zero).
+
+      G_WINSIZE
+           A single line is returned containing the current number  of  _c_o_l_u_m_n_s
+           and  _r_o_w_s  in  the  _t_e_x_t  _r_e_g_i_o_n.  If no text region is defined, the
+           number of _c_o_l_u_m_n_s and _r_o_w_s for the entire window is returned.
+
+      G_FLAGS
+           A single line is returned containing a hexadecimal number represent-
+           ing  the  current  window  mode bits.  For color MGR four additional
+           fields are returned which indicate the current text  foreground  and
+           background  color, and the graphics foreground and background color.
+           For the first, or mode field, each mode is represented by a  bit  in
+           the  word.  Many of the modes may be _s_e_t or _c_l_e_a_r_e_d with m_setmode()
+           or m_clearmode().  See the discussion of m_setmode() for a  detailed
+           discussion of these flags.  The meaningful mode bits are:
+
+           0x000001  The window is completely exposed.
+
+           0x000004  It is possible to use the system _c_u_t function in this win-
+                     dow.   This  mode is restored by clearing the window.  See
+                     m_clear().
+
+           0x000008  The window is _w_h_i_t_e text on a _b_l_a_c_k background.
+
+           0x000010  The window is in standout mode.  Individual characters are
+                     printed in reverse.
+
+           0x000020  The window has died.  If a client sees this flag, the win-
+                     dow is about to go away.
+
+           0x000040  Expose the window upon shell output.  The window  will  be
+                     automatically  activated  when  the next character arrives
+                     for output on the window.
+
+           0x000080  Permit a partially or totally obscured window to update.
+
+           0x000100  Do not kill the window when the original  process  started
+                     in  it  dies.   This flag may only be set from the startup
+                     file.
+
+           0x000200  _V_i mode is turned on.   Pushing  the  right  mouse  button
+                     sends the characters:
+
+8                                          ________________
+                                           row H column |
+8                                          ________________
+7                                         |8|
+8                                                         |8|
+
+9                     where row and column specifies the character location  the
+                     mouse is sitting on.  This has the effect of aligning _v_i's
+                     notion of the current character position with  the  mouse,
+                     if  no  wrapped  lines  appear  above this position on the
+                     screen.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 23 -                          Macros
+
+
+           0x000800  Keyboard input is refused when the window is active.
+
+           0x001000  Auto wrap mode is turned off with the bit equal to one, on
+                     when  zero.   When  on, the character cursor automatically
+                     wraps to the beginning of the next row when it reaches the
+                     right margin of the text region.
+
+           0x002000  Overstrike mode is turned on.  Characters are  written  to
+                     the  window  using the the current drawing mode, as set by
+                     m_func().
+
+           0x004000  The window is in _a_b_s_o_l_u_t_e window coordinate mode.
+
+           0x010000  The system _c_u_t function snarfs complete lines only.
+
+           0x020000  The system _c_u_t function changes spaces  to  tabs  whenever
+                     possible.  Tabs are assumed to be every 8 spaces.
+
+           0x040000  The system _c_u_t function will attempt to snarf text even if
+                     errors occur.
+
+ m_gets( buff)
+      A line of characters is read from MGR and placed into the  array  buff  .
+      The macro m_gets() returns _N_U_L_L if the connection to MGR is severed.  The
+      macro m_gets() is equivalent to the stdio _f_g_e_t_s() call  except  input  is
+      retrieved from MGR .  The buffersize is obtained from _s_i_z_e_o_f(_b_u_f_f) , con-
+      sequently, buff must be the name of an array.
+
+ m_go( x,y)
+      Move the _g_r_a_p_h_i_c_s _p_o_i_n_t to the window position ( x,y) in the current win-
+      dow coordinates.
+
+ m_gotext()
+      The graphics point is moved to the bottom  left  corner  of  the  current
+      character cursor location.
+
+ m_halfwin( X,Y,Dwidth,Dheight)
+      A window is created at X,Y of size Dwidth by Dheight with no process con-
+      nected  to it.  MGR returns the name of the file, a _p_s_e_u_d_o-_t_t_y, that must
+      be opened in order to talk to the new window.  A process which opens that
+      _p_s_e_u_d_o-_t_t_y  becomes  a client program, communicating with MGR and the new
+      window in the usual fashion.  For a single process managing multiple win-
+      dows,  use  m_newwin().   The  advantage  of this way is that MGR can not
+      detect the death of the process and automatically destroy the window.
+
+ m_halfwinft( X,Y,Dwidth,Dheight,font)
+      A window is created just as with m_halfwin(),  except  that  font  number
+      font is the initial font used in the new window.
+
+ m_highlight( X,Y,Dwidth,Dheight)
+      MGR flashes the rectangular portion of the display  starting  at  X,Y  of
+      size  Dwidth  by  Dheight.  This is an experimental capability and may be
+      removed in the future.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 24 -                          Macros
+
+
+ m_incr( n)
+      The current character position is adjusted to the left or right  n  units
+      in _w_i_n_d_o_w coordinates.  The argument n may be signed to indicate movement
+      to the left (if negative) or to the  right  (if  positive  or  unsigned).
+      This  is  useful  for  client programs dealing with proportionally spaced
+      text.
+
+ m_left( n)
+      Move the character cursor left n tenths of a character width.   See  also
+      m_down(), m_right(), and m_up().
+
+ m_line( x1,y1,x2,y2)
+      Draw a line in the current window from the coordinate  (  x1,y1)  to  the
+      coordinate  (  x2,y2).   The  line  is either set, cleared or inverted as
+      determined by the last call to m_func().
+
+ m_linecolor( mode,color)
+      The drawing mode and color is set for all  graphics  and  bit-blt  opera-
+      tions.   The  integer  mode  sets  the  drawing  mode,  in  the manner of
+      m_func().  The integer color is the index into the color lookup table for
+      the  drawing  color.   This  command is equivalent to m_func() on a mono-
+      chrome display.  See also m_bcolor() and m_fcolor()for the colors used in
+      text  operations.  The m_linecolor() call is deprecated in favor of using
+      m_func() and m_fgbgcolor().
+
+ m_lineto( to,x1,y1,x2,y2)
+      Draw a line on the scratchpad bitmap to from the coordinate (  x1,y1)  to
+      the  coordinate ( x2,y2).  The line is either set, cleared or inverted as
+      determined by the last call to m_func().
+
+ m_linkmenu( parent,item,child,mode)
+      The menus parent and child are linked  together.   When  menu  parent  is
+      popped up and item number item (starting from zero) is highlighted, slid-
+      ing off to the right of the parent menu causes the child menu to pop  up.
+      When an item is chosen, MGR sends the concatenation of the action strings
+      associated with each of the popped-up menus, from  left  to  right  (i.e.
+      parent  to  child).  An arbitrary tree of menus may be created by linking
+      successive menus together in this manner.  It is up to the application to
+      indicate  on the parent menu item that sliding to the right will pop up a
+      child menu.  Typically "->" is used.
+
+      The mode argument, if not zero, changes the menu options for  the  parent
+      menu.   The  flag  settings,  which  may  be  _o_r-ed  together (except for
+      MF_CLEAR ) are:
+
+      MF_SNIP
+           By default, when an item in a _c_h_i_l_d menu  is  selected,  the  values
+           associated  with the highlighted items for all of the ancestor menus
+           are concatenated  to  the  _c_h_i_l_d's  item  value.   When  MF_SNIP  is
+           enabled, only the string associated with the child menu is returned.
+
+      MF_PAGE
+           Normally, whenever a menu is popped-up, the previously  chosen  item
+           is  initially  highlighted.  If MF_PAGE is enabled, this behavior is
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 25 -                          Macros
+
+
+           extended to paged menus.  MGR automatically pages through a  set  of
+           paged menus to highlight the currently selected item.
+
+      MF_AUTO
+           MGR will automatically slide to the right and pop up a child menu to
+           highlight the previously selected item.
+
+      MF_CLEAR
+           Clears the mode MF_SNIP, MF_PAGE, and MF_AUTO.
+      See also m_loadmenu(), m_selectmenu(), and m_unlinkmenu().
+
+ m_loadfont( n,name)
+      The MGR font whose pathname is name is downloaded into MGR, replacing the
+      font   currently   located  at  position  n.   Any  subsequent  calls  to
+      m_font()will select the newly downloaded font.  The font that used to  be
+      at position n remains available to windows that are already using it, but
+      is unavailable for future use.  The format of MGR font files is described
+      in _i_n_c_l_u_d_e/_m_g_r/_f_o_n_t._h.
+
+ m_menubar( x,y,menu,item)
+
+ m_menuerase( menu)
+
+ m_menuitem( menu,item)
+
+ m_menushow( x,y,menu)
+
+ m_loadmenu( n,string)
+      The text string is downloaded into menu position n.  The first  character
+      of  string is the _m_e_n_u _d_e_l_i_m_i_t_e_r character.  All of the menu item strings
+      are concatenated, followed by all of their action strings.  The _m_e_n_u _d_e_l_-
+      _i_m_i_t_e_r  character  separates  all of the items and actions and terminates
+      the list.  Menus are downloaded at once, as a single entity.   The  macro
+      m_selectmenu()  is  used  to  have the menu pop-up when a mouse button is
+      pushed.
+
+ m_move( column,row)
+      The character cursor is moved to character location column,row , where  (
+      0,0)  is the top left character position on the window, or on the current
+      text region if one is specified (see m_textregion()).
+
+ m_movecursor( x,y)
+      Move the character cursor to the position ( x,y) in  window  coordinates.
+      This  permits  characters  to be placed at arbitrary pixel locations, not
+      just on character boundaries.  Use m_move()to move to a  row  and  column
+      position.
+
+ m_movemouse( X,Y)
+      Move the mouse to position ( X,Y) in _d_i_s_p_l_a_y coordinates.  Excessive  use
+      of this macro is anti-social.
+
+ m_moveprint( x,y,string)
+      Print string at the window coordinate ( x,y).  This macro  is  equivalent
+      to calling m_movecursor() followed by m_printstr().
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 26 -                          Macros
+
+
+ m_movewindow( X,Y)
+      Move the window to the display location ( X,Y)  in  _d_i_s_p_l_a_y  coordinates.
+      If  the new position is too close to the edge of the display for the win-
+      dow to fit entirely at the requested location, the right edge  or  bottom
+      of the window is truncated at the boundary of the display.
+
+ m_newwin( X,Y,Dwide,Dhigh)
+      An alternate window is created with the size and location indicated.  The
+      arguments  X and Y specify the upper left corner of the window, Dwide and
+      Dhigh the size.  If the window is to be to fit at the requested location,
+      its  size is truncated appropriately.  MGR will return a window number if
+      the creation is successful, or a _n_e_w_l_i_n_e  if  the  window  could  not  be
+      created.   The newly created window is made the _a_c_t_i_v_e window.  The macro
+      m_selectwin() is used to enable writing on the newly created window.
+
+ m_nomenu()
+      Deselect all menus.  No menu will pop-up when the middle mouse button  is
+      pressed.   This call does not delete the menu, it simply disassociates it
+      from the button.
+
+ m_nomenu2()
+      Deselect all menus.  No menu will pop-up when the right mouse  button  is
+      pressed.   This call does not delete the menu, it simply disassociates it
+      from the button.  This macro should be combined with  m_nomenu()  but  is
+      separate for historical reasons.
+
+ m_othersave( id,sub,name)
+      The bitmap contents of the window identified as id.sub is  saved  in  the
+      file name in bitmap format (see _b_i_t_m_a_p(5) for a description of the bitmap
+      format).  The _w_i_n_d_o_w _i_d can be determined either  by  calling  m_getinfo(
+      G_ALL)   or  from  the  event  _M__A_C_C_E_P_T  (see  m_setevent()).   See  also
+      m_windowsave() and m_bitsave().
+
+ m_pagemenu( parent,child)
+      Connect menu child to the bottom of menu parent to permit a long menu  to
+      be  paged.  Mousing off the bottom of the parent menu automatically pops-
+      up the _c_h_i_l_d menu, which in turn may be the parent of another menu.   See
+      also m_unpagemenu(), m_linkmenu() and m_unlinkmenu().
+
+ m_pop()
+      Pop the window  context.   The  last  window  context  saved  by  calling
+      m_push()  or  m_pushsave()  is  restored.   If  no environments have been
+      pushed, m_pop()has no effect.
+
+ m_popall()
+      Like m_pop() above, except all environments pushed since the  first  call
+      to  m_setup() are popped.  The macro m_popall() is typically used as part
+      of the clean up before client program termination.
+
+ m_printstr( string)
+      Print string on the window at  the  current  character  cursor  location.
+      This  is  equivalent to the _s_t_d_i_o function _p_r_i_n_t_f with a %_s format speci-
+      fied and the output directed toward the file pointer _m__t_e_r_m_o_u_t instead of
+      _s_t_d_o_u_t.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 27 -                          Macros
+
+
+ m_push( mode)
+      Certain parts (stack modes) of the  current  window  environment  may  be
+      moved  to  a  stack,  to  be  restored  at  a  later time with m_pop() or
+      m_popall().  Any combination  of  the  following  pieces  of  the  window
+      environment, called a window context, may be placed on the window stack.
+
+      P_BITMAP
+           All currently defined _s_c_r_a_t_c_h_p_a_d bitmaps are moved to the stack  and
+           become undefined in the current window context.
+
+      P_BITOP
+           The default bitblit functions used for graphics and text  operations
+           are  both  moved  to  the  stack  and replaced by _B_I_T__O_R and _B_I_T__S_R_C
+           respectively.
+
+      P_COLOR
+           The foreground and background colors  used  for  graphics  and  text
+           operations  are  all  moved to the stack and replaced by the default
+           black-on-white and black-on-white.
+
+      P_CURSOR
+           The current _c_h_a_r_a_c_t_e_r cursor and _g_r_a_p_h_i_c_s _p_o_i_n_t positions are  saved
+           on the stack.
+
+      P_EVENT
+           All currently defined events are moved to the stack and become unde-
+           fined in the current window context.
+
+      P_FLAGS
+           The window modes, as set with m_setmode() are moved  to  the  stack.
+           The  modes  revert  to  their default settings in the current window
+           context.
+
+      P_FONT
+           The current font setting is copied to the stack.  If  this  font  is
+           subsequently  deleted, by writing over it with a different font, the
+           original font setting is retained, even  if  it  can  no  longer  be
+           accessed using m_font().
+
+      P_MENU
+           All downloaded menus and menu links are moved to the the stack along
+           with the currently selected menu number.  The menus become undefined
+           in the current context.
+
+      P_MOUSE
+           The mouse cursor location is saved on the stack.  Its current  loca-
+           tion remains the same.
+
+      P_POSITION
+           The window size and location is saved on  the  stack.   The  current
+           size and location are maintained.
+
+      P_TEXT
+           The text region location and size are saved on the stack.  The  text
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 28 -                          Macros
+
+
+           region in the current context is reset to the entire window.
+
+      P_WINDOW
+           The current image contents of the window is  copied  to  the  stack.
+           This is done without altering the current contents of the window.
+      Stack modes are combined by _o_r-ing them together to form a  saved  window
+      context,  such  as:          m_push(  P_MENU|P_EVENT) which will save all
+      events, and menus but leave everything else alone.  All stack modes  that
+      require  client  download data revert to their default settings when they
+      are  _p_u_s_h_e_d.   For  example,  after  m_push(  P_MENU|P_EVENT|P_MOUSE)  is
+      called,  no  events or menus are currently defined, but the mouse remains
+      where it is.  The defined constant _P__A_L_L refers to all of the modes.
+
+ m_pushsave( mode)
+      Certain parts (stack modes) of the  current  window  environment  may  be
+      copied  to  a  stack,  to  be  restored  at  a later time with m_pop() or
+      m_popall().  The macro m_pushsave() differs from m_push() in  that  down-
+      loaded data, such as _m_e_n_u_s _e_v_e_n_t_s or _s_c_r_a_t_c_h_p_a_d bitmaps are copied to the
+      stack instead of moved, and thus remain  in  effect  after  the  call  to
+      m_pushsave().  The current window context is thus unaffected.  Any combi-
+      nation of the following pieces of the window environment may be copied to
+      the window stack.
+
+      P_BITMAP
+           All currently defined _s_c_r_a_t_c_h_p_a_d bitmaps are copied to the stack.
+
+      P_BITOP
+           The bitblit operations currently used for graphics  and  text  func-
+           tions are both copied to the stack.
+
+      P_COLOR
+           The current foreground and background colors used for  graphics  and
+           text functions are all copied to the stack.
+
+      P_CURSOR
+           The current _c_h_a_r_a_c_t_e_r and _g_r_a_p_h_i_c_s cursor positions are saved on the
+           stack.
+
+      P_EVENT
+           All currently defined events are copied to the stack.
+
+      P_FLAGS
+           The window modes, as set with m_setmode(), are copied to the stack.
+
+      P_FONT
+           The current font setting is copied to the stack.  If  this  font  is
+           subsequently  deleted, by writing over it with a different font, the
+           original font setting is retained, even  if  it  can  no  longer  be
+           accessed using m_font().
+
+      P_MENU
+           All downloaded menus and menu links are  copied  to  the  the  stack
+           along with the currently selected menu number.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 29 -                          Macros
+
+
+      P_MOUSE
+           The mouse cursor location is saved on the stack.
+
+      P_POSITION
+           The window size and location are saved on the stack.
+
+      P_TEXT
+           The text region location and size are saved on the stack.
+
+      P_WINDOW
+           The current image contents of the window is copied to the stack.
+      Stack modes are combined by _o_r-ing them together to form a  saved  window
+      context,  such  as:          m_push(  P_MENU|P_EVENT) which will save all
+      events, and menus but leave everything else alone.
+
+ m_put( string)
+      String is put into the global _s_n_a_r_f buffer.  There is one  common  buffer
+      for  all  clients  programs.   The macro m_snarf()is used to retrieve the
+      contents of the buffer.  The MGR system _c_u_t function places text in  this
+      buffer, whereas the system _p_a_s_t_e function pastes text from this buffer.
+
+ m_putchar( c)
+      The character c is written in the window at the current character  cursor
+      location.   This  function  is  like  the _s_t_d_i_o _p_u_t_c_h_a_r(_c), only directed
+      toward the client's window.
+
+ m_rcircle( radius)
+      A circle of radius radius is drawn,  centered  at  the  current  _g_r_a_p_h_i_c_s
+      _p_o_i_n_t.  The points at the edge of the circle are set, cleared or inverted
+      depending upon the last call to m_func().  Circles are  always  drawn  as
+      circles, both in _a_b_s_o_l_u_t_e and in _r_e_l_a_t_i_v_e window coordinates.  The radius
+      is scaled based upon the average width and height of the window.
+
+ m_rellipse( radius1,radius2)
+      Draw an ellipse centered at the _g_r_a_p_h_i_c_s _p_o_i_n_t with foci on  the  coordi-
+      nate axes.  The two radii, radius1 and radius2 specify the horizontal and
+      vertical (major or minor) axis  lengths.   The  ellipse  is  either  set,
+      cleared, or inverted, as determined by the last call to m_func().  If the
+      window is in _r_e_l_a_t_i_v_e coordinate mode, radius1  and  radius2  are  scaled
+      based upon the average width and height of the window.
+
+ m_resetesc()
+      The MGR _e_s_c_a_p_e character is reset to its to default value ('\033').  This
+      turns off the debugging mode turned on by m_setesc().
+
+ m_rfastdraw( count,data)
+      The next count bytes of data are sent to MGR are  to  be  interpreted  as
+      lines  drawn  in  _f_a_s_t _d_r_a_w mode, starting at the current graphics point.
+      _F_a_s_t _d_r_a_w mode permits the rapid drawing of short vectors by encoding  an
+      _x,_y  displacement in a single byte.  The _x coordinate is contained in the
+      most significant 4 bits, the _y coordinate  in  the  least  significant  4
+      bits.  Values for _x and _y represent displacements from the previous loca-
+      tion, and range from +7 to -8.  A 7 is coded as _0_x_f_f, a -8 as  _0_x_0_0.   If
+      both _x and _y are zero (i.e.  _0_x_8_0_8_0).  The next coordinate is taken to be
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 30 -                          Macros
+
+
+      a _m_o_v_e instead of a _d_r_a_w.  An eight  bit  channel  between  MGR  and  the
+      client program is required for _f_a_s_t _d_r_a_w mode.  See also m_fastdraw().
+
+ m_right( n)
+      Move the character cursor right n tenths of a character width.  See  also
+      m_left(), m_down(), and m_up().
+
+ m_scrollregion( first_row,last_row)
+      This sets up a _t_e_x_t _r_e_g_i_o_n as a _V_T_1_0_0-_l_i_k_e scrolling region.  The  entire
+      width  of  the  window from lines first_row to last_row inclusive becomes
+      the _t_e_x_t _r_e_g_i_o_n.  MGR does not change the kernel's notion of  the  window
+      size in response to this call, because the scrolling region is thought of
+      as only a part of the window, that part which should  scroll.   See  also
+      m_textregion() and m_textreset().
+
+ m_selectmenu( n)
+      This macro is used to indicate menu n pops-up in response to pressing the
+      _m_i_d_d_l_e  mouse  button.   Menus  are downloaded (with m_loadmenu()) first,
+      then selected.  Only one menu may be selected at a time on  each  button.
+      If  the  button  is already down when this call is made, and there is not
+      currently a menu associated with the button, then the menu just  selected
+      pops-up  immediately.   This last feature may be used to pop up different
+      menus in a context sensitive way.
+
+ m_selectmenu2( n)
+      This macro is used to indicate menu n pops-up in response to pressing the
+      _r_i_g_h_t mouse button.  Menus are downloaded (with m_loadmenu()) first, then
+      selected.  This macro functions the same as, and should be combined  with
+      m_selectmenu() above, but exists separately for historical reasons.
+
+ m_selectwin( n)
+      Select alternate window  n  for  output.   Alternate  windows  are  first
+      created  by  m_newwin().   All  output  goes to the selected window until
+      either m_selectwin()is called to change windows, or the  selected  window
+      is  destroyed.  If n is 0 (zero) or the currently selected window is des-
+      troyed, the main, or original window is selected.  Input from all windows
+      is  send  to  the  client  program  on the same input channel.  The macro
+      m_setevent( ACTIVATE) may be used to help decide  what  window  generated
+      the  input  by  associating  a  unique string with each window's _A_C_T_I_V_A_T_E
+      event.  The _s_e_l_e_c_t_e_d window and the _a_c_t_i_v_e window are specified  indepen-
+      dently.   Selecting  a  window  does  not  make it the _a_c_t_i_v_e window, and
+      creating a new window, although it is created as the  _a_c_t_i_v_e  window,  is
+      not automatically selected.
+
+ m_sendme( string)
+      The argument string is sent back to the client process as if it was typed
+      in  at the keyboard.  Strings may contain substitutable parameters in the
+      manner of _p_r_i_n_t_f format specifiers (i.e. %X).  The %X, where X is one  of
+      p,  P,  M, n, or w is replaced by the value of the parameters, as defined
+      above under the button-up section of m_setevent(). It  is  intended  that
+      this  mechanism  of  obtaining  state  information from MGR eventually be
+      extended to include any information that might be relevant to an applica-
+      tion program, thus rendering m_getinfo()obsolete.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 31 -                          Macros
+
+
+ m_sendto( n,string)
+      The message string is sent to window n.  A unique window identifier, n is
+      determined  with  either  m_setevent()  using  the  %_w  option,  or  with
+      m_getinfo().  In general, the window id n is the process id (_p_i_d) of  the
+      client program started by MGR when the window was created.  If the target
+      window has turned on _A_C_C_E_P_T with m_setevent(), string is received by  the
+      client  program  associated  with the target window as part of the _A_C_C_E_P_T
+      event.  General write permissions must be disabled on the target client's
+      _p_s_e_u_d_otty  in order for the message to be received, to prevent unsuspect-
+      ing _s_h_e_l_ls from interpreting messages sent by unscrupulous  processes  as
+      commands.  See also m_broadcast().
+
+ m_setcursor( i)
+      The character cursor may be set to one of  CS_BLOCK,  CS_LEFT,  CS_RIGHT,
+      CS_BOX,  CS_UNDER,  or CS_INVIS which sets the cursor representation to a
+      solid block (the default), a vertical bar at the left edge of the charac-
+      ter  cell, a vertical bar at the right edge, an outline box, or an under-
+      score respectively.  CS_INVIS, or any other invalid code causes the char-
+      acter cursor to be invisible.  This macro currently only effects the cur-
+      sor representation for the active window.
+
+ m_setecho()
+      Turn on character echoing, if possible.  Character  echoing  is  normally
+      disabled  by  clients  to  inhibit information from MGR, as from calls to
+      m_getinfo(), from echoing on the window.
+
+ m_setesc( c)
+      This macro call causes the character c to be used as the MGR escape char-
+      acter  by  the library package (instead of '_\_0_3_3').  This permits viewing
+      the output stream to MGR without causing the commands to be executed.
+
+ m_setevent( n,string)
+      An event string, string is sent to the client program  by  MGR  upon  the
+      occurrence  of the specified event n.  The event string is typically read
+      by the client program using m_gets().  Event strings are  never  sent  in
+      response to an event unless specifically requested by the client program.
+      Events are one of the following types.
+
+      ACTIVATE
+           The window became the _a_c_t_i_v_e window.  It is  at  the  front  of  the
+           display, and is currently receiving both mouse and keyboard input.
+
+      BUTTON_1
+           The right mouse button was depressed.  This event is  sent  only  to
+           the _a_c_t_i_v_e window.
+
+      BUTTON_1U
+           The right mouse button was released.  This event is sent only to the
+           _a_c_t_i_v_e window.
+
+      BUTTON_2
+           The middle mouse button was depressed.  This event is sent  only  to
+           the _a_c_t_i_v_e window.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 32 -                          Macros
+
+
+      BUTTON_2U
+           The middle mouse button was released.  This event is  sent  only  to
+           the _a_c_t_i_v_e window.
+
+      COVERED
+           The window was partially or completely obscured by another window.
+
+      DEACTIVATE
+           The window was deactivated, it is no longer the _a_c_t_i_v_e window.
+
+      REDRAW
+           The display was redrawn, either by selecting the _r_e_d_r_a_w option  from
+           the  system  menu, or by keying _L_E_F_T-_r from the keyboard.  Only win-
+           dows that are exposed receive  the  _R_E_D_R_A_W  event.   The  images  of
+           obscured windows are restored automatically by MGR.  The client pro-
+           gram is expected  to  regenerate  the  contents  of  its  window  in
+           response to the _R_E_D_R_A_W event.
+
+      RESHAPE
+           The window was reshaped.  If the user  selects  the  system  _r_e_s_h_a_p_e
+           option, the _R_E_S_H_A_P_E event is sent, even if the window stays the same
+           shape.
+
+      UNCOVERED
+           The window, previously obscured, was uncovered.  If the window  also
+           became  the  _a_c_t_i_v_e  window,  the _U_N_C_O_V_E_R_E_D event is sent before the
+           _A_C_T_I_V_A_T_E event.
+
+      MOVE
+           The window was moved.
+
+      DESTROY
+           The window was destroyed.  Only _a_l_t_e_r_n_a_t_e  windows  (as  created  by
+           m_newwin())  cause _D_E_S_T_R_O_Y events to be sent.  If the _m_a_i_n window is
+           destroyed, the client program is sent a _h_a_n_g_u_p signal, and its  con-
+           nection to MGR is severed.
+
+      ACCEPT
+           Messages are accepted from client programs running in other  windows
+           (see  m_sendto()).  The content of the message is obtained by speci-
+           fying the %m parameter as part of the  event  string,  as  is  fully
+           described below.
+
+      NOTIFY
+           Register a name with MGR, and make this  name  available  to  client
+           programs.  This name is available to other clients, either by a call
+           to m_getinfo( G_NOTIFY) or with the %n  parameter  described  below.
+           Unlike the other events, the _n_o_t_i_f_y string is never sent back to the
+           client program by MGR, but is used to register a name for  the  win-
+           dow.
+
+      SNARFED
+           Text was put into the snarf buffer either by a client  program  with
+           m_put() or by use of the system _c_u_t function.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 33 -                          Macros
+
+
+      PASTE
+           Text is about to arrive as a result of the system _p_a_s_t_efunction.
+
+      Some _e_v_e_n_t strings may contain substitutable parameters in the manner  of
+      _p_r_i_n_t_f format specifiers (i.e. %X).  These parameters are applicable only
+      to certain types of events.  In any case, the % character may  be  forced
+      by  doubling  it,  as  in %%.  Where more than one data item replaces the
+      format specifier, the items are separated by a _s_p_a_c_e character.  For  the
+      event  strings  BUTTON_1  and  BUTTON_2,  several parameters cause MGR to
+      sweep out some object in response to mouse movement, and report back  the
+      size  of the swept object when the button is released.  Any one of lines,
+      boxes, text, or rectangles may be swept out with this mechanism.  Initial
+      parameters  may be associated with a sweep event by listing them as comma
+      separated integers following the % and preceding the sweep command  char-
+      acter.   The parameters (if any) set the initial size of the object to be
+      swept, in the same  coordinate  system  in  which  the  sweep  extend  is
+      reported.
+
+      %r   Depressing the button  causes  MGR  to  sweep  out  a  rectangle  in
+           response  to  moving  the  mouse,  in a manner similar to the system
+           _r_e_s_h_a_p_e function.  The initial parameters set the initial width  and
+           height  of  the rectangle.  When the button is released, the coordi-
+           nates of the _s_t_a_r_t_i_n_g and _e_n_d_i_n_g points of the rectangle in response
+           to  moving the mouse, in _w_i_n_d_o_w coordinates, are substituted for the
+           %_r.
+
+      %R   Depressing the button causes MGR to sweep out a rectangle, as in  %_r
+           above, only the result is reported in _d_i_s_p_l_a_ycoordinates.
+
+      %b   Depressing the button causes MGR to move a rectangle in response  to
+           moving  the  mouse, in a manner similar to the system _m_o_v_e function.
+           The initial parameters set the initial width and height of the  rec-
+           tangle  to be moved.  When the button is released, the current coor-
+           dinates of the box's corner is returned in _w_i_n_d_o_w coordinates,  sub-
+           stituted for the %_b.
+
+      %B   Depressing the button causes MGR to move a rectangle in response  to
+           moving  the  mouse, in a manner similar to the system _m_o_v_e function.
+           The initial parameters set the initial width and height of the  rec-
+           tangle  to be moved.  When the button is released, the current coor-
+           dinates of the box's corner is returned in _d_i_s_p_l_a_y coordinates, sub-
+           stituted for the %_b.
+
+      %l   Depressing the button causes MGR to sweep out a line.   One  end  of
+           the  line remains fixed at the _g_r_a_p_h_i_c_s _p_o_i_n_t while the other end of
+           the line tracks the mouse position.  The initial end  point  of  the
+           line  may  be specified as a displacement from the graphics point as
+           part of the initial parameters.  When the button  is  released,  the
+           coordinates of the _s_t_a_r_t_i_n_g and _e_n_d_i_n_g points of the line, in _w_i_n_d_o_w
+           coordinates, are substituted for the %_l.
+
+      %t   Depressing the button causes MGR to sweep  out  text,  in  a  manner
+           equivalent to the system _c_u_t function.  Upon the release of the but-
+           ton, the %_t is replaced by the starting character coordinate of  the
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 34 -                          Macros
+
+
+           _c_u_t  region,  followed  by character distance to the ending point in
+           columns and lines  respectively.   For  example,  The  event  string
+           _s_w_e_e_p[%t]  might  return  _s_w_e_e_p[17 5 6 0], indicating the user swept
+           out a six character word on a single line, starting  on  column  17,
+           row  5.   An  initial  size  may  be specified in number of rows and
+           number of columns.
+      The remaining format specifiers are replaced by the information described
+      below.   No  sweep  action is performed.  The first five, %p, %P, %M, %n,
+      and %w also apply to the button release events.
+
+      %p   The %_p is replaced by the current mouse coordinates, in _w_i_n_d_o_w coor-
+           dinates.
+
+      %P   The %_P is replaced by the current mouse  coordinates,  in  _c_h_a_r_a_c_t_e_r
+           coordinates.
+
+      %M   The %_M is replaced by the time in hundredths of  seconds  that  have
+           elapsed since MGR was started.
+
+      %n   If the mouse cursor is over a window whose NOTIFY event is set,  the
+           text of that message is substituted for the %_n.
+
+      %w   If the mouse cursor is over a window whose NOTIFY event is set,  the
+           window_id  of the clicked on window is substituted for the %_w.  This
+           window_id may be used by m_sendto() to send the clicked-on window  a
+           message.
+
+      %S   If the mouse cursor is over a window whose NOTIFY event is set,  the
+           length of that message is substituted for the %_S.
+
+      The ACCEPT event is used to receive messages from other client  programs.
+      The  following  substitutable parameters may be used as part of the event
+      string.
+
+      %f   The window_id of message sender, as used in m_sendto(), replaces the
+           %_f.
+
+      %m   The text of message sent by the other client program replaces the %_m
+
+      %s   The length of the message, in  characters,  replaces  the  %_s.   For
+           example, a call to
+
+8                __________________________________________________________
+                 m_setevent(ACCEPT,"Message from (%f), (%s) long is: %m")
+8                __________________________________________________________
+7               |8|
+8                                                                         |8|
+
+9           might cause MGR to return
+
+8                          ______________________________________
+                           Message from (3214), (2) long is: HI
+8                          ______________________________________
+7                         |8|
+8                                                               |8|
+
+9           after the client program whose _w_i_n_d_o_w _i_d is _3_2_1_4  uses  m_sendto()to
+           send the message "_H_I".
+
+      %p   As with the BUTTON events above, %_p is replaced by the current mouse
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 35 -                          Macros
+
+
+           position in _w_i_n_d_o_w coordinates.
+
+      %P   As with the BUTTON events above, %_P is replaced by the current mouse
+           position in _c_h_a_r_a_c_t_e_r coordinates.
+      For the SNARFED event string, the following substitution  parameters  are
+      recognized.
+
+      %f   The _w_i_n_d_o_w _i_d of the window filling the _s_n_a_r_f  buffer  replaces  the
+           %_f.
+
+      %c   The current length of the _s_n_a_r_f buffer, in characters, replaces  the
+           %_c.
+
+      %C   The contents of the _s_n_a_r_f buffer replaces the %_C.  At present,  only
+           the first 250 characters of the _s_n_a_r_f buffer may be returned via the
+           %_C parameter.  Use m_snarf()to read the entire buffer.
+
+      The PASTE event string, recognizes the %_c specifier  as  described  under
+      _S_N_A_R_F_E_D above.
+
+ m_setmode( mode)
+      Various window modes may be _s_e_t or _c_l_e_a_r_e_d (see  m_clearmode())  indepen-
+      dently.  These modes are:
+
+      M_ABS
+           The window is set to _a_b_s_o_l_u_t_e coordinate mode.  The upper left  edge
+           of  the  window,  just inside the border is at position ( 0,0).  All
+           other locations are measured relative to that corner in pixels.
+
+      M_ACTIVATE
+           The window is made the _a_c_t_i_v_e window,  pops  to  the  front  of  the
+           display, and obtains all keyboard and mouse input.
+
+      M_AUTOEXPOSE
+           The next character to be typed on the window causes it to  automati-
+           cally become the _a_c_t_i_v_e window.
+
+      M_BACKGROUND
+           Output goes to the  window  even  if  it  is  partially  or  totally
+           obscured.   The  data  in  exposed  portions  of  the window is seen
+           immediately.  Data in covered portions of the window is saved by MGR
+           and restored when the covered portions are exposed.
+
+      M_CONSOLE
+           This window is the destination of data written to "/dev/console"  if
+           the  OS supports this kind of redirection.  When one window turns on
+           this flag, the same flag is turned off in all other windows.
+
+      M_NOBUCKEY
+           Buckey characters, those with values from 128-255, typed on the key-
+           board  do  not magically cause server functions to be executed.  All
+           eight bits of keyboard input are passed on to the client.
+
+      M_NOINPUT
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 36 -                          Macros
+
+
+           Keyboard input is prohibited.  All input from the keyboard  is  held
+           buffered  by  MGR  until either _M__N_O_I_N_P_U_T is cleared, or a different
+           window is made the _a_c_t_i_v_e window.  In the latter case the input goes
+           to  the  newly  activated window.  This flag is automatically turned
+           off when the user activates the window.  This feature is for  client
+           programs  that  want  one of their windows to come to the front just
+           long enough to notify the user of some event, but  do  not  want  to
+           accidentally intercept keyboard input while the user is merrily typ-
+           ing to some other client.
+
+      M_NOREPORT
+           When a window changes size, the OS is not specially notified of  the
+           change,  even  if that OS tries to keep track of the screen sizes of
+           terminals attached to ttys.
+
+      M_NOWRAP
+           The character cursor does not automatically jump to the left edge of
+           the  next  line  as  it  reaches  the right edge of its text region.
+           After the right margin is passed, the cursor and any subsequent text
+           disappear past the right edge of the window.
+
+      M_OVERSTRIKE
+           Text is written to the window with the mode  specified  by  m_func()
+           instead  of  the  normal copy mode.  This mode is _B_I_T__O_R by default.
+           In copy mode, the characters completely obliterate their destination
+           instead of combining with it.
+
+      M_SNARFHARD
+           The system _c_u_t function attempts to cut text even if the window con-
+           tents  have  been corrupted.  Unidentifyable characters are returned
+           as _C__N_O_C_H_A_R ('?').
+
+      M_SNARFLINES
+           The system _c_u_t function only cuts entire lines.  If any  text  on  a
+           line is swept out, the entire line of text is included.
+
+      M_SNARFTABS
+           The system _c_u_t function attempts to turn white space into a  minimal
+           combination of spaces and tabs.  Tab are set at every 8 columns.
+
+      M_STACK
+           Any events pushed on the window stack when this flag is set will  be
+           sent  in  addition  to  any currently active events. This setting is
+           useful for filters which need to receive events,  yet  still  permit
+           clients running under them to receive events as well.
+
+      M_STANDOUT
+           The window is put in standout mode.  All characters are written with
+           their foreground and background colors reversed.
+
+      M_WOB
+           The sense of _w_h_i_t_e and _b_l_a_c_k is reversed for the entire window,  not
+           just for characters as is _M__S_T_A_N_D_O_U_T.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 37 -                          Macros
+
+
+ m_setnoecho()
+      Character echoing to the window is disabled if possible.  Character echo-
+      ing  is  normally disabled by clients to inhibit information from MGR, as
+      from calls to m_getinfo() from echoing on the window.
+
+ m_setnoraw()
+      Normal terminal input processing is in  effect.   Input  is  buffered  by
+      lines,  and  all normal line editing and keyboard interrupt generation is
+      in effect.
+
+ m_setraw()
+      Every character is available as entered, no  input  processing  is  done.
+      This  is typically called _r_a_w mode.  Raw mode is not always available, in
+      which case the macro call has no effect.
+
+ m_shapewindow( X,Y,Dwidth,Dheight)
+      The window is reshaped to  position  (  X,Y)  and  with  size  Dwidth  by
+      Dheight.   As  only  the  _a_c_t_i_v_e  window may be reshaped, m_shapewindow()
+      activates the window if it is not already active.  The new  size  of  the
+      window  is  not  guaranteed;  the _w_i_d_t_h or _h_e_i_g_h_t may be truncated to the
+      right or bottom edges of the display.  The macro m_getinfo() can be  used
+      to determine the actual window size.
+
+ m_size( columns,rows)
+      The size of the window is changed so that it fits exactly columns by rows
+      of  characters  in  the current font.  The window may be truncated at the
+      right or bottom edge of the display if it is too  large  to  fit  on  the
+      display at its current position.
+
+ m_sizeall( X,Y,columns,rows)
+      The window is reshaped to position ( X,Y) on the display, and resized  to
+      fit columns and rows of text.  As only the _a_c_t_i_v_e window may be reshaped,
+      m_shapewindow() activates the window if it is not  already  active.   The
+      new  size  of  the  window  is not guaranteed; the _w_i_d_t_h or _h_e_i_g_h_t may be
+      truncated to the right  or  bottom  edges  of  the  display.   The  macro
+      m_getinfo() can be used to determine the actual window size.
+
+ m_sleep()
+      This call causes MGR to suspend the processing of characters to the  win-
+      dow.   After  a chunk of output for all other windows has been processed,
+      output processing resumes.  This does not normally take very long, making
+      m_sleep() almost a _n_o-_o_p.
+
+ m_snarf()
+      The application is sent the contents of the global snarf buffer, if  any,
+      as  specified by the last call by a client programs call to m_put() or by
+      use of the system _c_u_t function.
+
+ m_standend()
+      Inverse video mode as set by m_standout() is turned off.  This is exactly
+      equivalent to m_clearmode( M_STANDOUT).
+
+ m_standout()
+      Inverse  video  mode  is  turned  on.   This  is  exactly  equivalent  to
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 38 -                          Macros
+
+
+      m_setmode(  M_STANDOUT).   The  color  of  the characters and their back-
+      grounds are interchanged.
+
+ m_stringto( to,x_dst,y_dst,string)
+      The text string is printed starting at the  location  (  x_dst,y_dst)  on
+      _s_c_r_a_t_c_h_p_a_d  bitmap  to.  The text is clipped to fit in the bitmap, and no
+      special command processing is done on string.  If to  is  0  (zero),  The
+      text  is  printed  on the window, but _t_e_x_t _r_e_g_i_o_n boundaries are ignored.
+      This is the only way to get text  into  a  window  outside  of  the  _t_e_x_t
+      _r_e_g_i_o_n.
+
+ m_textregion( x,y,wide,high)
+      A subregion within the current window starting at ( x,y) and of size wide
+      by  high  is  defined within which all text is restricted.  All functions
+      and information that deals in _c_h_a_r_a_c_t_e_r coordinates views the text region
+      as  if  it was the entire window.  As soon as the text region is defined,
+      the character cursor is moved to row and column  (  0,0),  which  is  now
+      located  at  the  point  ( x,y).  Graphics output is not affected by text
+      regions.  MGR may (if the server is compiled with  -DREGION_HACK)  change
+      the kernel's notion of the window size in response to this call, possibly
+      generating a SIGWINCH signal.
+
+ m_textreset()
+      The _t_e_x_t _r_e_g_i_o_n (defined by a call to m_textregion()or  m_scrollregion())
+      is reset to be the entire window.  This is the default setting.  MGR does
+      not change the kernel's notion of the window size  in  response  to  this
+      call, because this may be a scrolling region, only.  If you want the ker-
+      nel to know of the change, set the textregion to be the entire window.
+
+ m_unlinkmenu( parent,item)
+      The menu link associating a child menu  with  the  menu  parent  at  item
+      (counting  from  zero) is removed (see also m_linkmenu()).  This function
+      does not change the menus, only their connections.
+
+ m_unpagemenu( parent)
+      The link associating the menu parent with a _c_h_i_l_d menu is  removed.   See
+      also m_pagemenu().
+
+ m_up( n)
+      Move the character cursor up n tenths of a character  height.   This  may
+      cause  the  window  to  scroll  down.   See also m_left(), m_right(), and
+      m_down().
+
+ m_whatsat( X,Y)
+      MGR returns to the client program  a  line  indicating  what  is  at  the
+      _d_i_s_p_l_a_ycoordinates  (  X,Y).  If that location is occupied by a window, a
+      line containing the name of the controlling terminal of the client,  then
+      that of the window at that location, then its alternate window number and
+      process id, all written as a space separated list.  The names  of  termi-
+      nals  are  abbreviated  to their final two characters.  If the location (
+      X,Y)is not in a window, MGR returns a newline.
+
+ m_windowsave( name)
+      The current image contents of the window is saved in the file name on the
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 39 -                          Macros
+
+
+      MGR-host  machine  in  MGR bitmap format.  File names beginning with "./"
+      are evaluated relative to the current directory  when  MGR  was  started.
+      See also m_othersave() and m_bitsave().
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 40 -                       Functions
+
+
+ _F_u_n_c_t_i_o_n_s
+
+ The functions listed below have  packaged  common  sequences  of  _m_a_c_r_o  calls
+ together  to  provide  a  slightly  higher  level of interface than the macros
+ alone.  They are still low  level,  and  have  no  pretense  of  completeness.
+ Except  where  noted, all of the functions return a value greater than zero on
+ success, and a value less than zero upon failure.  The functions fail only  if
+ they  read  an unexpected value from MGR, for example if an event notification
+ arrives just before the response to the query.  Client programs  may  use  the
+ function  m_lastline()  in  an  attempt  to  determine  what  input caused the
+ failure.  If such race conditions become a problem, one can either change  the
+ approach  to  one  which uses m_dupkey() or to one which integrates queries to
+ the server with the event dispatching mechanism.  Those functions which expect
+ data  from  MGR  automatically  flush  any  pending output before reading, and
+ unless the _M__M_O_D_E_O_K flag is set, attempt to  turn  off  character  echoing  to
+ prevent data returned by MGR from echoing back on the window.  The three func-
+ tions get_param(), get_size(), and get_font()are deprecated in favor of alter-
+ natives  listed  below  which  return  the same information in more manageably
+ sized parameter lists.
+
+
+ int
+ get_all( list)
+ struct window_data *list;
+9      The current position size and status of all windows  on  the  display  is
+      returned  in  list.  The number of in windows on the display is returned.
+      List should be large enough to hold a status entry for each window.   The
+      _w_i_n_d_o_w__d_a_t_a structure is defined in _i_n_c_l_u_d_e/_m_g_r/_m_g_r._h.
+
+ int
+ get_client( list)
+ struct window_data *list;
+9      The current position size and status of  the  client  programs  _m_a_i_n  and
+      _a_l_t_e_r_n_a_t_e  windows  is  returned in list.  The number of windows owned by
+      the client program is returned.  List should be large enough  to  hold  a
+      status  entry  for  each window.  The _w_i_n_d_o_w__d_a_t_a structure is defined in
+      _i_n_c_l_u_d_e/_m_g_r/_m_g_r._h.
+
+ int
+ get_colrow( columns,rows)
+ int *columns, *rows;
+9      The number of _c_o_l_u_m_n_s and _r_o_w_s in the current _t_e_x_t _r_e_g_i_o_n is returned  in
+      columns  and  rows  respectively.   For  any  _N_U_L_L  argument, no value is
+      returned.
+
+ int
+ get_cursor( column,row)
+ int *column, *row;
+9      The current _c_h_a_r_a_c_t_e_r cursor position is placed in column and  row.   For
+      any _N_U_L_L argument, no value is returned.
+
+ int
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 41 -                       Functions
+
+
+ get_eachclientwin( windatap)
+ struct window_data *windatap;
+9      Get the window parameters for each window in the current window set,  one
+      window  at  a time.  This function returns 1 if window_data structure has
+      been filled, 0 otherwise.  It is important to call get_eachclientwin() in
+      a  tight  loop that doesn't exit until it returns 0, so that all the data
+      is picked up.  This function is preferred  to  get_client()  because  you
+      don't need to know the maximum number of windows you are likely to see.
+
+ int
+ get_eachwin( windatap)
+ struct window_data *windatap;
+9      Get the window parameters for all the windows,  one  window  at  a  time.
+      This  function returns 1 if window_data structure has been filled, 0 oth-
+      erwise.  It is important to call  get_eachwin()  in  a  tight  loop  that
+      doesn't exit until it returns 0, so that all the data is picked up.  This
+      function is preferred to get_all() because you don't  need  to  know  the
+      maximum number of windows you are likely to see.
+
+ int
+ get_font( wide,high)
+ int  *wide, *high;
+9      The character size of the current font, in pixels is placed in  wide  and
+      high.  For any _N_U_L_L argument, no value is returned.  The function returns
+      the current font number, as would be used in a call to m_font().
+
+ int
+ get_mouse( x,y)
+ int *x, *y;
+9      The current mouse position, in _w_i_n_d_o_w coordinates, is placed in x and  y.
+      For  any  _N_U_L_L  argument, no value is returned.  The function returns the
+      current mouse button state, which is in the range of -2 to +2  upon  suc-
+      cess,  a  value less than -2 upon failure.  See m_getinfo( G_MOUSE) for a
+      discussion of the return values.
+
+ int
+ get_param( host,xmax,ymax,border)
+ char *host;
+ int *xmax, *ymax, *border;
+9      The _M_G_R-_h_o_s_t, display size (in pixels) and window border size (in pixels)
+      is  placed  in  the  arguments  host,xmax,ymax, and border.  For any _N_U_L_L
+      argument, no value is returned.  This function exists only  for  backward
+      compatibility and should not be used any longer.
+
+ int
+ get_size( X,Y,Dwidth,Dheight)
+ int *X, *Y, *Dwidth, *Dheight;
+9      The position of the window on the  display,  in  _d_i_s_p_l_a_y  coordinates  is
+      placed  into  X,Y,Dwidth and Dheight.  For any _N_U_L_L argument, no value is
+      returned.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 42 -                       Functions
+
+
+ char *
+ get_termcap()
+9      A string containing a  _T_E_R_M_C_A_P  entry,  suitable  for  placing  into  the
+      _T_E_R_M_C_A_P  environment  variable  is  returned.  The function get_termcap()
+      returns _N_U_L_L upon failure.
+
+ void
+ ckmgrterm( text)
+ char *text;
+9      This function checks the environment variable TERM.  If it is present and
+      does  not  contain  the  substring "mgr", then a message beginning with (
+      text) is written to _s_t_d_e_r_r and _e_x_i_t is called.
+
+ BITMAP *
+ bitmapread( file_pointer)
+ FILE* file_pointer;
+9      The file pointed to by file_pointer is read and  converted  into  an  MGR
+      bitmap.  The return value of NULL indicates failure.  This is the identi-
+      cal routine MGR uses to read bitmap  files,  so  use  it.   The  external
+      integer bm_compressed is set if the bitmap was compressed.
+
+ int
+ bitmapwrite( file_pointer,bitmap,flag)
+ FILE* file_pointer;
+ BITMAP* bitmap;
+9      This function is used by MGR to write the MGR bitmap pointed to  by  bit-
+      map() into the file pointed to by file_pointer().
+
+ int
+ is_active()
+9      The function is_active() returns _T_R_U_E if the window is the _a_c_t_i_v_e window.
+
+ void
+ menu_load( n,count,text)
+ int n, count;
+ struct menu_entry *text;
+9      A menu is downloaded to MGR at position n.   The  integer  count  is  the
+      number  of  menu  items  to  be down-loaded, and text is an array of menu
+      item/value   pairs.    The   structure   _m_e_n_u__e_n_t_r_y   is    defined    in
+      _i_n_c_l_u_d_e/_m_g_r/_m_g_r._h.
+
+ int
+ m_bitfile( to,name,widep,highp,depthp)
+ int to;
+ char *name;
+ int *widep, *highp, *depthp;
+9      Given a bitmap id, to and an icon name, have MGR load that icon into that
+      scratchpad bitmap, returning the icon width, height and depth, in pixels,
+      via the given integer pointers.  Return a positive number if  successful.
+      If  the  icon  is not loaded, set the width, height and depth values to 0
+      and return 0.  This function  is  identical  to  m_bitfromfile()plus  the
+
+
+9                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 43 -                       Functions
+
+
+      needed interception of the line returned from MGR.
+
+ int
+ m_getbordersize( void)
+9      This function returns the width of the border of each window in pixels.
+
+ int
+ m_getdepth( void)
+9      This function returns the depth of the screen bitmap in bits, usually one
+      for monochrome, eight for color.
+
+ int
+ m_getfontid( void)
+9      The function returns as an int the current font number, or -1 to indicate
+      a protocol error.
+
+ char*
+ m_getfontname()
+9      The function returns a pointer to a static array containing the  name  of
+      the current font or NULL to indicate a protocol error.
+
+ int
+ m_getfontsize( width,height)
+ int *width, *height;
+9      The size of the current font is stored  in  *width  and  height.   Return
+      value is -1 for a protocol error or 0 otherwise.
+
+ int
+ m_gethostname( name,len)
+ char *name;
+ int len;
+9      The hostname of the host machine running the MGR server, with a terminat-
+      ing  NUL,  is returned in name[0] through name[len-1], possibly truncated
+      if len is too small.  Return value is -1 for a protocol error or 0 other-
+      wise.
+
+ int
+ m_getscreensize( width,height,depth)
+ int *width, *height, *depth;
+9      The display size (in pixels) and depth (in bit) is placed  in  the  argu-
+      ments  width, height, and depth.  Return value is -1 for a protocol error
+      or 0 otherwise.
+
+ int
+ m_getwindowposition( x,y)
+ int *x, *y;
+9      The position of the upper left corder of the window border is  placed  in
+      the arguments x and y.  Return value is -1 for a protocol error or 0 oth-
+      erwise.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 44 -                       Functions
+
+
+ int
+ m_getwindowsize( width,height)
+ int *width, *height;
+9      The window size is placed in the  arguments  width  and  height.   Return
+      value is -1 for a protocol error or 0 otherwise.
+
+ char *
+ m_lastline()
+9      The last input from MGR to a library function is returned.  The  data  is
+      kept in a static buffer which is overwritten at each request.
+
+ int
+ m_makewindow( X,Y,Dwidth,Dheight)
+ int  X, Y, Dwidth, Dheight;
+9      An alternate window is created as the _a_c_t_i_v_e window, at  display  coordi-
+      nates  (  X,Y)and of size Dwidth by Dheight pixels.  If the window is too
+      big to fit on the display, its  width  and  height  are  truncated.   The
+      alternate  window's  _w_i_n_d_o_w-_i_d is returned if the window was created suc-
+      cessfully.  The macro m_selectwin() is used to write on the newly created
+      window.
+
+ int
+ m_setup( mode)
+ int mode;
+9      This function initializes the library.  It  must  be  called  before  any
+      other  function  or macro.  The argument mode is one or more of the flags
+      _M__F_L_U_S_H, _M__D_E_B_U_G, or _M__M_O_D_E_O_K _o_r-ed together.  If _M__F_L_U_S_H is present, all
+      macros  and  function flush output to MGR after each macro call.  This is
+      slightly less efficient than letting the client program  flush  the  data
+      (see  m_flush()) but prevent inadvertent buffering problems.  The _M__D_E_B_U_G
+      flag forces the macro package to read and write  from  _s_t_d_i_n  and  _s_t_d_o_u_t
+      respectively.   Normally  /_d_e_v/_t_t_y  is  opened for reading and writing to
+      permit standard input or output redirection  while  still  maintaining  a
+      connection  to  MGR.  If /_d_e_v/_t_t_y can not be opened, as would be the case
+      for clients invoked through _r_s_h, the _M__D_E_B_U_G flag is turned on, and _s_t_d_i_n
+      and _s_t_d_o_u_t are used instead.  The _M__M_O_D_E_O_K flag instructs those functions
+      which expect data from MGR to assume the terminal modes are set appropri-
+      ately.   Otherwise,  the  functions attempt to turn off character echoing
+      and turn on line mode before  fetching  data  from  MGR.   The  functions
+      m_ttyset()  and  m_ttyreset()  can  be used to set and reset the terminal
+      modes.  The function m_setup() returns its  argument,  with  the  _M__D_E_B_U_G
+      flag _o_r-ed in if /_d_e_v/_t_t_y can not be opened.
+
+ void
+ m_ttyreset()
+9      The terminal modes are restored to their state just  prior  to  the  last
+      call  to m_ttyset().  Calls to m_ttyset() and m_ttyreset() may be stacked
+      up to ten levels.
+
+ int
+ m_ttyset()
+9
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 45 -                       Functions
+
+
+      The terminal is set in a state suitable for data exchange with MGR.   All
+      automatic  conversions  are  switched off to get a completely transparent
+      line.  The function returns 0 if it successfully retrieves  the  terminal
+      modes, -1 otherwise.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 46 -                 Using the Library
+
+
+ _U_s_i_n_g _t_h_e _L_i_b_r_a_r_y
+
+ Clients using _T_h_e _C _I_n_t_e_r_f_a_c_e _L_i_b_r_a_r_y should specify:
+
+         #include <mgr/mgr.h>
+
+ which also includes
+
+         <stdio.h>
+
+ if it has not already been included.  Programs are compiled either with
+
+         cc -o foo -I$(inc) foo.c libmgr.a
+
+ where $(inc) is the MGR include directory or simply
+
+         cc -o foo foo.c -lmgr
+
+ if the library is installed in a standard location.  The  file  _l_i_b_m_g_r._a  con-
+ tains  the functions listed in the last section.  Several compile time options
+ are available to the client program using the library.  Normally, the  library
+ setup  routine,  m_setup()  attempts to open /_d_e_v/_t_t_y to communicate with MGR.
+ Client  programs  may  define  the  C  preprocessor  symbols   _M__D_E_V_I_C_E_I_N   or
+ _M__D_E_V_I_C_E_O_U_T  to override the selection of /_d_e_v/_t_t_y for input or output respec-
+ tively.  After each macro call, the flush flag _M__F_L_U_S_H is  tested  to  see  if
+ output  should  be  flushed to MGR.  If the C preprocessor symbol _M__N_O_F_L_U_S_H is
+ defined, before the client program includes _m_g_r._h, the  flush  flag  is  never
+ tested, and it becomes the responsibility of the client program to insure out-
+ put is flushed at the appropriate times.
+
+ Several external variables maintained by the library are accessible to  client
+ programs.  The _s_t_d_i_o _F_I_L_E pointers _m__t_e_r_m_i_n and _m__t_e_r_m_o_u_t are used for direct-
+ ing output to, and receiving input from MGR.  These file pointers are initial-
+ ized  in  m_setup(),  and may be changed by client programs after m_setup() is
+ called.  The integer _m__f_l_a_g_s contains the current library  mode  settings,  as
+ returned  by  m_setup().  The _M__M_O_D_E_O_K and _M__F_L_U_S_H bits of _m__f_l_a_g_s may also be
+ changed at any time after m_setup() is called.  The  integer  _m__e_n_v_c_o_u_n_t  con-
+ tains  the  current window context depth, and is used by m_popall() to pop the
+ appropriate number of contexts.  _M__e_n_v_c_o_u_n_t should not be  changed  by  client
+ programs.   Finally, the character _m__m_e_n_u_c_h_a_r defines the menu separator char-
+ acter used by menu_load().  This character, set to '\005' by the library pack-
+ age,  can  be  changed to any character that will not appear as part of a menu
+ item or action.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 47 -                        Glossary
+
+
+ _G_l_o_s_s_a_r_y
+
+
+ absolute coordinates
+      _A_b_s_o_l_u_t_e _c_o_o_r_d_i_n_a_t_e_s is a coordinate system used in _w_i_n_d_o_w_s  measured  in
+      units of pixels.
+
+ active window
+      The _a_c_t_i_v_e window is the window logically in the front  of  the  display,
+      which is receiving keyboard and mouse input and has a bold border.
+
+ alternate window
+      An _a_l_t_e_r_n_a_t_e _w_i_n_d_o_w is an additional window created by a  client  program
+      that shares the communication channel with the main window.
+
+ bitmap
+      A _b_i_t_m_a_p represents a rectangular  array  of  pixels,  either  stored  in
+      server memory or displayed on-screen.
+
+ channel
+      The _c_h_a_n_n_e_l is the bidirectional byte  stream  connecting  MGR  with  the
+      client  program.  The _c_h_a_n_n_e_l is usually the program's standard input and
+      output.
+
+ character coordinates
+      _C_h_a_r_a_c_t_e_r _c_o_o_r_d_i_n_a_t_e_s is the coordinate system used in windows for count-
+      ing  characters  in _c_o_l_u_m_n_s and _r_o_w_s .  The top left character coordinate
+      is (0,0).
+
+ character cursor
+      The _c_h_a_r_a_c_t_e_r _c_u_r_s_o_r points to the location in the window where the  next
+      character  will  be placed.  The cursor location is always highlighted on
+      the active window.
+
+ child menu
+      A _c_h_i_l_d _m_e_n_u is a menu that will pop up when the user  slides  the  mouse
+      off to the right of a popped up _p_a_r_e_n_t _m_e_n_u.
+
+ client program
+      A _c_l_i_e_n_t _p_r_o_g_r_a_m is any Unix command that is running in  an  MGR  window.
+      Client  programs  may  be existing programs, as might be found in /_b_i_n or
+      new MGR-aware applications written specifically to take advantage of  the
+      windowing environment.
+
+ client-host
+      The _c_l_i_e_n_t-_h_o_s_t is the computer that the client program  is  running  on.
+      It is often the same as the _M_G_R-_h_o_s_t machine, but it does not need to be.
+
+ display coordinates
+      _D_i_s_p_l_a_y _c_o_o_r_d_i_n_a_t_e_s is a coordinate system used to measure pixels on  the
+      display.  The top left corner of the display is at (0,0), with _x increas-
+      ing to the right, and _y increasing down.
+
+ exposed
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 48 -                        Glossary
+
+
+      A window is _e_x_p_o_s_e_d if it is entirely visible.
+
+ graphics point
+      The _g_r_a_p_h_i_c_s _p_o_i_n_t is a location on the window, measured in the  prevail-
+      ing  window  coordinate system, that may serve as a reference location or
+      origin for many of the graphics operations.
+
+ listener
+      A _l_i_s_t_e_n_e_r is a window that has turned on the ACCEPT event and is willing
+      to receive messages from other client programs.
+
+ main window
+      A client program's _m_a_i_n _w_i_n_d_o_w is the window the program was started  in.
+      The  client program may create and destroy alternate windows, but not its
+      _m_a_i_n _w_i_n_d_o_w.  If the user destroys a client program's  _m_a_i_n  _w_i_n_d_o_w,  the
+      connection  to  MGR  is severed, and the client program receives a _h_a_n_g_u_p
+      signal.
+
+ MGR-host
+      The MGR-host is the computer that MGR is running on.
+
+ mouse cursor
+      The _m_o_u_s_e _c_u_r_s_o_r is a small bitmap or _i_c_o_n that tracks  the  movement  of
+      the  mouse  on  the  display.  Normally the _m_o_u_s_e _c_u_r_s_o_r is a small arrow
+      pointing north west.
+
+ obscured
+      A window is _o_b_s_c_u_r_e_d when it is partially or totally covered  by  another
+      window.
+
+ parent menu
+      A menu is called a _p_a_r_e_n_t _m_e_n_u  when  sliding  off  to  the  right  of  a
+      selected item causes another menu or _c_h_i_l_d _m_e_n_u to pop up.
+
+ relative coordinates
+      _R_e_l_a_t_i_v_e _c_o_o_r_d_i_n_a_t_e_s is a coordinate system for windows  where  a  single
+      unit represents one thousandth of the way across (or down) the window.
+
+ scratchpad bitmap
+      A _s_c_r_a_t_c_h_p_a_d _b_i_t_m_a_p is a chunk of memory, allocated by MGR for use  by  a
+      client program, that may hold a bitmap image that is not on the display.
+
+ snarf buffer
+      The _s_n_a_r_f _b_u_f_f_e_r is a buffer maintained by MGR of arbitrary size that  is
+      accessible by all client programs.
+
+ target window
+      A _t_a_r_g_e_t _w_i_n_d_o_w is a window that is to receive  a  message  from  another
+      window.
+
+ text region
+      A _t_e_x_t _r_e_g_i_o_n is the part of the window in which character text  and  the
+      functions  that  operate  on characters work.  The _t_e_x_t _r_e_g_i_o_n may be the
+      entire window (the default) or a rectangular subregion within the window.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 49 -                        Glossary
+
+
+ window border
+      The _w_i_n_d_o_w _b_o_r_d_e_r is  a  thin  black  border  around  every  window  that
+      separates  the  window  from  the  rest  of  the  display.  The border is
+      included in the size of the window in display coordinates, but the window
+      coordinate systems exclude the border.
+
+ window context
+      A _w_i_n_d_o_w _c_o_n_t_e_x_t contains the values for  one  or  more  aspects  of  the
+      window's  state.   A  _W_i_n_d_o_w  _c_o_n_t_e_x_t  may  be saved on a stack, and then
+      restored at some later time.
+
+ window id
+      A _w_i_n_d_o_w _i_d is a unique number assigned to every window that may be  used
+      as  an  identifier when sending a message to the window.  _W_i_n_d_o_w _i_ds have
+      two parts, the first part is the process number  of  the  client  program
+      that  was  started  when  the  window was created, the second part is the
+      window's _a_l_t_e_r_n_a_t_e window number, or zero for a main window.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 50 -             Sample Client Program
+
+
+ _S_a_m_p_l_e _C_l_i_e_n_t _P_r_o_g_r_a_m
+
+
+ This program, called _c_l_o_s_e, closes, or iconifies a window. Its not a  terribly
+ useful  application  in  its  own  right,  but it does exercise several of the
+ library calls.  When _c_l_o_s_e starts up, it makes the window  smaller,  moves  it
+ toward  the  top  of the display, then writes the word "closed" in it.  If the
+ window is covered by another window, it changes the word "closed" to "hidden",
+ then flashes its window every 15 seconds as long as the window is covered.  If
+ the window is then uncovered, the word "hidden" gets changed back to "closed".
+ Activating  the window causes _c_l_o_s_e to restore the window's original shape and
+ contents, then exit.
+
+ /* _i_c_o_n_i_f_y _a _M_G_R _w_i_n_d_o_w */
+
+ #include <mgr/mgr.h>
+ #include <signal.h>
+
+ #define TIME    15                /* _t_i_m_e _i_n_t_e_r_v_a_l _f_o_r _r_e_m_i_n_d_e_r */
+ #define CONTEXT P_POSITION | P_WINDOW | P_FLAGS | P_EVENT | P_CURSOR
+
+ static char line[80];             /* _e_v_e_n_t _i_n_p_u_t _b_u_f_f_e_r */
+
+ int main()
+     {
+     int clean(), timer();         /* _i_n_t_e_r_r_u_p_t _r_o_u_t_i_n_e_s */
+     int x,y;                      /* _w_i_n_d_o_w _p_o_s_i_t_i_o_n _o_n _d_i_s_p_l_a_y */
+     char *msg = "closed";         /* _c_l_o_s_e_d _w_i_n_d_o_w "_i_c_o_n" */
+
+     /* _s_e_t_u_p _t_h_e _w_i_n_d_o_w _e_n_v_i_r_o_n_m_e_n_t */
+
+     m_setup(M_FLUSH);             /* _s_e_t_u_p _i/_o, _t_u_r_n _o_n _f_l_u_s_h_i_n_g */
+     m_push(CONTEXT);              /* _s_a_v_e _c_u_r_r_e_n_t _w_i_n_d_o_w _c_o_n_t_e_x_t */
+     m_setmode(M_NOWRAP);          /* _d_o_n'_t _a_u_t_o-_w_r_a_p _a_t _r_i_g_h_t _m_a_r_g_i_n */
+     m_ttyset();                   /* _s_e_t _u_p _t_t_y _m_o_d_e_s */
+
+     /* _c_a_t_c_h _t_h_e _a_p_p_r_o_p_r_i_a_t_e _s_i_g_n_a_l_s */
+
+     signal(SIGTERM,clean);        /* _i_n _c_a_s_e _w_e _g_e_t _t_e_r_m_i_n_a_t_e_d */
+     signal(SIGALRM,timer);        /* _f_o_r _t_h_e _r_e_m_i_n_d_e_r _s_e_r_v_i_c_e */
+
+     /* _i_c_o_n_i_f_y _t_h_e _w_i_n_d_o_w */
+
+     get_size(&x,&y,0,0);          /* _f_e_t_c_h _w_i_n_d_o_w _c_o_o_r_d_i_n_a_t_e_s */
+     m_sizeall(x,10,strlen(msg),1);/* _m_o_v_e _a_n_d _r_e_s_i_z_e _w_i_n_d_o_w */
+     m_clear();                    /* _c_l_e_a_r _t_h_e _w_i_n_d_o_w */
+     m_printstr(msg);              /* _p_r_i_n_t _m_e_s_s_a_g_e _i_n _t_h_e _w_i_n_d_o_w */
+
+     /* _c_a_t_c_h _e_v_e_n_t_s */
+
+     m_setevent(ACTIVATE, "A\n"); /* _w_i_n_d_o_w _i_s _n_o_w _t_h_e _a_c_t_i_v_e _w_i_n_d_o_w */
+     m_setevent(COVERED,  "C\n"); /* _c_o_v_e_r_e_d _b_y _a_n_o_t_h_e_r _w_i_n_d_o_w */
+     m_setevent(UNCOVERED,"U\n"); /* _c_o_m_p_l_e_t_e_l_y _v_i_s_i_b_l_e */
+     m_setevent(REDRAW,   "R\n"); /* _r_e_d_r_a_w _r_e_q_u_e_s_t_e_d */
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 51 -             Sample Client Program
+
+
+     m_clearmode(M_ACTIVATE);      /* _b_u_r_y _t_h_e _w_i_n_d_o_w */
+
+     /* _w_a_i_t _f_o_r _a_n _e_v_e_n_t */
+
+     while(m_gets(line) != NULL)   /* _r_e_a_d _a _l_i_n_e _f_r_o_m _M_G_R */
+         switch (*line) {
+         case 'A':                 /* _w_i_n_d_o_w _i_s _a_c_t_i_v_a_t_e_d */
+             clean();              /* _c_l_e_a_n _u_p _a_n_d _e_x_i_t */
+             break;
+         case 'C':                 /* _w_i_n_d_o_w _i_s _c_o_v_e_r_e_d */
+             m_clear();
+             m_printstr("hidden");
+             alarm(TIME);          /* _t_u_r_n _o_n _r_e_m_i_n_d_e_r */
+             break;
+         case 'R':                 /* _s_y_s_t_e_m '_r_e_d_r_a_w' */
+         case 'U':                 /* _w_i_n_d_o_w _i_s _u_n_c_o_v_e_r_e_d */
+             m_clear();
+             m_printstr(msg);
+             alarm(0);             /* _t_u_r_n _o_f_f _r_e_m_i_n_d_e_r */
+             break;
+         case 'T':                 /* _s_e_n_d _r_e_m_i_n_d_e_r */
+             m_setmode(M_WOB);     /* _h_i_g_h_l_i_g_h_t _w_i_n_d_o_w */
+             m_bell();             /* _r_i_n_g _t_h_e _b_e_l_l */
+             sleep(1);
+             alarm(TIME);          /* _r_e_s_e_t _r_e_m_i_n_d_e_r _t_i_m_e_r */
+             m_clearmode(M_WOB);   /* _r_e_s_e_t _w_i_n_d_o_w _h_i_g_h_l_i_g_h_t_i_n_g */
+             break;
+         }
+     }
+
+ clean()                           /* _c_l_e_a_n _u_p _a_n_d _e_x_i_t */
+     {
+     m_ttyreset();                 /* _r_e_s_e_t _t_t_y _m_o_d_e_s */
+     m_popall();                   /* _r_e_s_t_o_r_e _w_i_n_d_o_w _c_o_n_t_e_x_t */
+     exit(0);
+     }
+
+ timer()                           /* _c_a_l_l_e_d _a_t _r_e_m_i_n_d_e_r _t_i_m_e_o_u_t */
+     {
+     m_sendme("T\n");             /* _s_e_n_d _t_i_m_e_o_u_t _m_e_s_s_a_g_e */
+     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 52 -    Macros and Functions by Category
+
+
+ _M_a_c_r_o_s _a_n_d _F_u_n_c_t_i_o_n_s _b_y _C_a_t_e_g_o_r_y
+
+
+
+
+ _L_i_b_r_a_r_y _P_a_c_k_a_g_e _C_o_n_t_r_o_l*
+
+
+
+ m_bell 11...........Flash the window and ring the bell.
+
+ m_flush 18..........Flush any outpout pending for the window.
+
+ m_lastline|- 44......Retrieve the last line send from MGR for a  library  func-
+                     tion.
+
+ m_resetesc 29.......Restore the MGR escape character to '033'.
+
+ m_setecho 31........Turn on terminal character echo.
+
+ m_setesc 31.........Change the MGR escape character (for debugging).
+
+ m_setnoecho 37......Turn off character echo.
+
+ m_setnoraw 37.......Enable normal character input processing (line mode).
+
+ m_setraw 37.........Disable all character input processing (raw mode).
+
+ m_setup|- 44.........Initialize the library package.
+
+ m_ttyreset|- 44......Reset the tty modes.
+
+ m_ttyset|- 44........Set the tty modes for proper MGR interaction.
+
+
+ _S_t_a_n_d_a_r_d _I/_O _F_u_n_c_t_i_o_n_s
+
+
+
+ m_getchar 19........Read a character from MGR.
+
+ m_gets 23...........Read a line from MGR.
+
+ m_printstr 26.......Print a string on the window.
+
+ m_putchar 29........Put a character on the window.
+
+9 _________________________
+9   * The routines marked with a  dagger  (|-)  are  func-
+ tions,  the other routines are macros.  The page number
+ on which the macro or function is defined is printed in
+ bold face after the name.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 53 -    Macros and Functions by Category
+
+
+ _T_e_r_m_i_n_a_l _F_u_n_c_t_i_o_n_s
+
+
+
+ m_addchar 11........Insert a space character.
+
+ m_addchars 11.......Insert some space characters.
+
+ m_addline 11........Insert a blank line.
+
+ m_addlines 11.......Insert some blank lines.
+
+ m_aligntext 11......Align character cursor with the graphics point.
+
+ m_clear 14..........Clear the window.
+
+ m_cleareol 14.......Clear to the end of the line.
+
+ m_cleareos 14.......Clear to the end of the window.
+
+ m_deletechar 16.....Delete a character.
+
+ m_deletechars 16....Delete characters.
+
+ m_deleteline 16.....Delete a line.
+
+ m_deletelines 16....Delete lines.
+
+ m_down 17...........Move character  cursor  down  by  tenths  of  a  character
+                     height.
+
+ m_fracdown 18.......Cursor down a fraction of a char height.
+
+ m_fracleft 18.......Cursor left a fraction of a char width.
+
+ m_fracright 18......Cursor right a fraction of a char width.
+
+ m_fracup 18.........Cursor up a fraction of a char height.
+
+ m_incr 24...........Adjust the character cursor position.
+
+ m_left 24...........Move character cursor left by tenths of a character width.
+
+ m_move 25...........Move the character cursor.
+
+ m_movecursor 25.....Move the character cursor to an arbitrary coordinate loca-
+                     tion.
+
+ m_moveprint 25......Print a string at a given location.
+
+ m_right 30..........Move character cursor  right  by  tenths  of  a  character
+                     width.
+
+ m_scrollregion 30...Set up a VT00 like scrolling region.
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 54 -    Macros and Functions by Category
+
+
+ m_setesc 31.........Change the character cursor representation.
+
+ m_standend 37.......Turn off reverse video characters.
+
+ m_standout 37.......Turn on reverse video characters.
+
+ m_textregion 38.....create a text region.
+
+ m_textreset 38......Reset the text region to the entire window.
+
+ m_up 38.............Move character cursor up by tenths of a character height.
+
+
+ _G_r_a_p_h_i_c_s _P_r_i_m_i_t_i_v_e_s
+
+
+
+ m_arc 11............Draw an arc.
+
+ m_circle 14.........Draw a circle.
+
+ m_draw 17...........Draw a line from the graphics point.
+
+ m_ellipse 17........Draw an ellipse.
+
+ m_ellipseto 17......Draw an ellipse on a scratchpad bitmap.
+
+ m_fastdraw 17.......Draw a group of fast vectors.
+
+ m_func 18...........Set the bit-blt and graphics drawing mode.
+
+ m_go 23.............Move the graphics point.
+
+ m_gotext 23.........Align the graphics point with the character cursor.
+
+ m_line 24...........Draw a line.
+
+ m_lineto 24.........Draw a line on a scratchpad bitmap.
+
+ m_rcircle 29........Draw a circle at the graphics point.
+
+ m_rellipse 29.......Draw an ellipse at the graphics point.
+
+ m_rfastdraw 29......Draw a group of fast vectors at the graphics point.
+
+ m_stringto 38.......Print a string to an scratchpad bitmap.
+
+
+ _B_i_t-_b_l_t_s _a_n_d _R_e_l_a_t_e_d _F_u_n_c_t_i_o_n_s
+
+
+
+ bitmapread|- 42......Read an MGR bitmap from a file.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 55 -    Macros and Functions by Category
+
+
+ bitmapwrite|- 42.....Write an MGR bitmap to a file.
+
+ m_bitccreate 11.....Create a color scratchpad bitmap.
+
+ m_bitcld 12.........Download an image to the window.
+
+ m_bitcldto 12.......Down load an image to a scratchpad bitmap.
+
+ m_bitcopy 12........Bit-blt a rectangle within the window.
+
+ m_bitcopyto 12......Bit-blt a rectangle between two bitmaps.
+
+ m_bitcreate 12......Create a scratchpad bitmap.
+
+ m_bitdestroy 13.....Destroy a scratchpad bitmap.
+
+ m_bitfile|- 42.......Read a bitmap file into a scratchpad bitmap.
+
+ m_bitfromfile 13....Read a bitmap file into a scratchpad bitmap.
+
+ m_bitget 13.........Upload a bitmap to the client program.
+
+ m_bitld 13..........Download a monochrome image to the window.
+
+ m_bitldto 13........Down load a monochrome image to a scratchpad bitmap.
+
+ m_bitsave 13........Copy a scratchpad bitmap to a file.
+
+ m_bitset 13.........set a pixel on a bitmap to a given value.
+
+ m_bitvalue 14.......Get value of pixel in bitmap.
+
+ m_bitwrite 14.......Set, Clear or Invert a rectangular portion of the window.
+
+ m_bitwriteto 14.....Set, Clear or Invert a rectangular portion of a scratchpad
+                     bitmap.
+
+ m_func 18...........Set the bit-blt function.
+
+ m_getbordersize|- 43.Inquire the pixel width of window borders.
+
+ m_getdepth|- 43......Inquire the depth of the screen in bits.
+
+ m_othersave 26......Save another client's window image in a file.
+
+ m_windowsave 38.....Save the window image on a file.
+
+
+ _W_i_n_d_o_w _E_n_v_i_r_o_n_m_e_n_t _C_h_a_n_g_e_s
+
+
+
+ m_clearmode 15......Reset a window mode.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 56 -    Macros and Functions by Category
+
+
+ m_dupkey 17.........Turn on keyboard escape mechanism.
+
+ m_font 18...........Change to a new font.
+
+ m_loadfont 25.......Download a font.
+
+ m_movemouse 25......Move the mouse position.
+
+ m_movewindow 26.....Move a window.
+
+ m_setmode 35........Set a window mode.
+
+ m_shapewindow 37....Reposition a window.
+
+ m_size 37...........Resize a window to a specified number of rows and columns.
+
+ m_sizeall 37........Reposition a window  with  a  given  number  of  rows  and
+                     columns.
+
+
+ _W_i_n_d_o_w _S_t_a_t_e _I_n_q_u_i_r_y
+
+
+
+ ckmgrterm|- 42.......Check $TERM for an MGR terminal.
+
+ get_all|- 40.........Get all window status.
+
+ get_client|- 40......Get alternate window status.
+
+ get_colrow|- 40......Get window size, in columns and rows.
+
+ get_cursor|- 40......Get cursor position.
+
+ get_eachclientwin|- 41Get window parameters for each window.
+
+ get_eachwin|- 41.....Get window parameters for each window.
+
+ get_font|- 41........Get character font size.
+
+ get_mouse|- 41.......Get mouse position.
+
+ get_param|- 41.......Get MGR system parameters.
+
+ get_size|- 41........Get the window size and position on the display.
+
+ get_termcap|- 42.....Get a TERMCAP entry.
+
+ is_active|- 42.......See if the window is the active window.
+
+ m_getfontid|- 43.....Get id number of current font.
+
+ m_getfontname|- 43...Get name of current font.
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 57 -    Macros and Functions by Category
+
+
+ m_getfontsize|- 43...Get size of current font.
+
+ m_gethostname|- 43...Get name of MGR server host.
+
+ m_getinfo 19........Ask MGR for information.
+
+ m_getscreensize|- 43.Get MGR screen size parameters.
+
+ m_getwindowposition|- 43
+                     Get window position.
+
+ m_getwindowsize|- 44.Get window size.
+
+ m_whatsat 38........Find out what is at a particular display location.
+
+
+ _P_o_p-_u_p _M_e_n_u _M_a_n_a_g_e_m_e_n_t
+
+
+
+ m_clearmenu 15......Clear a menu.
+
+ m_linkmenu 24.......Link two menus together.
+
+ m_loadmenu 25.......Down load a menu.
+
+ m_menubar 25........Highlight a menu item (extended menu operation).
+
+ m_menuerase 25......Remove a menu (extended menu operation).
+
+ m_menuitem 25.......Pre-select a menu item.
+
+ m_menushow 25.......Display a menu (extended menu operation).
+
+ m_nomenu 26.........Unselect a pop-up menu from the middle mouse button.
+
+ m_nomenu2 26........Unselect a pop-up menu from the end mouse button.
+
+ m_pagemenu 26.......Break a large menu into pages.
+
+ m_selectmenu 30.....Select a pop-up menu for the middle mouse button.
+
+ m_selectmenu2 30....Select a pop-up menu for the right mouse button.
+
+ m_unlinkmenu 38.....Unlink a menu.
+
+ m_unpagemenu 38.....Disconnect two pages of a paged menu.
+
+ menu_load|- 42.......Down load a pop-up menu.
+
+
+ _E_v_e_n_t _H_a_n_d_l_i_n_g
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 58 -    Macros and Functions by Category
+
+
+ m_clearevent 14.....Clear an event.
+
+ m_setevent 31.......Set an event.
+
+
+ _W_i_n_d_o_w _C_o_n_t_e_x_t _M_a_n_i_p_u_l_a_t_i_o_n
+
+
+
+ m_pop 26............Pop the window context.
+
+ m_popall 26.........Pop all stacked window contexts.
+
+ m_push 27...........Stack the window context.
+
+ m_pushsave 28.......Stack and save the window context.
+
+
+ _M_u_l_t_i_p_l_e _W_i_n_d_o_w_s
+
+
+
+ m_destroywin 16.....Destroy an alternate window.
+
+ m_halfwin 23........Create a window with no process connected to it.
+
+ m_halfwinft 23......Create a window with no process connected to it.
+
+ m_makewindow|- 44....Make an alternate window.
+
+ m_newwin 26.........Make a new window.
+
+ m_selectwin 30......Select an alternate window for output.
+
+
+ _M_e_s_s_a_g_e _P_a_s_s_i_n_g
+
+
+
+ m_broadcast 14......Broadcast a message to all listeners.
+
+ m_put 29............Save characters in the global snarf buffer.
+
+ m_sendme 30.........Send string back to self.
+
+ m_sendto 31.........Send a message to another window.
+
+ m_snarf 37..........Retrieve the contents of the global snarf buffer.
+
+
+ _M_i_s_c_e_l_l_a_n_e_o_u_s _F_u_n_c_t_i_o_n_s
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+ MGR-C Language Application Interface- 59 -    Macros and Functions by Category
+
+
+ m_highlight 23......Highlight a portion of the display.
+
+ m_sleep 37..........Do nothing.
+
+
+ _C_o_l_o_r _M_a_n_i_p_u_l_a_t_i_o_n
+
+
+
+ m_bcolor 11.........Set the text background color.
+
+ m_fcolor 17.........Set the text foreground color.
+
+ m_fgbgcolor 18......Set the graphics foreground and background colors.
+
+ m_linecolor 24......Set the graphics mode and color.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                     March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+     MGR-C Language Application Interface- 60 -           Macro and Function Index
+
+
+     _M_a_c_r_o _a_n_d _F_u_n_c_t_i_o_n _I_n_d_e_x
+
+     These are the pages where macros and functions are referenced.  The bold
+     page numbers are the defining references.
+
+     bitmap 42
+     bitmapread 42
+     bitmapwrite 42
+     ckmgrterm 42
+     file_pointer 42
+     get_all 40, 41
+     get_client 40, 41
+     get_colrow 40
+     get_cursor 40
+     get_eachclientwin 41
+     get_eachwin 41
+     get_font 40, 41
+     get_mouse 41
+     get_param 40, 41
+     get_size 40, 41
+     get_termcap 42
+     is_active 42
+     m_addchar 11
+     m_addchars 11
+     m_addline 11
+     m_addlines 11
+     m_aligntext 11
+     m_arc 11
+     m_bcolor 11, 17, 18,
+     24
+     m_bell 11
+     m_bitccreate 11
+     m_bitcld 12
+     m_bitcldto 12
+     m_bitcopy 12
+     m_bitcopyto 12
+     m_bitcreate 12
+     m_bitdestroy 13
+     m_bitfile 42
+     m_bitfromfile 12, 13,
+     17, 42
+     m_bitget 13
+     m_bitld 12, 13
+     m_bitldto 13
+     m_bitsave 13, 26, 39
+     m_bitset 13
+     m_bitvalue 13
+     m_bitwrite 14, 18
+     m_bitwriteto 12, 14
+     m_broadcast 14, 31
+     m_circle 14
+     m_clear 14, 22
+     m_cleareol 14
+     m_cleareos 14
+7777777777777777777777777777777777777777777777777                                m_clearevent 14
+                                m_clearmenu 14
+                                m_clearmode 15, 22,
+                                35, 37
+                                m_deletechar 16
+                                m_deletechars 16
+                                m_deleteline 16
+                                m_deletelines 16
+                                m_destroywin 16
+                                m_down 17, 18, 24,
+                                30, 38
+                                m_draw 17
+                                m_dupkey 16, 17, 40
+                                m_ellipse 14, 17
+                                m_ellipseto 17
+                                menu_load 42, 46
+                                m_fastdraw 17, 30
+                                m_fcolor 11, 17, 18,
+                                24
+                                m_fgbgcolor 11, 17,
+                                18, 24
+                                m_flush 18, 44
+                                m_font 18, 25, 27,
+                                28, 41
+                                m_fracdown 18
+                                m_fracleft 18
+                                m_fracright 18
+                                m_fracup 18
+                                m_func 11, 12, 14,
+                                15, 17, 18, 23, 24,
+                                29, 36
+                                m_getbordersize 43
+                                m_getchar 19
+                                m_getdepth 43
+                                m_getfontid 43
+                                m_getfontname 43
+                                m_getfontsize 43
+                                m_gethostname 43
+                                m_getinfo 17, 19, 26,
+                                30, 31, 32, 37, 41
+                                m_gets 23, 31
+                                m_getscreensize 43
+                                m_getwindowposition
+                                43
+                                m_getwindowsize 44
+                                m_go 11, 17, 23
+                                m_gotext 23
+                                m_halfwin 23
+                                m_halfwinft 23
+7777777777777777777777777777777777777777777777777                                                           m_highlight 23
+                                                           m_incr 24
+                                                           m_lastline 40, 44
+                                                           m_left 17, 18, 24,
+                                                           30, 38
+                                                           m_line 18, 24
+                                                           m_linecolor 24
+                                                           m_lineto 24
+                                                           m_linkmenu 24, 26, 38
+                                                           m_loadfont 18, 25
+                                                           m_loadmenu 25, 30
+                                                           m_makewindow 19, 44
+                                                           m_menubar 25
+                                                           m_menuerase 25
+                                                           m_menuitem 25
+                                                           m_menushow 25
+                                                           m_move 25
+                                                           m_movecursor 25
+                                                           m_movemouse 25
+                                                           m_moveprint 25
+                                                           m_movewindow 26
+                                                           m_newwin 16, 17, 23,
+                                                           26, 30, 32
+                                                           m_nomenu 26
+                                                           m_nomenu2 26
+                                                           m_othersave 13, 26,
+                                                           39
+                                                           m_pagemenu 26, 38
+                                                           m_pop 26, 27, 28
+                                                           m_popall 26, 27, 28,
+                                                           46
+                                                           m_printstr 25, 26
+                                                           m_push 9, 16, 26, 27,
+                                                           28, 29
+                                                           m_pushsave 26, 28
+                                                           m_put 29, 32, 37
+                                                           m_putchar 29
+                                                           m_rcircle 29
+                                                           m_rellipse 29
+                                                           m_resetesc 29
+                                                           m_rfastdraw 17, 29
+                                                           m_right 17, 18, 24,
+                                                           30, 38
+                                                           m_scrollregion 30, 38
+                                                           m_selectmenu 25, 30
+                                                           m_selectmenu2 30
+                                                           m_selectwin 16, 26,
+                                                           30, 44
+                                                           m_sendme 30
+
+
+
+                                     March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+     MGR-C Language Application Interface- 61 -           Macro and Function Index
+
+
+     m_sendto 31, 32, 34
+     m_setcursor 31
+     m_setecho 31
+     m_setesc 29, 31
+     m_setevent 14, 26,
+     30, 31
+     m_setmode 15, 16, 22,
+     27, 28, 35, 37
+     m_setnoecho 37
+     m_setnoraw 37
+     m_setraw 37
+     m_setup 18, 26, 44,
+     46
+     m_shapewindow 37
+     m_size 37
+     m_sizeall 37
+     m_sleep 37
+     m_snarf 29, 35, 37
+     m_standend 37
+     m_standout 37
+     m_stringto 12, 38
+     m_textregion 25, 30,
+     38
+     m_textreset 30, 38
+     m_ttyreset 44
+     m_ttyset 44
+     m_unlinkmenu 25, 26,
+     38
+     m_unpagemenu 26, 38
+     m_up 17, 18, 24, 30,
+     38
+     m_whatsat 38
+     m_windowsave 13, 26,
+     38
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+777777777777777777777777777777777777777777777777777777
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+
+
+
+
+                                     - _i -
+
+
+
+
+
+                               Table of Contents
+
+
+
+
+ Introduction ............................................................    1
+
+ Model of Interaction ....................................................    3
+
+ Coordinate Systems ......................................................    3
+
+ Functional Overview .....................................................    4
+
+ Underlying Protocol .....................................................    7
+
+ Conventions and Notation ................................................    9
+
+ Macros ..................................................................   11
+
+ Functions ...............................................................   40
+
+ Using the Library .......................................................   46
+
+ Glossary ................................................................   47
+
+ Sample Client Program ...................................................   50
+
+ Macros and Functions by Category ........................................   52
+
+ Macro and Function Index ................................................   60
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                 March 28, 1996       MGR 0.59  8c9 1988 Bellcore
+
+

@@ -1,0 +1,12 @@
+#		MTX command file (preliminary version)
+#		make a 2 headed shell with 2 windows
+#	make the windows
+W: W_stderr 173 569 648 186
+W: W_stdout 172 164 650 394
+#	make the process
+P: stdout stderr
+#	make the other connections
+C: stdout W_stdout
+C: stderr W_stderr
+C: W_stdout stdout
+C: W_stderr stderr

@@ -1,0 +1,41 @@
+The VGA parts of this colorport libbitblit implementation
+were derived from the monochrome linux code.
+
+Functions are supplied for opening and closing the screen device, as
+well as graphic operations like point and line drawing and
+bit-block-transfers, aka as bitblit's.
+
+The basic data structure for this library is a 'BITMAP' as defined
+in bitmap.h.  This is a rectangular portion of the screen, some kind
+of window, but can also be in memory.
+
+The following SCREEN types can be used:
+
+  sun           cg* color frame buffer.  bwtwo might work?
+  vga           VGA
+
+On VGA, MGR will use the portable 320x200x256 as default.
+It can support the following modes with appropriate device-specific code:
+
+	640x480x256	800x600x256	1024x768x256
+
+For the last three resolutions, you must create three header files
+
+	800x600x256.h - defintions for 800x600 mode.
+	1024x768x256.h - definitions for the 1024x768 mode.
+	768x1024x256.h - definitions for 768x1024 mode.
+
+This is done with the vgaregs program, which directory also contains
+instructions how to use it.
+Make sure vga.c #includes your new header file.
+The super-vga implementation also needs device-dependent code
+for bank-switching, under -DBANKED, which is supplied for a few devices.
+The Tseng ET4000 is the only one tested much.
+Some sample header files containing vga register initial values
+are found in the s3, tseng4k, and trident subdirectories.
+
+The current dealing with vts is more a hack.  More work should be done
+to support switching between vts!
+
+Michael
+Vincent Broman

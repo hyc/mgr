@@ -1,0 +1,43 @@
+Changes since the previous release (4/15/91 - sau)
+
+
+* $HOME MOVIE (see USENIX winter 91 proceedings) is included
+
+* Several new clients
+
+* Facilities for handling compressed bitmaps
+
+* bunches of new fonts, several new icons
+
+* Minor bugs fixed:
+
+- browse:  make cursor invisable
+- chess: NEW (courtesy S. D. Hawley)
+- icontoc: rewrite (still broken)
+- walk: make cursor invisible
+- zoom (minor changes)
+- ify: NEW (courtesy J. M. Blandy)
+- bounce: make cursor invisible
+- clock2: make cursor invisible
+- clock3 - color version of clock2
+- ether: make cursor invisible
+- lock: fixed security hole, dont eat up all cpu time when running
+- spot: NEW (sau)
+- stat: fixed vmstat overflow, added color
+- color change "^" "[" to "^["
+- cursor change "^" "[" to "^["
+- resetwindow (NEW)
+- tests (misc NEW tests)
+- NEW (and more confusing) bitmap format
+- mgr.1: document $HOME movie
+- usrman : updated
+- term.h: added new calls
+- mgr handles compressed bitmaps (see squeeze/unsqueeze_) (courtesy: M. E. Lesk)
+- copyright.c: rework -R stuff
+- cut.c: fixed memory leak.
+- destroy.c: don't hang mgr if client process hangs
+- do_buckey.c add HOME movie stuff
+- download.c: fixed memory leak
+- getshell.c = look for more ptty's
+- kbd.c: issue TIOCWINZ on window reshapes
+- mgr.c: MOVIE support, args, and USR1, USR2

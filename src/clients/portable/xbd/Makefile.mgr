@@ -1,0 +1,42 @@
+include ../../../../Configfile
+
+_CPPFLAGS=	$(CPPFLAGS) -DMGR -DLIB=\"$(XBDDIR)\"
+CFLAGS=		$(CCFLAGS) $(_CPPFLAGS)
+
+XSIZE=		18
+YSIZE=		12
+
+OBJS1=		xbd.o shared.o field.o scores.o
+OBJS2=		xbde.o shared.o
+
+all:		mgrbd
+
+mgrbd:		$(OBJS1)
+		$(CC) $(LDFLAGS) -o $@ $(OBJS1) $(LIBDIR)/libmgr.a
+
+bitmaps:
+		(cd bitmap.orig; for i in *.bits ;\
+		do \
+		  file=`basename $$i .bits` ;\
+		  xbmtopbm $$file.bits | pnmscale -xsize $(XSIZE) -ysize $(YSIZE) | pgmtopbm | pbmtomgr >$(ICONDIR)/mgrbd/$$file ;\
+		done)
+
+install:	all
+		install -c -s mgrbd $(BINDIR)
+		install -m 755 -d $(XBDDIR)
+		install -c -m 644 xbdlev0* $(XBDDIR)
+		touch $(XBDDIR)/scores
+		chmod 666 $(XBDDIR)/scores
+		install -c -m 644 xbd.man $(MANDIR)/man6/mgrbd.6
+
+depend:
+		$(MKDEP) $(MKDEPFLAGS) $(_CPPFLAGS) xbd.c shared.c field.c scores.c > $(MKDEPOUT)
+
+clean:
+		$(RMF) $(OBJS1) $(OBJS2)
+
+clobber:	clean
+		$(RMF) core mgrbd
+		$(ZILCH) $(DEPFILE)
+
+include $(DEPFILE)
