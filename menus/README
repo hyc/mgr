@@ -1,0 +1,12 @@
+The *.menu files can be load be using menu(1).
+
+There is also an experimental menu for origami, which can be load using
+m4.  I say experimental, because I may a) add some things next time and
+b) Origami will support MGR in its next releases, so there will be
+context sensitive menues rather than one global menu.  For now, use "m4
+menu2mgr.m4" to load the menu.
+
+A prototype of a m4 script which produces OCL code is provided in
+menu2ocl.m4.
+
+Michael

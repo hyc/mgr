@@ -1,0 +1,62 @@
+WHY?  A readily available comprehensive EGA/VGA font collection is in
+the interest of us all.  I am always in a search for more fonts to add
+to it.  In particular, I am looking for DOS Code Page fonts supplied
+with various countries national supplement package.  I currently have
+the Code Page fonts for all the standard code pages + code page 862
+(Hebrew).  I am especially interested in getting the code page fonts
+for modern Greek and Arabic.
+
+DOS CODE PAGES: If you have access to a DOS national supplement
+for any country or a language which is not included in the current
+collection, you can help.  Here is what you should do.  Feel free to
+contact me if you have further questions or need more assistance.
+
+	1.  Look for a file called EGA.CPI. the fonts are usually
+	contained in a file named EGA.CPI which is included with the
+	DOS (Version 3.3 or higher) distribution.  Do NOT send me
+	this file, since distributing it constitutes a violation of
+	DOS copyright.
+
+	2.  Instead, use the program BREAKCPI.COM, which is included
+	in the my font utilities, to break the EGA.CPI file into fonts.
+
+	2'.  Yet another method to create the fonts is to use DOS
+	commands (as described in the manual) to load the font(s)
+	and then use the DUMPFONT.COM program included with the font
+	utilities to extract the font and dump it into files.  If you
+	choose to do so, please note that each code page screen font
+	comes in 3 different sizes: 16x8 (for VGA), 14x8 (for EGA)
+	and 8x8 (for 43/50 lines on EGA/VGA).
+
+	3.  Make an archive all these font files.  Uuencode the archive
+	and mail it to me.  I prefer ZIP format, but I should be able
+	to handle with minimal effort other archival formats.
+
+I will use your contribution in the next edition of the collection
+and gratefully acknowledge your help.
+
+IS THIS LEGAL?  Yes, it is.  Fonts cannot be copyrighted.  Only
+the programs that generate them can be copyrighted.  Refer to the
+discussions in the "legal" newgroups for details.
+
+OTHER FONTS: I am also looking for other EGA/VGA text mode fonts as
+well.  If you have access to such a fonts, you can help.  Please take
+a moment to check if the font is currently included in the collection
+(I may have used a different name for it).  If it is and you know
+the origin of the font, please let me know, since I have lost most
+of this information.  If it not in the collection, I would appreciate
+getting the font and if possible include credit to its creator.
+
+FONTS INCLUDED IN PD/SHAREWARE PROGRAMS: If you find a font included
+in a PD/SHAREWARE program, please mail the program to me.  I will
+extract the font out and erase the program.
+
+FONTS INCLUDED IN OTHER PROGRAMS: Please do not send me the program as
+you may be violating its copyright.  Instead try to use DUMPFONT.COM
+to extract the font.  If this doesn't work, contact me, and I will
+help you to extract the font from the program without violating its
+copyright.
+
+
+
+ 

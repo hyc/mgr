@@ -1,0 +1,8 @@
+print	t
+delete	dt
+next	n
+file	| hm -s
+quit	q
+help	?
+headers	h *
+abort	x

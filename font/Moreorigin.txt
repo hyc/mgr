@@ -1,0 +1,165 @@
+The fonts is8859-*-8x* are obtained from the isofonts package
+by Kosta Kostis <kosta@blues.sub.de> who seems to have
+rearranged materials from the PC code pages collected by Yossi Gil.
+
+The fonts cp*thn-* come from DOS 5.02 code pages labelled ISO.CPI,
+the ISO referring not to iso646 nor iso8859 nor iso10646, but rather
+to some obscure iso ergonomic standard.
+The cp???alt-* fonts are also DOS 5.02, but differ from the corresponding
+plain cp???-* fonts by minor editing of the glyphs.  I could not tell
+which was better/newer.
+
+dsvga-6x14	Fonts on a Diamond Speedstar VGA utility diskette
+dsvga-6x8
+dsvga-8x14
+dsvga-8x8
+dsvgaapl-8x14	incl. some APL chars
+dsvgathin-8x14
+dsvgathin-8x8
+
+cp857-8x14	code page 857 Turkish from DOS 5.02 EGA.CPI
+cp857-8x16
+cp857-8x8
+cp861alt-8x16	code page 861 Icelandic
+cp861alt-8x8
+cp869-8x14	code page 869 Greek
+cp869-8x16
+cp869-8x8
+cp437thn-8x16	Thin fonts from DOS 5.02 ISO.CPI
+cp850thn-8x16	European
+cp852thn-8x16	Slavic
+cp857thn-8x16	Turkish
+cp860thn-8x16	Portuguese
+cp861thn-8x16	Icelandic
+cp863thn-8x16	Canadian: French+English
+cp865thn-8x16	Norwegian+Danish
+cp869thn-8x16	Greek
+
+The lucidQ??-* fonts are just like the lucida??-* fonts, which are
+lucida typewriter, but the Q means that the backquote '`' was
+turned upside down to match expectations of computer users.
+In the smallest sizes, the rightquote '\'' had to be made
+asymmetric about the vertical axis, and the 'M' edited
+for legibility because it appeared to have smeared.
+
+The is8859* fonts seem to have been formed by rearranging
+dos cpi fonts into the iso standard encodings.
+The control chars got glyphs with two chars joined,
+reflecting the two-char mnemonics for the control function:
+NU for Null, ET for EndofTeXt, etc.
+
+The wgreek font came from the is8859-7-8x16 font with added
+diacriticals.  An extra line of height was needed to make the
+diacriticals legible, a line of width to relieve crowding
+caused by the extra info.  The encoding of the chars
+reflects that of the greek fonts in the WINGREEK shareware package.
+
+The gacha-* and gachabold-* fonts came from screen fonts in a
+Sun /usr/lib/fonts/fixedwidthfonts directory.  Likewise the apl-8x10 font.
+
+The following 33 fonts were found (in vga format) among other fonts
+in the QB/EVGFX package, ftp-able as qbevgfx3.zip on oak.oakland.edu .
+  3270-8x14      apls-8x7       fraktur-8x14   hexapl-8x14    pcbig-8x24
+  3270-8x8       apls-8x8       fresno-8x14    italic2-8x14   revapl-8x14
+  3270pc-8x14    apls-8x9       future-8x14    italic3-8x14   script2-8x14
+  apl-8x24       block-8x14     gaelic-8x14    lcd-8x14       sideways-8x10
+  apls-8x11      broadway-8x14  georgian-8x14  ocr-8x14       system-8x10
+  apls-8x14      cntdown-8x14   guisys14-8x14  oldeng-f-8x14
+  apls-8x6       computer-8x14  hebrew_2-8x14  pc-8x8
+
+thincaps-8x14 came from the nvltfnts.zip package on oak.oakland.edu
+and is cleaned up after coming from fntcol15.
+
+Several fonts came from oak.oakland.edu:pub/msdos/vga/fontpak.zip v1.0
+from  Tim Sneath <tjs@cs.nott.ac.uk>.  I removed the standard vga glyphs
+from below 32 and above 128, as they didn't fit in with the rest of the font.
+These are   antique-8x16, broadway-8x16, greekthin-8x16,
+	    medieval-8x16, roman2-8x16, script-8x16 .
+
+----------------------------------------------------------------------------
+
+Taken from the linux package kbd_fonts.tar.gz with no provenance:
+     sansfbold-8x15	A Latin1 font, bold, sanserif.
+
+From the same package attributed to VFONT:
+     
+     romanlarg-8x16	A taller version of Roman, complete with varying
+			character line widths, serifs, and numbers that are
+			non-lining (i.e. extend below the baseline).
+     muchery-8x16	Muchery (TM) a wide, san-serif font.
+     mucherylg-8x16	Muchery Large, a taller version of Muchery.
+     tektite-8x16	Tektite, an "Architect" style font.
+     clouds-8x16	Clouds, a tall hybrid font.
+     blockx-8x16	Blockx, a very large and bold san-serif font.
+     moderne-8x16	Moderne, a highly stylized art-deco/moderne font.
+     modernerd-8x16	Moderne Round, a rounded version of Moderne.
+			moderne is close to "art" and "wiggly" in fntcol15.
+     scrawl-8x16	Scrawl, a handwritten-looking "scrawled" font, an
+			extensively re-worked version of a public-domain font
+			(which had no name).   With the added attraction of
+			scrawled, wiggly line-drawing characters!
+
+These 9 fonts were taken from version 5.10 of the DOS - OS/2 program called
+"vfont". It can be found via anon ftp on many sites as "vfont2.zip" which
+is 29312 bytes. In this version of the program, the fonts are seperated
+from the DOS "vfont.com" program, and hence are easy to recover in a 
+Linux useable format. They are stored as 13 consecutive 4096 byte font
+records in the file "vfont.dat".
+[Also from version 4.36]
+
+Author of VFONT:
+	Ralph B Smith Jr
+	clySmic software
+	P. O. Box 2421
+	Empire State Plaza
+	Albany, NY 12220
+-----------------------------------------------------------------------------
+
+CHAREDIT version 0.91 of 1991 by H. Peter Anvin
+(found on eecs.nwu.edu in ched091.zip)
+contained these five fonts in another format.
+square-8x14		boxy-shaped in cp437-encoding
+square-8x8
+cp437-8x6		very short glyphs
+cp437-8x7
+nonlatin1-8x14		from multilng, much miscellaneous stuff not in Latin1
+
+In LQ version 2.0 in the PC-blue volume 328 on oak.oakland.edu
+epson printer fonts including the following were found in a
+different format.  The filenames were adjusted to say
+fooO, not fooital, fooB, not foo2, etc.
+The epson aspect ratio would print these 10x24 rasters in a box
+of shape 9x24, but they already look tall and thin enough as is.
+computer-10x24	greek-10x24	lqmain-10x24	romanB-10x24	sansserB-10x24
+courier-10x24	helv-10x24	lqmainO-10x24	romanO-10x24	sansserO-10x24
+courierB-10x24	helvB-10x24	palatino-10x24	sansBO-10x24
+courierO-10x24	helvO-10x24	roman-10x24	sansser-10x24
+The package includes an edchar.exe font editor for that format of font.
+My lq2mgr.c filter converts the font formats to mgr.
+
+These fonts were found in the Bradford v2.0 font printing package
+on oak.oakland.edu in the PC-Blue collection, volume #?.
+The side/bottom bearings I added semi-automatically myself,
+the spacing not being obviously present in the original.
+chart-12x17	jazz2-18x33	pizza2bO-22x33	select2c-21x33	typeO-11x17
+chart2-24x33	jazz2h-19x22	pizza2c-20x33	selectw-18x17	typex-10x33
+chart2h-24x33	jazzh-10x17	pizza2h-20x33	selectwO-23x17	typexO-9x33
+digit-10x17	nostalg-10x17	pizzaO-11x17	smalcaps-10x17	vanilla-10x17
+digit2-19x33	orator-10x17	pizzaw-18x17	square-10x17	vanillaO-11x17
+digitO-11x17	oratorO-11x17	pizzawO-24x17	stripe2-19x33
+extend-9x16	pizza-10x17	select-10x17	tiny-6x16
+greek-10x17	pizza2-18x33	select2-19x33	tinyw-10x16
+jazz-10x17	pizza2b-18x33	select2b-20x33	type-10x17
+
+The apeaus-8x1[46] fonts were upgraded from
+//oak.oakland.edu/pub/msdos/screen/apeaus20.zip from B.SEHARI1@GENIE.GEIS.COM .
+
+The fonts calligraf-8x14 and x16 were taken from a cp437 font collection
+named xfonts-ibmpc.tar.gz in the Linux archive.
+There they were called "script".
+The source of this package was Mike Batchelor of Quarterdeck Office Systems,
+email: mikebat@gdeck.com
+
+The betagreek-8x16 font was derived from GRroman-8x16 by V Broman,
+where upper case latin letters were replaced by uncial greek
+letters encoded according to the TLG/CCAT Beta scheme.

@@ -1,0 +1,8 @@
+ls		ls
+repeat		!!
+last edit	!vi
+last make	!make
+date		date
+shazam		zap
+mail		mail
+messages	msgs

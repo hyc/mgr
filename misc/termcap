@@ -1,0 +1,37 @@
+# MGR terminal emulation entries
+
+lx|mgr-linux|Bellcore window manager terminal emulation with Linux keyboard:\
+	:ku=\E[A:kd=\E[B:kr=\E[C:kl=\E[D:kb=^H:\
+	:kh=\E[H:kH=\E[Y:kI=\E[2~:kD=\E[3~:kP=\E[5~:kN=\E[6~:\
+	:k1=\E[[A:k2=\E[[B:k3=\E[[C:k4=\E[[D:k5=\E[[E:\
+	:k6=\E[[F:k7=\E[[G:k8=\E[[H:k9=\E[[I:k0=\E[[J:\
+	:K1=\E[H:K2=\E[G:K3=\E[5~:K4=\E[Y:K5=\E[6~:\
+	:tc=mgr:
+
+px|mgr|General Bellcore window manager teminal emulation:\
+	:am:bs:li#24:co#80:\
+	:al=\Ea:AL=\E%da:cd=\EC:ce=\Ec:cl=^L:cm=\E%r%d,%dM:cs=\E%d,%dt:\
+        :dc=\EE:dl=\Ed:DL=\E%dd:do=\Ef:ic=\EA:md=\E2n:me=\E0n:mr=\E1n:\
+        :nd=\Er:se=\E0n:so=\E1n:ta=^I:ue=\E0n:up=\Eu:us=\E4n:ve=\Ev:vs=\EV:
+
+# HP 2621 termcap entries for hpmgr with local use
+
+# HP 2621 without labels/cursor keys
+hn|2621-nl|hp2621nl|2621nl|hp2621-nl|hp 2621 with no labels:\
+	:ks@:ke@:kh@:ku@:kl@:kr@:kd@:tc=hp2621-fl:
+
+# HP 2621 with labels/cursor keys
+h2|2621|hp2621|hp2621a|hp2621p|2621a|2621p|2621-pb|hp2621-fl|hp 2621:\
+	:is=\E&j@\r:bt=\Ei:cm=\E&a%r%dc%dY:dc=2\EP:ip=2:pb#19200:\
+	:so=\E&dD:se=\E&d@:us=\E&dD:ue=\E&d@:me=\E&d@:\
+	:kh=\Ep\r:ku=\Et\r:kl=\Eu\r:kr=\Ev\r:kd=\Ew\r:\
+	:kn#8:k1=\Ep\r:k2=\Eq\r:k3=\Er\r:k4=\Es\r:k5=\Et\r:k6=\Eu\r:k7=\Ev\r:\
+	:k8=\Ew\r:ks=\E&jB:ke=\E&j@:ta=2^I:tc=hp:
+
+# General Hewlett Packard 2621 entry
+h5|hp|hewlett-packard:\
+        :ct=\E3:st=\E1:do=^J:al=\EL:am:le=^H:bs:\
+        :cd=\EJ:ce=\EK:ch=\E&a%dC:cl=\EH\EJ:cm=6\E&a%r%dc%dY:\
+        :co#80:cv=\E&a%dY:da:db:dc=\EP:dl=\EM:ei=\ER:im=\EQ:\
+        :kb=^H:li#24:mi:nd=\EC:pt:se=\E&d@:so=\E&dJ:\
+        :us=\E&dD:ue=\E&d@:up=\EA:xs:vt#6:pb#9600:

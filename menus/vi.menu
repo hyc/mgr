@@ -1,0 +1,9 @@
+undo		u\c
+next page	\c
+prev page	\c
+yank line	"zY\c
+put line	"zP\c
+mark		mz\c
+goto mark	'z\c
+rerun		:! !
+quit		:q

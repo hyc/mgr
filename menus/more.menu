@@ -1,0 +1,8 @@
+more		d\c
+again		.\c
+next file	:n\c
+find		/\c
+backup		'\c
+file ?		:f\c
+help		h\c
+quit		:Q\c

@@ -1,0 +1,169 @@
+#
+# MGR Terminal emulator
+#
+# Adds some capabilities to the one that was shipped.  Things you may
+# wish to change:
+#
+# kWHATEVER		They only keyboard I ever type to mgr with is
+#			the UNIXpc console keyboard, so I defined all
+#			the same k<key> strings as the s4 terminfo.
+#			If you wish to be more general, take these out.
+#
+# km, smkm, rmkm	I want applications to be able to see all metakey
+# 			functions so I defined these. smkm sets the mgr
+#			attribute M_NOBUCKEY so that mgr won't grab them.
+#			If you want metakeys, but don't want to interfere
+#			with mgr, define km, but not smkm or rmkm (you
+#			``lose'' the metakeys that mgr grabs).  If you
+#			couldn't care less about metakeys, don't define
+#			any of them.
+#
+# cnorm			I like the block cursor.  You may also wish to
+#			add cvvis (a very visible cursor); if you do
+#			you may also wish to set the boolean chts to
+#			indicate the normal cursor is hard to see.
+#			Available styles: \E0h (block), \E1h (left
+#			vertical bar), \E2h (right vertical bar),
+#			\E3h (box), \E4h (underline), \E9h (invisible).
+#
+# flash, bel		If you have clients that mingle curses and mgr
+#			calls, which also don't reset the m_func() before
+#			the bitblt ops, you don't want the flash string.
+#			IMHO, such client programs are crazy.
+#			If you really dislike noise; you may wish to
+#			set the bel string to the same as the flash
+#			string; then the only time you'll get beeped at
+#			is when people send real ^G chars.
+#
+# Notes:
+#
+# About the wind capability: yes, mgr can do this and it works fine,
+# except that curses(3X) is busted and messes things up if defined.  I
+# scanned 485 terminfo descriptions, and not one defined wind (two
+# mentioned it but had it commented out because it broke things).
+#
+# It should also be possible to to sc and rc, but again curses messes
+# up.  In the 5.3 curses source I looked at if wind wasn't set but
+# csr and sc and rc were it tried to fake wind with it, so it's
+# probably the same bug as above.
+#
+# The mgr functions m_up() and m_down() don't work quite as advertised,
+# so the half-line up and down capabilities can't be defined.
+#
+Px|mgr|SAU mgr teminal emulator,
+	am,
+	km,
+	msgr,
+	cols#80,
+	lines#24,
+	bel=^G,
+	civis=\E9h,
+	clear=\f,
+	cnorm=\E0h,
+	cr=\r,
+	csr=\E%p1%d;%p2%dt,
+	cub1=\b,
+	cud1=\Ef,
+	cuf1=\Er,
+	cup=\E%p2%d;%p1%dM,
+	cuu1=\Eu,
+	dch=\E%p1%dE,
+	dch1=\EE,
+	dl=\E%p1%dd,
+	dl1=\Ed,
+	ed=\EC,
+	el=\Ec,
+	flash=\E128P\E7s\E5b\E0;0;999;999b\E0;0;999;999b\Ep,
+	ht=\t,
+	ich=\E%p1%dA,
+	ich1=\EA,
+	il=\E%p1%da,
+	il1=\Ea,
+	ind=\n,
+	kBEG=\ENB,
+	kCAN=\EOW,
+	kCMD=\EOU,
+	kCPY=\END,
+	kCRT=\EON,
+	kDC=\ENF,
+	kDL=\ENE,
+	kEND=\ENN,
+	kEOL=\EOA,
+	kEXT=\EOK,
+	kFND=\EOX,
+	kHLP=\EOM,
+	kHOM=\ENM,
+	kIC=\ENJ,
+	kLFT=\ENK,
+	kMOV=\ENC,
+	kMSG=\EOL,
+	kNXT=\ENH,
+	kOPT=\EOR,
+	kPRT=\EOZ,
+	kPRV=\ENG,
+	kRDO=\EOT,
+	kRES=\EOQ,
+	kRIT=\ENL,
+	kRPL=\EOY,
+	kSAV=\EOO,
+	kSPD=\EOP,
+	kUND=\EOS,
+	kbeg=\E9,
+	kbs=\b,
+	kcan=\EOw,
+	kclo=\EOV,
+	kclr=\E[J,
+	kcmd=\EOu,
+	kcpy=\ENd,
+	kcrt=\EOn,
+	kcub1=\E[D,
+	kcud1=\E[B,
+	kcuf1=\E[C,
+	kcuu1=\E[A,
+	kdch1=\ENf,
+	kdl1=\ENe,
+	kel=\EOa,
+	kend=\E0,
+	kext=\EOk,
+	kf1=\EOc,
+	kf2=\EOd,
+	kf3=\EOe,
+	kf4=\EOf,
+	kf5=\EOg,
+	kf6=\EOh,
+	kf7=\EOi,
+	kf8=\EOj,
+	kfnd=\EOx,
+	khlp=\EOm,
+	khome=\E[H,
+	kich1=\ENj,
+	kind=\E[S,
+	kmov=\ENc,
+	kmrk=\ENi,
+	kmsg=\EOl,
+	knp=\E[U,
+	knxt=\ENh,
+	kopn=\EOv,
+	kopt=\EOr,
+	kpp=\E[V,
+	kprt=\EOz,
+	kprv=\ENg,
+	krdo=\EOt,
+	kref=\EOb,
+	kres=\EOq,
+	krfr=\ENa,
+	kri=\E[T,
+	krpl=\EOy,
+	krst=\EOB,
+	ksav=\EOo,
+	kslt=\ENI,
+	kspd=\EOp,
+	kund=\EOs,
+	rmam=\E5S,
+	rmcup=\Et\Ep,
+	rmm=\E14s,
+	rmso=\En,
+	smam=\E5s,
+	smcup=\E1664P,
+	smm=\E14S,
+	smso=\Ei,
