@@ -15,6 +15,7 @@
 #include <mgr/font.h>
 #include <mgr/share.h>
 #include <sys/time.h>
+#undef P_ALL
 #include <sys/wait.h>
 #include <getopt.h>
 #include <fcntl.h>
@@ -365,6 +366,7 @@ int main(argc,argv) int argc; char **argv;
       font = open_font("");
    font->ident = 0;
    /*}}}  */
+#if 0
    /*{{{  open the mouse*/
    if ((mouse=open(mouse_dev,O_RDWR)) <0) {
       perror("mgr: Can't find the mouse, or it is already in use.\n");
@@ -372,14 +374,18 @@ int main(argc,argv) int argc; char **argv;
       }
    mfd=mouse;
    /*}}}  */
+#endif
    /*{{{  find screen*/
    if ((screen = bit_open(screen_dev)) == (BITMAP *) 0)
    {
       perror("mgr: Can't open the screen.");
       exit(2);
    }
+#if 0
    ms_init(BIT_WIDE(screen),BIT_HIGH(screen),mouse_type);
+#endif
    mousex=mousey=32;
+
    bit_grafscreen();
    if (getenv("MGRSIZE"))
    {
@@ -420,7 +426,9 @@ int main(argc,argv) int argc; char **argv;
    SETMOUSEICON(&mouse_cup);
    /*{{{  always look for keyboard and mouse input*/
    FD_ZERO( &mask);
+#if 0
    FD_SET( mouse, &mask);
+#endif
    FD_SET( 0, &mask);
    FD_ZERO( &to_poll);
    FD_ZERO( &reads);
@@ -498,6 +506,7 @@ int main(argc,argv) int argc; char **argv;
          }
       dbgprintf('l',(stderr,"reads=0x%lx\r\n",(unsigned long)HD(reads)));
 
+#if 0
       /* process mouse */
 
       if (FD_ISSET( mouse, &reads)) {
@@ -505,6 +514,7 @@ int main(argc,argv) int argc; char **argv;
 	    proc_mouse(mouse);
 	 } while(mouse_count() > 0);
       }
+#endif
       /* process keyboard input */
 
       if (FD_ISSET( 0, &reads) && active && !(ACTIVE(flags)&W_NOINPUT))

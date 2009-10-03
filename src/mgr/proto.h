@@ -10,7 +10,9 @@
 #endif
 
 #ifndef __FreeBSD__
+#if 0
 _PROTOTYPE( extern int ioctl, (int _fd, int _request, .../* void *_argp */));
+#endif
 _PROTOTYPE( extern int fclose, (FILE *_stream));
 _PROTOTYPE( extern int fflush, (FILE *_stream));
 _PROTOTYPE( extern int fprintf, (FILE *_stream, const char *_format, ...));
@@ -20,11 +22,13 @@ _PROTOTYPE( extern size_t fread, (void *_ptr, size_t _size, size_t _nmemb, FILE 
 _PROTOTYPE( extern FILE *popen, (const char *_command, const char *_mode));
 _PROTOTYPE( extern int pclose, (FILE *_stream));
 _PROTOTYPE( extern void perror, (const char *_s));
+#if 0
 _PROTOTYPE( extern char *strchr, (const char *_s, int _charwanted));
 _PROTOTYPE( extern char *strrchr, (const char *_s, int _charwanted));
 _PROTOTYPE( extern int memcmp, (const void *_s1, const void *_s2, size_t _len));
 _PROTOTYPE( extern void *memcpy, (void *_dst, const void *_src, size_t _len));
 _PROTOTYPE( extern void *memset, (void *_dst, int _uc, size_t _len));
+#endif
 #ifdef sun	/* needed for their FD_ZERO */
 _PROTOTYPE( extern void bzero, (void *_dst, size_t _len));
 #endif
@@ -36,13 +40,17 @@ _PROTOTYPE( extern int getdtablesize, (void));
 _PROTOTYPE( extern int gethostname, (char *name, size_t namelen));
 _PROTOTYPE( extern int initgroups, (const char *name, gid_t basegid));
 _PROTOTYPE( extern int killpg, (pid_t pgrp, int sig));
+#if 0
 _PROTOTYPE( extern int putenv, (const char *string));
+#endif
 #if defined(FD_SET) && defined(DST_NONE)    /* have the include files */
 _PROTOTYPE( extern int select, (int width, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout));
 #endif
 _PROTOTYPE( extern int setregid, (gid_t rgid, gid_t egid));
 _PROTOTYPE( extern int setreuid, (uid_t ruid, uid_t euid));
+#if 0
 _PROTOTYPE( extern void usleep, (unsigned long int useconds));
+#endif
 _PROTOTYPE( extern int vfork, (void));
 #ifdef WEXITSTATUS
 _PROTOTYPE( extern pid_t waitpid, (pid_t _pid, int *statusp, int options));

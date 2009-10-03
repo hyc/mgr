@@ -102,12 +102,14 @@
 	}
 /*}}}  */
 
+static int DO_MSG(struct share_msg,char *);
+
 /*{{{  variables*/
 int log_noinitial = 0;				/* dont output initial image */
 
-static BITMAP *bit_maps[MAX_MAPS];		/* pointers to used bitmaps */
+BITMAP *bit_maps[MAX_MAPS];		/* pointers to used bitmaps */
 static unsigned short freed_ids[MAX_MAPS];	/* list of freed id's */
-static unsigned short next_id = 1;		/* next availiable ID (0 is not used) */
+unsigned short next_id = 1;		/* next availiable ID (0 is not used) */
 static int next_free = 0;			/* next free id from free list */
 static struct share_msg _m;			/* place to hold the message */
 static struct share_msg do_m;			/* place to hold compressed message */

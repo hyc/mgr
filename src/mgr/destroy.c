@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#undef P_ALL
 #include <sys/wait.h>
 #include <signal.h>
 #include <unistd.h>

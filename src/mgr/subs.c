@@ -13,6 +13,7 @@
 /*{{{  #includes*/
 #include <mgr/bitblit.h>
 #include <mgr/font.h>
+#undef P_ALL
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <signal.h>

@@ -37,7 +37,7 @@ is assumed that they end with '\n' and that the terminal is already set.
 int m_getevent(int timeout, int *keypress, char *eventstr, size_t eventstrsize)
 {
   /*{{{  variables*/
-  struct fd_set readfds;
+  fd_set readfds;
   struct timeval timeoutval;
   int n;
   /*}}}  */

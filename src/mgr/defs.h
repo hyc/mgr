@@ -73,7 +73,9 @@
 
 #ifdef DEBUG
 extern char debug_level[];
+#if 0
 char *strchr();
+#endif
 #define dbgprintf( level, arglist) \
 	do{ if( debug && strchr( debug_level, level)) fprintf arglist;}while(0)
 #else
