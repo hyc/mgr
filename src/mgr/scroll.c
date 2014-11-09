@@ -29,7 +29,7 @@ int start,end,delta,op;	/* starting line, ending line, # of lines */
    register int ems = end-start;
    if (delta > 0) {
       if (end-start > delta)
-#ifdef MGR_ALIGN
+#if 0 /* def MGR_ALIGN */
          if (win->window == map) {
             dbgprintf('F',(stderr,"fast scroll %s\r\n",W(tty)));
             /* special high-speed byte-aligned scroller */
