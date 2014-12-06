@@ -49,6 +49,7 @@ constant) after each operation.
 #include <string.h>		/* for other stuff */
 #include <ctype.h>		/* for isspace() */
 #include <stdlib.h>
+#include <errno.h>
 #include <unistd.h>
 #include <mgr/mgr.h>
 
@@ -90,7 +91,6 @@ int layoutlen;			/* # of windows in layout */
 
 /* error reporting stuff: */
 char *progname;			/* name of this program */
-extern int errno;
 char errtemp[100];		/* space for THEERROR() */
 #define THEERROR(msg)\
   (strcat(strcpy(errtemp, msg),\
@@ -740,6 +740,7 @@ foreachwindow(win, count, tty, func, data)
 
 /* ==================== Put the window someplace nice ==================== */
 
+static int in_win();
 
 int
 find_spot(wide, high, coords, count, newx, newy)
@@ -755,7 +756,6 @@ find_spot(wide, high, coords, count, newx, newy)
                                        (credit where credit is due dept.)*/
 {
     register int c, intersection, x, y, nexty;
-    static int in_win();
     
     dprintf(stderr,"found %d windows\n", count);
     

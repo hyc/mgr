@@ -13,7 +13,11 @@ static char	RCSid_[] = "$Source: /tmp/mgrsrc/demo/misc/RCS/close.c,v $$Revision:
 /* close a window  - keep icon uncovered */
 
 #include <mgr/mgr.h>
+#include <sys/types.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 
 static int debug = 0;			/* for debugging */
 
@@ -32,6 +36,12 @@ static int wide, high, xmax, ymax, depth, border;	/* global mgr state info */
 #define Covered		"C\n"
 #define Redraw		"R\n"
 
+static int clean();
+static int goto_spot();
+static int sigalrm();
+static int m_setid();
+static void usage();
+static void setupwindow();
 
 int main(argc,argv)
 int argc;
@@ -42,9 +52,6 @@ char **argv;
    char text[MAXLINE];			/* text for icon */
    char moving[MAXLINE];		/* text for icon while moving */
    int font;
-   int clean();
-   int sigalrm();
-   char *getenv();
 
    ckmgrterm( *argv );
 
@@ -154,6 +161,8 @@ clean()
 
 /* find an unused spot for a window */
 
+static int in_win();
+
 static
 int
 goto_spot(wide, high)
@@ -247,7 +256,7 @@ m_setid()
 }
 
 
-static
+static void
 usage( pgm )
 char	*pgm;
 {
@@ -260,7 +269,7 @@ If fontnumber is non-numberic or not available, zero is assumed.\n\
 }
 
 
-static
+static void
 setupwindow( text )
 char	*text;
 {

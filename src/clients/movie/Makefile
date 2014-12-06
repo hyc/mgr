@@ -13,7 +13,7 @@ install:	all
 		install -c -m 644 time_it.1 $(MANDIR)/man1/time_it.1
 
 play_data:	play_data.o getshort.o
-		$(CC) $(LDFLAGS) -o $@ play_data.o getshort.o $(LIBDIR)/libbitblit.a
+		$(CC) $(LDFLAGS) -o $@ play_data.o getshort.o $(LIBDIR)/libbitblit.a $(EXTRALIBS)
 
 get_maps:	get_maps.o getshort.o
 		$(CC) $(LDFLAGS) -o $@ get_maps.o getshort.o $(LIBDIR)/libbitblit.a

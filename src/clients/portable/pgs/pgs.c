@@ -605,7 +605,6 @@ char *
 save_line(s)
 char *s;
 {
-	char *malloc(), *strcpy();
 	return (strcpy(malloc(strlen(s) + 1), s));
 }
 

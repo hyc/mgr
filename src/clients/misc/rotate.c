@@ -28,7 +28,6 @@ int main(argc,argv)
 int argc;
 char **argv;
    {
-   char *malloc();
    struct b_header b_buff, *head = &b_buff;
    int w=0,h=0,d;
    int inbytes,outbytes,size;

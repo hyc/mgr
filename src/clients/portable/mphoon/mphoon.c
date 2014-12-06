@@ -14,6 +14,7 @@
 */
 
 #include <signal.h>
+#include <errno.h>
 #ifdef VIAFILE
 #ifdef OSK
 #include <modes.h>
@@ -73,7 +74,6 @@ static void   synchronize(void);
 extern void getbitmap(int *w, int *h, char **bits, int *cx, int *cy, int *r);
 
 /* Global variables */
-extern int    errno;
 
 /* Local variables */
 static char  *argv0;
