@@ -5,6 +5,9 @@
 /*{{{  #includes*/
 #include <mgr/bitblit.h>
 #include <stdio.h>
+#ifdef USE_X11
+#include "../libbitblit/x11/bitx11.h"
+#endif
 
 #include "defs.h"
 
@@ -63,5 +66,8 @@ void erase_win(BITMAP *map)
     BUILDOP(BIT_SRC,color_map[ROOT_COLOR_FG],color_map[ROOT_COLOR_BG]),
     pattern
   );
+#ifdef USE_X11
+  XFlush(bit_xinfo.d);
+#endif
 }
 /*}}}  */
