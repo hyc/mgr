@@ -17,6 +17,76 @@
 
 #include "proto.h"
 #include "mouse.h"
+#ifdef USE_X11
+#include "../libbitblit/x11/bitx11.h"
+static int prevx, prevy;
+int mfd = -1;
+XEvent cur_event;
+
+void
+ms_init(int screen_w, int screen_h, char *mouse_type)
+{
+}
+
+static Bool evpred(Display *d, XEvent *ev, XPointer arg)
+{
+	return (ev->type == ButtonPress ||
+		ev->type == ButtonRelease ||
+		ev->type == MotionNotify);
+}
+
+int
+get_ms_event(struct ms_event *ev)
+{
+	XEvent xev;
+	XButtonEvent *xb = (XButtonEvent *)&xev;
+	if (cur_event.type) {
+		xev = cur_event;
+		cur_event.type = 0;
+	} else if (!XCheckIfEvent(bit_xinfo.d, &xev, evpred, NULL))
+		return -1;
+
+	ev->ev_butstate = 0;
+	if (xb->state & Button1Mask)
+		ev->ev_butstate |= MS_BUTLEFT;
+	if (xb->state & Button2Mask)
+		ev->ev_butstate |= MS_BUTMIDDLE;
+	if (xb->state & Button3Mask)
+		ev->ev_butstate |= MS_BUTRIGHT;
+
+	if (xb->type == ButtonPress) {
+		ev->ev_code = MS_BUTDOWN;
+		if (xb->button == Button1)
+			ev->ev_butstate |= MS_BUTLEFT;
+		else if (xb->button == Button2)
+			ev->ev_butstate |= MS_BUTMIDDLE;
+		else if (xb->button == Button3)
+			ev->ev_butstate |= MS_BUTRIGHT;
+	} else if (xb->type == ButtonRelease) {
+		ev->ev_code = MS_BUTUP;
+		if (xb->button == Button1)
+			ev->ev_butstate &= ~MS_BUTLEFT;
+		else if (xb->button == Button2)
+			ev->ev_butstate &= ~MS_BUTMIDDLE;
+		else if (xb->button == Button3)
+			ev->ev_butstate &= ~MS_BUTRIGHT;
+	} else if (xb->type == MotionNotify) {
+		if (xb->state & (Button1Mask|Button2Mask|Button3Mask))
+			ev->ev_code = MS_DRAG;
+		else
+			ev->ev_code = MS_MOVE;
+	}
+
+	ev->ev_x = xb->x;
+	ev->ev_y = xb->y;
+	ev->ev_dx = ev->ev_x - prevx;
+	prevx = ev->ev_x;
+	ev->ev_dy = ev->ev_y - prevy;
+	prevy = ev->ev_y;
+	return 0;
+}
+
+#else
 
 /* these settings may be altered by the user */
 #ifdef MOUSE
@@ -251,3 +321,4 @@ restart:
     buttonwas = ev->ev_butstate;
     return 0;
 }
+#endif

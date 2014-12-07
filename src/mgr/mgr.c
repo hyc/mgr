@@ -56,6 +56,10 @@
 #include "set_mode.h"
 #include "startup.h"
 #include "subs.h"
+#ifdef USE_X11
+#include "../libbitblit/x11/bitx11.h"
+extern XEvent cur_event;
+#endif
 /*}}}  */
 
 /*{{{  variables*/
@@ -426,10 +430,13 @@ int main(argc,argv) int argc; char **argv;
    SETMOUSEICON(&mouse_cup);
    /*{{{  always look for keyboard and mouse input*/
    FD_ZERO( &mask);
-#if 0
+#ifdef USE_X11
+   FD_SET( bit_xinfo.fd, &mask);
+   XSelectInput(bit_xinfo.d, bit_xinfo.w, KeyPressMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask);
+#else
    FD_SET( mouse, &mask);
-#endif
    FD_SET( 0, &mask);
+#endif
    FD_ZERO( &to_poll);
    FD_ZERO( &reads);
    memcpy(&set_poll_save,&set_poll,sizeof(set_poll));
@@ -506,7 +513,36 @@ int main(argc,argv) int argc; char **argv;
          }
       dbgprintf('l',(stderr,"reads=0x%lx\r\n",(unsigned long)HD(reads)));
 
-#if 0
+#ifdef USE_X11
+      if (FD_ISSET(bit_xinfo.fd, &reads)) {
+	    XEvent ev;
+		XNextEvent(bit_xinfo.d, &ev);
+		if (ev.type == KeyPress) {
+			XLookupString(&ev, &c, 1, NULL, NULL);
+			if (active && !(ACTIVE(flags)&W_NOINPUT)) {
+#ifdef BUCKEY
+				if ((ACTIVE(flags)&W_NOBUCKEY) || !do_buckey(c))
+					write(ACTIVE(to_fd),&c,1);
+#else
+				write(ACTIVE(to_fd),&c,1);
+#endif
+				if (ACTIVE(flags)&W_DUPKEY && c==ACTIVE(dup))
+					write(ACTIVE(to_fd),&c,1);
+				continue;
+			} else if (!active) {
+#ifdef BUCKEY
+				do_buckey(c);
+#endif
+			}
+
+		} else if (ev.type == ButtonPress ||
+			ev.type == ButtonRelease ||
+			ev.type == MotionNotify) {
+				cur_event = ev;
+				proc_mouse(mouse);
+			}
+		}
+#else
       /* process mouse */
 
       if (FD_ISSET( mouse, &reads)) {
@@ -514,7 +550,6 @@ int main(argc,argv) int argc; char **argv;
 	    proc_mouse(mouse);
 	 } while(mouse_count() > 0);
       }
-#endif
       /* process keyboard input */
 
       if (FD_ISSET( 0, &reads) && active && !(ACTIVE(flags)&W_NOINPUT))
@@ -536,6 +571,7 @@ int main(argc,argv) int argc; char **argv;
          do_buckey(c);
 #endif
 	 }
+#endif /* USE_X11 */
 
       /* process shell output */
 

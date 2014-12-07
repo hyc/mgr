@@ -37,6 +37,9 @@ without paying fees.
 #include "proto.h"
 #include "colormap.h"
 #include "icon_server.h"
+#ifdef USE_X11
+#include "../libbitblit/x11/bitx11.h"
+#endif
 /*}}}  */
 /*{{{  #defines*/
 #define SSIZE	3		/* star size */
@@ -230,6 +233,9 @@ void copyright(BITMAP *where, char *password)
   unsigned int ind, r, g, b, maxi;
   int at_startup = (*password == 0);
 
+#ifdef USE_X11
+  XSelectInput(bit_xinfo.d, bit_xinfo.w, KeyPressMask);
+#endif
   /* find w/o claiming the colors we want on the startup screen */
   r = 255; g = 180; b = 60; maxi = 255; /* sun yellow */
   findcolor( screen, &ind, &r, &g, &b, &maxi);
@@ -305,10 +311,23 @@ void copyright(BITMAP *where, char *password)
     int sel;
     struct timeval tmpdelay = delay;
 
+#ifdef USE_X11
+    FD_SET( bit_xinfo.fd, &mask);
+#else
     FD_SET( STDIN_FILENO, &mask);
+#endif
     sel = select( FD_SETSIZE, &mask, (fd_set*)0, (fd_set*)0, &tmpdelay);
     if( sel > 0) {
+#ifdef USE_X11
+	  XEvent ev;
+	  XNextEvent(bit_xinfo.d, &ev);
+	  if (ev.type == KeyPress)
+	    XLookupString(&ev, readp, 1, NULL, NULL);
+	  else
+	    continue;
+#else
       read( STDIN_FILENO, readp, 1);
+#endif
       if( at_startup)
 	break;		/* any char at all */
       if( *readp == '\r' || *readp == '\n') {
