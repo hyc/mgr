@@ -1,0 +1,9 @@
+bit_load.o: bit_load.c screen.h /usr/local/mgr/include/mgr/bitblit.h \
+ /usr/local/mgr/include/mgr/window.h /usr/local/mgr/include/mgr/mgr.h
+bit_save.o: bit_save.c screen.h /usr/local/mgr/include/mgr/bitblit.h \
+ /usr/local/mgr/include/mgr/window.h /usr/local/mgr/include/mgr/mgr.h
+bitmapread.o: bitmapread.c screen.h /usr/local/mgr/include/mgr/bitblit.h \
+ /usr/local/mgr/include/mgr/window.h /usr/local/mgr/include/mgr/share.h
+bitmapwrite.o: bitmapwrite.c screen.h \
+ /usr/local/mgr/include/mgr/bitblit.h /usr/local/mgr/include/mgr/window.h \
+ /usr/local/mgr/include/mgr/mgr.h

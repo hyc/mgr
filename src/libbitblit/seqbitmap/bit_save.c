@@ -4,6 +4,7 @@
 #include <mgr/mgr.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 /*}}}  */
 
 /*{{{  bit_save -- convert bitmap data to external format*/
