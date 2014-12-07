@@ -43,7 +43,7 @@
 /*}}}  */
 
 /*{{{  variables*/
-static char line[] = {"/dev/ptypX"};
+static char line[] = {"/dev/ptypX\0\0"};
 extern char **environ;
 /*}}}  */
 
@@ -62,6 +62,7 @@ static int getapty()
    int i;
    int pty_fd;
 
+#if 0
    line[5] = 'p';
    for(line[8]='p';line[8]<='t';line[8]++)
       for (i=0;i<=16;i++) {
@@ -71,6 +72,17 @@ static int getapty()
 	    return(pty_fd);
 	 }
       }
+#else
+	extern char *ptsname();
+	pty_fd = open("/dev/ptmx",O_RDWR);
+	if (pty_fd >= 0) {
+		strcpy(line, ptsname(pty_fd));
+		grantpt(pty_fd);
+		unlockpt(pty_fd);
+		return pty_fd;
+	}
+#endif
+
    return(-1);
 }
 /*}}}  */
