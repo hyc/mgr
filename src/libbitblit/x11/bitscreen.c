@@ -15,6 +15,11 @@ static void _bit_destroy(BITMAP *map)
   XCloseDisplay(bit_xinfo.d);
 }
 
+static int _bit_errhandl(Display *d, XErrorEvent *err)
+{
+	return 0;
+}
+
 /* setup the display */
 
 DATA *
@@ -28,19 +33,33 @@ bit_initscreen(char *name, int *width, int *height, unsigned char *depth,
    if (bit_xinfo.d == NULL) return BIT_NULL;
    bit_xinfo.s = DefaultScreen(bit_xinfo.d);
    bit_xinfo.fd = ConnectionNumber(bit_xinfo.d);
+   XSetErrorHandler(_bit_errhandl);
 
    /* Look for a PseudoColor visual. If none exists, fake it */
    if (XMatchVisualInfo(bit_xinfo.d, bit_xinfo.s, 24, PseudoColor, &xvi)) {
    	bit_xinfo.c = XCreateColormap(bit_xinfo.d, RootWindow(bit_xinfo.d, bit_xinfo.s),xvi.visual, AllocAll);
    	attrs.colormap = bit_xinfo.c;
    	bit_xinfo.w = XCreateWindow(bit_xinfo.d, RootWindow(bit_xinfo.d, bit_xinfo.s),
-   	0, 0, 1024, 768, 1, 24, InputOutput, xvi.visual, CWColormap, &attrs);
+	0, 0, 1024, 768, 1, 24, InputOutput, xvi.visual, CWColormap, &attrs);
 	bit_xinfo.fakemap = 0;
    } else {
     bit_xinfo.fakemap = 1;
    	bit_xinfo.w = XCreateSimpleWindow(bit_xinfo.d, RootWindow(bit_xinfo.d, bit_xinfo.s),
    	0, 0, 1024, 768, 1, BlackPixel(bit_xinfo.d, bit_xinfo.s),
 	BlackPixel(bit_xinfo.d, bit_xinfo.s));
+   }
+
+   /* Hide the X cursor */
+   {
+	Cursor invis;
+	Pixmap bmnull;
+	XColor black;
+	static char empty[] = {0,0,0,0,0,0,0,0};
+	black.red = black.green = black.blue = 0;
+	bmnull = XCreateBitmapFromData(bit_xinfo.d, bit_xinfo.w, empty, 8, 8);
+	invis = XCreatePixmapCursor(bit_xinfo.d, bmnull, bmnull, &black, &black, 0, 0);
+	XDefineCursor(bit_xinfo.d, bit_xinfo.w, invis);
+	XFreeCursor(bit_xinfo.d, invis);
    }
    XSelectInput(bit_xinfo.d, bit_xinfo.w, ExposureMask | KeyPressMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask);
    XMapWindow(bit_xinfo.d, bit_xinfo.w);
