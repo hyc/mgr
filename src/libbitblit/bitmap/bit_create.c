@@ -20,12 +20,14 @@ BITMAP *bit_create(map, x, y, wide, high) BITMAP *map; int x, y, wide, high;
 
 #ifdef USE_X11
   if ((result=(BITMAP*)malloc(sizeof(BITMAP)+sizeof(xdinfo)))==(BITMAP*)0) return (BITMAP*)0;
-  result->deviceinfo = result+1;
   if (map->deviceinfo) {
     xdinfo *xd0, *xd1;
+    result->deviceinfo = result+1;
     xd0 = map->deviceinfo;
 	xd1 = result->deviceinfo;
 	xd1->d = xd0->d;
+  } else {
+    result->deviceinfo = NULL;
   }
 #else
   if ((result=(BITMAP*)malloc(sizeof(BITMAP)))==(BITMAP*)0) return (BITMAP*)0;

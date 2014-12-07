@@ -20,7 +20,6 @@ int x0, y0, x1, y1;
 int func;
    {
 	xdinfo *xd;
-	GC gc = DefaultGC(bit_xinfo.d, bit_xinfo.s);
 	int fg, bg;
 
 	fg = GETFCOLOR(func);
@@ -30,6 +29,9 @@ int func;
 		bg = bit_colors[bg];
 	}
 	xd = dest->deviceinfo;
-	XSetState(bit_xinfo.d, gc, fg, bg, bit_ops[func&0xf], AllPlanes);
-	XDrawLine(bit_xinfo.d, xd->d, gc, x0, y0, x1, y1);
+	XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, bit_ops[func&0xf], AllPlanes);
+	XDrawLine(bit_xinfo.d, xd->d, bit_xinfo.gc, x0, y0, x1, y1);
+	if (IS_SCREEN(dest)) {
+	  XDrawLine(bit_xinfo.d, bit_xinfo.w, bit_xinfo.gc, x0, y0, x1, y1);
+	}
    }

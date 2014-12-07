@@ -46,7 +46,6 @@ BITMAP *src, *dst;		/* bit map pointers */
 int func;			/* rasterop function */
 {
 	xdinfo *xds, *xdd;
-	GC gc = DefaultGC(bit_xinfo.d, bit_xinfo.s);
 	int fg, bg;
 	Drawable d;
 
@@ -61,31 +60,50 @@ int func;			/* rasterop function */
 	xdd = dst->deviceinfo;
 	dx += dst->x0;
 	dy += dst->y0;
+	XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, bit_ops[func&0xf], AllPlanes);
 	if (src) {
+	  sx += src->x0;
+	  sy += src->y0;
 	  xds = src->deviceinfo;
 	  if (xds) {
 		  d = xds->d;
 	  } else {
-	  	XImage *img = XCreateImage(bit_xinfo.d, DefaultVisual(bit_xinfo.d,
-		bit_xinfo.s), src->depth, src->depth == 1 ? XYBitmap : XYPixmap,
-		0, src->data, BIT_WIDE(src), BIT_HIGH(src), 8, 0);
-		XSetState(bit_xinfo.d, gc, fg, bg, bit_ops[func&0xf], AllPlanes);
-		img->byte_order =  MSBFirst;
-		img->bitmap_bit_order = MSBFirst;
-		XPutImage(bit_xinfo.d, xdd->d, gc, img, sx, sy, dx, dy, width, height);
-		img->data = NULL;
-		XDestroyImage(img);
-		return;
+		XImage img;
+		img.width = BIT_WIDE(src->primary);
+		img.height = BIT_HIGH(src->primary);
+		img.xoffset = 0;
+		img.format = (src->depth == 1) ? XYBitmap : XYPixmap;
+		img.data = src->data;
+		img.byte_order =  MSBFirst;
+		img.bitmap_bit_order = MSBFirst;
+		img.bitmap_unit = 32;
+		img.bitmap_pad = 8;
+		img.depth = src->depth;
+		img.bits_per_pixel = src->depth;
+		img.bytes_per_line = 0;
+		img.red_mask = 0xff0000;
+		img.green_mask = 0xff00;
+		img.blue_mask = 0xff;
+		img.obdata = 0;
+		XInitImage(&img);
+		XPutImage(bit_xinfo.d, xdd->d, bit_xinfo.gc, &img, sx, sy, dx, dy, width, height);
+		goto done;
 	  }
 	} else {
 	  d = xdd->d;
 	  /* Doing a clear op, fill to BG color */
-	  if (!(func & 0xf)) {
-	    XSetWindowBackground(bit_xinfo.d, d, bg);
-	  	XClearArea(bit_xinfo.d, d, dx, dy, width, height, 0);
+	  if (!(func & 0xf) && IS_SCREEN(dst)) {
+		XSetWindowBackground(bit_xinfo.d, bit_xinfo.w, bg);
+		XClearArea(bit_xinfo.d, bit_xinfo.w, dx, dy, width, height, 0);
+/*		XSetState(bit_xinfo.d, bit_xinfo.gc, bg, bg, GXset, AllPlanes);
+		XFillRectangle(bit_xinfo.d, d, bit_xinfo.gc, dx, dy, width, height); */
 		return;
 	  }
 	}
-	XSetState(bit_xinfo.d, gc, fg, bg, bit_ops[func&0xf], AllPlanes);
-	XCopyArea(bit_xinfo.d, d, xdd->d, gc, sx, sy, width, height, dx, dy);
+	XCopyArea(bit_xinfo.d, d, xdd->d, bit_xinfo.gc, sx, sy, width, height, dx, dy);
+done:
+	if (IS_SCREEN(dst)) {
+		XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, GXcopy, AllPlanes);
+		XCopyArea(bit_xinfo.d, xdd->d, bit_xinfo.w, bit_xinfo.gc, dx, dy, width, height, dx, dy);
+	}
 }

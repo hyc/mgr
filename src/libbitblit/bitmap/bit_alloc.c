@@ -55,7 +55,7 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
   else
   {
 #ifdef USE_X11
-	xd->d = XCreatePixmap(bit_xinfo.d, bit_xinfo.s, wide, high, depth);
+	xd->d = XCreatePixmap(bit_xinfo.d, bit_xinfo.w, wide, high, bit_xinfo.depth);
 	result->data = NULL;
 #else
     register int size=bit_size(wide,high,depth);

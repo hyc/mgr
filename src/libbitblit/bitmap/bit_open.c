@@ -26,7 +26,7 @@ BITMAP *bit_open(char *name)
 #ifdef USE_X11
   {
     xdinfo *xd = result->deviceinfo;
-	xd->d = bit_xinfo.w;
+	xd->d = bit_xinfo.p;
   }
 #endif
   result->x0 = 0;

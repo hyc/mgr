@@ -2,6 +2,7 @@
 
 #include "bitmap.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <X11/Xutil.h>
 
 xinfo bit_xinfo;
@@ -10,13 +11,18 @@ extern void (*display_close)(BITMAP *map);
 
 static void _bit_destroy(BITMAP *map)
 {
-  xdinfo *xd = map->deviceinfo;
-  XDestroyWindow(bit_xinfo.d, xd->d);
+  XFreePixmap(bit_xinfo.d, bit_xinfo.p);
+  XDestroyWindow(bit_xinfo.d, bit_xinfo.w);
   XCloseDisplay(bit_xinfo.d);
 }
 
 static int _bit_errhandl(Display *d, XErrorEvent *err)
 {
+	char errbuf[1024];
+	XGetErrorText(d, err->error_code, errbuf, sizeof(errbuf));
+	fprintf(stderr,"Err on req #%lu code %d: %s\n", err->serial, err->error_code, errbuf);
+	fprintf(stderr,"req code %d / %d, resource %lx\n",
+		err->request_code, err->minor_code, err->resourceid);
 	return 0;
 }
 
@@ -33,7 +39,6 @@ bit_initscreen(char *name, int *width, int *height, unsigned char *depth,
    if (bit_xinfo.d == NULL) return BIT_NULL;
    bit_xinfo.s = DefaultScreen(bit_xinfo.d);
    bit_xinfo.fd = ConnectionNumber(bit_xinfo.d);
-   XSetErrorHandler(_bit_errhandl);
 
    /* Look for a PseudoColor visual. If none exists, fake it */
    if (XMatchVisualInfo(bit_xinfo.d, bit_xinfo.s, 24, PseudoColor, &xvi)) {
@@ -48,6 +53,18 @@ bit_initscreen(char *name, int *width, int *height, unsigned char *depth,
    	0, 0, 1024, 768, 1, BlackPixel(bit_xinfo.d, bit_xinfo.s),
 	BlackPixel(bit_xinfo.d, bit_xinfo.s));
    }
+
+   /* Pixmap for our window contents */
+   {
+   XWindowAttributes wa;
+   XGetWindowAttributes(bit_xinfo.d, bit_xinfo.w, &wa);
+   bit_xinfo.depth = wa.depth;
+   bit_xinfo.p = XCreatePixmap(bit_xinfo.d, bit_xinfo.w, wa.width, wa.height, wa.depth);
+   bit_xinfo.gc = XCreateGC(bit_xinfo.d, bit_xinfo.w, 0, NULL);
+   XCopyGC(bit_xinfo.d, DefaultGC(bit_xinfo.d, bit_xinfo.s), 0xffffff, bit_xinfo.gc);
+   }
+
+   XSetErrorHandler(_bit_errhandl);
 
    /* Hide the X cursor */
    {

@@ -21,7 +21,6 @@ register int dx, dy;
 int func;
    {
 	xdinfo *xd;
-	GC gc = DefaultGC(bit_xinfo.d, bit_xinfo.s);
 	int fg;
 
 	fg = GETFCOLOR(func);
@@ -29,8 +28,11 @@ int func;
 		fg = bit_colors[fg];
 	}
 	xd = map->deviceinfo;
-	XSetForeground(bit_xinfo.d, gc, fg);
-	XSetFunction(bit_xinfo.d, gc, bit_ops[func&0xf]);
-	XDrawPoint(bit_xinfo.d, xd->d, gc, dx, dy);
+	XSetForeground(bit_xinfo.d, bit_xinfo.gc, fg);
+	XSetFunction(bit_xinfo.d, bit_xinfo.gc, bit_ops[func&0xf]);
+	XDrawPoint(bit_xinfo.d, xd->d, bit_xinfo.gc, dx, dy);
+	if (IS_SCREEN(map))
+		XDrawPoint(bit_xinfo.d, bit_xinfo.w, bit_xinfo.gc, dx, dy);
+		
 	return 0;
    }

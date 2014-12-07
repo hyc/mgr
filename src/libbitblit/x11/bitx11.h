@@ -5,7 +5,10 @@ typedef struct xinfo {
 	int s;
 	int fd;
 	Window w;
+	Pixmap p;
 	Colormap c;
+	GC gc;
+	int depth;
 	int fakemap;
 } xinfo;
 
