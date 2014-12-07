@@ -59,6 +59,8 @@ int func;			/* rasterop function */
 		bg = bit_colors[bg];
 	}
 	xdd = dst->deviceinfo;
+	dx += dst->x0;
+	dy += dst->y0;
 	if (src) {
 	  xds = src->deviceinfo;
 	  if (xds) {

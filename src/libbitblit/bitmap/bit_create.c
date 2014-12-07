@@ -1,5 +1,9 @@
 /*{{{}}}*/
 /*{{{  #includes*/
+#ifdef USE_X11
+#include "../x11/bitmap.h"
+#include <X11/Xutil.h>
+#endif
 #include <mgr/bitblit.h>
 #include <mgr/share.h>
 #include <stdlib.h>
@@ -14,7 +18,19 @@ BITMAP *bit_create(map, x, y, wide, high) BITMAP *map; int x, y, wide, high;
   if (y + high > map->high) high = map->high - y;
   if (wide < 1 || high < 1) return (BITMAP*)0;
 
+#ifdef USE_X11
+  if ((result=(BITMAP*)malloc(sizeof(BITMAP)+sizeof(xdinfo)))==(BITMAP*)0) return (BITMAP*)0;
+  result->deviceinfo = result+1;
+  if (map->deviceinfo) {
+    xdinfo *xd0, *xd1;
+    xd0 = map->deviceinfo;
+	xd1 = result->deviceinfo;
+	xd1->d = xd0->d;
+  }
+#else
   if ((result=(BITMAP*)malloc(sizeof(BITMAP)))==(BITMAP*)0) return (BITMAP*)0;
+  result->deviceinfo = map->deviceinfo;
+#endif
 
   result->data = map->data;
   result->x0 = map->x0 + x;
@@ -30,7 +46,6 @@ BITMAP *bit_create(map, x, y, wide, high) BITMAP *map; int x, y, wide, high;
 #endif
   result->id = map->id;
   result->type = map->type;
-  result->deviceinfo = map->deviceinfo;
   return (result);
 }
 /*}}}  */

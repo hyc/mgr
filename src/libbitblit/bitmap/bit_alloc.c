@@ -3,6 +3,10 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#ifdef USE_X11
+#include "../x11/bitmap.h"
+#include <X11/Xutil.h>
+#endif
 #include <mgr/bitblit.h>
 #include <mgr/share.h>
 /*}}}  */
@@ -11,7 +15,9 @@
 BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
 {
   register BITMAP *result;
-  register int size;
+#ifdef USE_X11
+  xdinfo *xd;
+#endif
 
 #ifdef DEBUG
   if (wide<=0 || high <=0 || !(depth==8 || depth==1))
@@ -20,7 +26,15 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
     return(NULL);
   }
 #endif
+#ifdef USE_X11
+  if ((result=(BITMAP*)malloc(sizeof(BITMAP)+sizeof(xdinfo)))==(BITMAP*)0) return (result);
+  result->deviceinfo = result+1;
+  xd = result->deviceinfo;
+  xd->d = 0;
+#else
   if ((result=(BITMAP*)malloc(sizeof(BITMAP)))==(BITMAP*)0) return (result);
+  result->deviceinfo = NULL;
+#endif
 
   result->x0=0;
   result->y0=0;
@@ -29,8 +43,6 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
   result->depth=depth;
   result->cache=NULL;
   result->color=0;
-
-  size=bit_size(wide,high,depth);
 
   if (data != (DATA *) 0)
   {
@@ -42,11 +54,17 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
   }
   else
   {
+#ifdef USE_X11
+	xd->d = XCreatePixmap(bit_xinfo.d, bit_xinfo.s, wide, high, depth);
+#else
+    register int size=bit_size(wide,high,depth);
+
     if ((result->data = (DATA *) malloc(size)) == (DATA *) 0)
     {
       free(result);
       return ((BITMAP *) 0);
     }
+#endif
 #ifdef MOVIE
   log_alloc(result);
 #endif
@@ -55,7 +73,6 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
   result->primary = result;
   result->type = _MEMORY;
   result->id = 0;	/* assign elsewhere? */
-  result->deviceinfo = NULL;
   return (result);
 }
 /*}}}  */
