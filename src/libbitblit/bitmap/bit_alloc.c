@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #ifdef USE_X11
 #include "../x11/bitmap.h"
-#include <X11/Xutil.h>
 #endif
 #include <mgr/bitblit.h>
 #include <mgr/share.h>
@@ -54,10 +53,6 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
   }
   else
   {
-#ifdef USE_X11
-	xd->d = XCreatePixmap(bit_xinfo.d, bit_xinfo.w, wide, high, bit_xinfo.depth);
-	result->data = NULL;
-#else
     register int size=bit_size(wide,high,depth);
 
     if ((result->data = (DATA *) malloc(size)) == (DATA *) 0)
@@ -65,7 +60,6 @@ BITMAP *bit_alloc(int wide, int high, DATA *data, unsigned char depth)
       free(result);
       return ((BITMAP *) 0);
     }
-#endif
 #ifdef MOVIE
   log_alloc(result);
 #endif

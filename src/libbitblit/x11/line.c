@@ -29,6 +29,8 @@ int func;
 		bg = bit_colors[bg];
 	}
 	xd = dest->deviceinfo;
+	if (!xd->d)
+		bit_pixmap(dest);
 	XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, bit_ops[func&0xf], AllPlanes);
 	x0 += dest->x0;
 	y0 += dest->y0;

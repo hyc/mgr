@@ -35,6 +35,18 @@ const unsigned char bit_ops[16] = {
 	GXset			/* 1111 BIT_SET */
 };
 
+/* Create a pixmap for drawing into */
+void bit_pixmap(BITMAP *map)
+{
+	BITMAP *prm = map->primary;
+	xdinfo *xd = map->deviceinfo, *xp = prm->deviceinfo;
+	if (xp->d) {
+		xd->d = xp->d;
+	} else {
+		xd->d = XCreatePixmap(bit_xinfo.d, bit_xinfo.w, BIT_WIDE(prm), BIT_HIGH(prm), bit_xinfo.depth);
+	}
+}
+
 /*
  *  General memory-to-memory rasterop
  */
@@ -58,6 +70,8 @@ int func;			/* rasterop function */
 		bg = bit_colors[bg];
 	}
 	xdd = dst->deviceinfo;
+	if (!xdd->d)
+		bit_pixmap(dst);
 	dx += dst->x0;
 	dy += dst->y0;
 	XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, bit_ops[func&0xf], AllPlanes);
@@ -65,7 +79,7 @@ int func;			/* rasterop function */
 	  sx += src->x0;
 	  sy += src->y0;
 	  xds = src->deviceinfo;
-	  if (xds) {
+	  if (xds && xds->d) {
 		  d = xds->d;
 	  } else {
 		XImage img;

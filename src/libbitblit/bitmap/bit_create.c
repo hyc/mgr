@@ -2,7 +2,6 @@
 /*{{{  #includes*/
 #ifdef USE_X11
 #include "../x11/bitmap.h"
-#include <X11/Xutil.h>
 #endif
 #include <mgr/bitblit.h>
 #include <mgr/share.h>

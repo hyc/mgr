@@ -28,6 +28,8 @@ int func;
 		fg = bit_colors[fg];
 	}
 	xd = map->deviceinfo;
+	if (!xd->d)
+		bit_pixmap(map);
 	XSetForeground(bit_xinfo.d, bit_xinfo.gc, fg);
 	XSetFunction(bit_xinfo.d, bit_xinfo.gc, bit_ops[func&0xf]);
 	dx += map->x0;

@@ -7,4 +7,5 @@
 
 extern const unsigned char bit_ops[16];
 extern int bit_colors[256];
+extern void bit_pixmap(BITMAP *map);
 

@@ -26,7 +26,8 @@ void bit_destroy(bitmap) BITMAP *bitmap;
 	  if (bitmap->data) {
         free(bitmap->data);
         bitmap->data=(DATA*)0;
-	  } else {
+	  }
+	  if (xd->d) {
 	    XFreePixmap(bit_xinfo.d, xd->d);
 	  }
 	}
