@@ -54,10 +54,34 @@ BITMAP *src, *dst;		/* bit map pointers */
 int func;			/* rasterop function */
 {
 	xdinfo *xds, *xdd;
-	int fg, bg;
+	int fg, bg, t;
 	Drawable d;
 
 	if (!dst) return;
+
+	/* clipping */
+	if (width < 0) dx += width, width = -width;
+	if (height < 0) dy += height, height = -height;
+	if (dx < 0) {
+		if (src) sx -= dx;
+		width += dx; dx = 0;
+	}
+	if (dy < 0) {
+		if (src) sy -= dy;
+		height += dy; dy = 0;
+	}
+	if (src) {
+		if (sx < 0) dx -= sx, width += sx, sx = 0;
+		if (sy < 0) dy -= sy, height += sy, sy = 0;
+		if ((t = sx + width - src->wide) > 0) width -= t;
+		if ((t = sy + height - src->high) > 0) height -= t;
+		sx += src->x0;
+		sy += src->y0;
+	}
+	if ((t = dx + width - dst->wide) > 0) width -= t;
+	if ((t = dy + height - dst->high) > 0) height -= t;
+
+	if (width < 1 || height < 1) return;
 
 	fg = GETFCOLOR(func);
 	bg = GETBCOLOR(func);
@@ -72,8 +96,6 @@ int func;			/* rasterop function */
 	dy += dst->y0;
 	XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, bit_ops[func&0xf], AllPlanes);
 	if (src) {
-	  sx += src->x0;
-	  sy += src->y0;
 	  xds = src->deviceinfo;
 	  if (xds && xds->d) {
 		  d = xds->d;
