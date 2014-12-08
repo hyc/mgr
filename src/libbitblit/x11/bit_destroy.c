@@ -4,8 +4,8 @@
 
 static void _bit_freedummy(void *ptr){}
 
-void (*_bit_freedisplay)(BITMAP *) = _bit_freedummy;
-void (*_bit_freepixmap)(xdinfo *) = _bit_freedummy;
+void (*_bit_freedisplay)(void *) = _bit_freedummy;
+void (*_bit_freepixmap)(void *) = _bit_freedummy;
 
 /*{{{  bit_destroy -- destroy a bitmap, free up space*/
 void bit_destroy(bitmap) BITMAP *bitmap;
