@@ -2,7 +2,10 @@
 #include <mgr/share.h>
 #include <stdlib.h>
 
-void (*display_close)(BITMAP *);
+static void _bit_freedummy(void *ptr){}
+
+void (*_bit_freedisplay)(BITMAP *) = _bit_freedummy;
+void (*_bit_freepixmap)(xdinfo *) = _bit_freedummy;
 
 /*{{{  bit_destroy -- destroy a bitmap, free up space*/
 void bit_destroy(bitmap) BITMAP *bitmap;
@@ -25,10 +28,10 @@ void bit_destroy(bitmap) BITMAP *bitmap;
 #endif
 	  if (bitmap->data) {
         free(bitmap->data);
-        bitmap->data=(DATA*)0;
+		bitmap->data=(DATA*)0;
 	  }
 	  if (xd->d) {
-	    XFreePixmap(bit_xinfo.d, xd->d);
+		_bit_freepixmap(xd);
 	  }
 	}
     else if (IS_SCREEN(bitmap))
@@ -36,7 +39,7 @@ void bit_destroy(bitmap) BITMAP *bitmap;
 #ifdef MOVIE
       log_destroy(bitmap);
 #endif
-      display_close(bitmap);
+      _bit_freedisplay(bitmap);
 	}
     /* dont free static bitmaps */
     if (IS_STATIC(bitmap)) return;

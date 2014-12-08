@@ -7,13 +7,19 @@
 
 xinfo bit_xinfo;
 
-extern void (*display_close)(BITMAP *map);
+extern void (*_bit_freedisplay)(BITMAP *);
+extern void (*_bit_freepixmap)(xdinfo *);
 
 static void _bit_destroy(BITMAP *map)
 {
   XFreePixmap(bit_xinfo.d, bit_xinfo.p);
   XDestroyWindow(bit_xinfo.d, bit_xinfo.w);
   XCloseDisplay(bit_xinfo.d);
+}
+
+static void _bit_freepix(xdinfo *xd)
+{
+  XFreePixmap(bit_xinfo.d, xd->d);
 }
 
 static int _bit_errhandl(Display *d, XErrorEvent *err)
@@ -86,7 +92,8 @@ bit_initscreen(char *name, int *width, int *height, unsigned char *depth,
    *height = 768;
    *depth = 8;
 
-   display_close = _bit_destroy;
+   _bit_freedisplay = _bit_destroy;
+   _bit_freepixmap = _bit_freepix;
    return NULL;
 }
 
