@@ -472,6 +472,9 @@ int main(argc,argv) int argc; char **argv;
       MOUSE_OFF(screen,mousex,mousey);
       erase_win(screen);
       MOUSE_ON(screen,mousex,mousey);
+#ifdef USE_X11
+	  XFlush(bit_xinfo.d);
+#endif
    }
    /*}}}  */
    /*{{{  turn on mouse cursor*/
