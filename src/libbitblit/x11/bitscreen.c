@@ -104,7 +104,7 @@ int bit_on(bp, x, y)
 	if (x < 0 || x >= BIT_WIDE(bp) || y < 0 || y >= BIT_HIGH(bp))
 		return 0;
 	xd = bp->deviceinfo;
-	img = XGetImage(bit_xinfo.d, xd->d, x, y, 1, 1, AllPlanes, XYPixmap);
+	img = XGetImage(bit_xinfo.d, xd->d, x+bp->x0, y+bp->y0, 1, 1, AllPlanes, XYPixmap);
 	if (!img)
 		return 0;
 	ret = XGetPixel(img, 0, 0);

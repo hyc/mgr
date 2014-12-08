@@ -30,6 +30,10 @@ int func;
 	}
 	xd = dest->deviceinfo;
 	XSetState(bit_xinfo.d, bit_xinfo.gc, fg, bg, bit_ops[func&0xf], AllPlanes);
+	x0 += dest->x0;
+	y0 += dest->y0;
+	x1 += dest->x0;
+	y1 += dest->y0;
 	XDrawLine(bit_xinfo.d, xd->d, bit_xinfo.gc, x0, y0, x1, y1);
 	if (IS_SCREEN(dest)) {
 	  XDrawLine(bit_xinfo.d, bit_xinfo.w, bit_xinfo.gc, x0, y0, x1, y1);

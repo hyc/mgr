@@ -92,11 +92,13 @@ int func;			/* rasterop function */
 	} else {
 	  d = xdd->d;
 	  /* Doing a clear op, fill to BG color */
-	  if (!(func & 0xf) && IS_SCREEN(dst)) {
+	  if (!(func & 0xf)) {
+		XSetForeground(bit_xinfo.d, bit_xinfo.gc, bg);
+		XFillRectangle(bit_xinfo.d, d, bit_xinfo.gc, dx, dy, width, height);
+	    if (IS_SCREEN(dst)) {
 		XSetWindowBackground(bit_xinfo.d, bit_xinfo.w, bg);
 		XClearArea(bit_xinfo.d, bit_xinfo.w, dx, dy, width, height, 0);
-/*		XSetState(bit_xinfo.d, bit_xinfo.gc, bg, bg, GXset, AllPlanes);
-		XFillRectangle(bit_xinfo.d, d, bit_xinfo.gc, dx, dy, width, height); */
+		}
 		return;
 	  }
 	}

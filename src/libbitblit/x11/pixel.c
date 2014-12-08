@@ -30,6 +30,8 @@ int func;
 	xd = map->deviceinfo;
 	XSetForeground(bit_xinfo.d, bit_xinfo.gc, fg);
 	XSetFunction(bit_xinfo.d, bit_xinfo.gc, bit_ops[func&0xf]);
+	dx += map->x0;
+	dy += map->y0;
 	XDrawPoint(bit_xinfo.d, xd->d, bit_xinfo.gc, dx, dy);
 	if (IS_SCREEN(map))
 		XDrawPoint(bit_xinfo.d, bit_xinfo.w, bit_xinfo.gc, dx, dy);
