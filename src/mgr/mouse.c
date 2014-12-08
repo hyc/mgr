@@ -19,7 +19,7 @@
 #include "mouse.h"
 #ifdef USE_X11
 #include "../libbitblit/x11/bitx11.h"
-static int prevx, prevy;
+int ms_prevx, ms_prevy;
 int mfd = -1;
 XEvent cur_event;
 
@@ -43,8 +43,7 @@ get_ms_event(struct ms_event *ev)
 	if (cur_event.type) {
 		xev = cur_event;
 		cur_event.type = 0;
-	} else if (!XCheckIfEvent(bit_xinfo.d, &xev, evpred, NULL))
-		return -1;
+	} else XIfEvent(bit_xinfo.d, &xev, evpred, NULL);
 
 	ev->ev_butstate = 0;
 	if (xb->state & Button1Mask)
@@ -79,10 +78,10 @@ get_ms_event(struct ms_event *ev)
 
 	ev->ev_x = xb->x;
 	ev->ev_y = xb->y;
-	ev->ev_dx = ev->ev_x - prevx;
-	prevx = ev->ev_x;
-	ev->ev_dy = ev->ev_y - prevy;
-	prevy = ev->ev_y;
+	ev->ev_dx = ev->ev_x - ms_prevx;
+	ms_prevx = ev->ev_x;
+	ev->ev_dy = ev->ev_y - ms_prevy;
+	ms_prevy = ev->ev_y;
 	return 0;
 }
 

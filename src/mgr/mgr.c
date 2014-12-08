@@ -122,6 +122,9 @@ static void sig_share(int n)
 # endif
 }
 /*}}}  */
+#ifdef USE_X11
+int evx, evy;
+#endif
 /*{{{  proc_mouse -- process mouse*/
 static int
 proc_mouse(mouse)
@@ -133,8 +136,13 @@ int mouse;
    do {
       button = mouse_get(mouse,&dx,&dy);
       MOUSE_OFF(screen,mousex,mousey);
+#ifdef USE_X11
+	  mousex = evx;
+	  mousey = evy;
+#else
       mousex += 2*dx;
       mousey -= 2*dy;
+#endif
       mousex = BETWEEN(0,mousex,BIT_WIDE(screen)-1);
       mousey = BETWEEN(0,mousey,BIT_HIGH(screen)-1);
       if (button != button_state) {
@@ -432,7 +440,7 @@ int main(argc,argv) int argc; char **argv;
    FD_ZERO( &mask);
 #ifdef USE_X11
    FD_SET( bit_xinfo.fd, &mask);
-   XSelectInput(bit_xinfo.d, bit_xinfo.w, KeyPressMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask);
+   XSelectInput(bit_xinfo.d, bit_xinfo.w, ExposureMask|KeyPressMask|ButtonPressMask|ButtonReleaseMask|PointerMotionMask);
 #else
    FD_SET( mouse, &mask);
    FD_SET( 0, &mask);
@@ -539,9 +547,18 @@ int main(argc,argv) int argc; char **argv;
 			ev.type == ButtonRelease ||
 			ev.type == MotionNotify) {
 				cur_event = ev;
+				evx = ev.xbutton.x;
+				evy = ev.xbutton.y;
 				proc_mouse(mouse);
-			}
+		} else if (ev.type == Expose) {
+			XSetFunction(bit_xinfo.d, bit_xinfo.gc, GXcopy);
+			XCopyArea(bit_xinfo.d, bit_xinfo.p, bit_xinfo.w, bit_xinfo.gc,
+				ev.xexpose.x, ev.xexpose.y, ev.xexpose.width, ev.xexpose.height,
+				ev.xexpose.x, ev.xexpose.y);
+			if (!ev.xexpose.count)
+				XFlush(bit_xinfo.d);
 		}
+	}
 #else
       /* process mouse */
 
@@ -633,6 +650,9 @@ int main(argc,argv) int argc; char **argv;
 #endif
 
             i = put_window(win,W(buff)+W(current),count);
+#ifdef USE_X11
+			XFlush(bit_xinfo.d);
+#endif
             dbgprintf('w',(stderr,"%s: writing %d/%d %.*s [%.*s]\r\n",
 			  W(tty),i,count,i,W(buff)+W(current),count-i,
 			  W(buff)+W(current)+i));

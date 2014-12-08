@@ -25,6 +25,10 @@
 #include "font_subs.h"
 #include "icon_server.h"
 #include "mouse_get.h"
+#ifdef USE_X11
+#include "../libbitblit/x11/bitx11.h"
+extern int ms_prevx, ms_prevy;
+#endif
 /*}}}  */
 /*{{{  #defines*/
 #define MAX_LIST	100	/* max number of choices */
@@ -157,7 +161,7 @@ int start;			/* preselected item */
    /* position the box on the screen */
 
    if (BIT_WIDE(state->menu)>BIT_WIDE(screen) ||
-       BIT_WIDE(state->menu)>BIT_WIDE(screen) ||
+       BIT_HIGH(state->menu)>BIT_HIGH(screen) ||
        state->save)
        return((struct menu_state *) 0);
 
@@ -238,7 +242,13 @@ int exit;			/* off-menu exit codes */
    y_position = state->bar_sizey*(inverse+1) + state->bar_sizey/2;
 
    /* track the mouse */
-
+#ifdef USE_X11
+   ms_prevx = inside->x0+x_position-HOT;
+   ms_prevy = inside->y0+y_position-HOT;
+   XWarpPointer(bit_xinfo.d, None, bit_xinfo.w, 0,0,0,0,
+	ms_prevx, ms_prevy);
+   XFlush(bit_xinfo.d);
+#endif
    MOUSE_ON(inside,x_position-HOT,y_position-HOT);		/* on */
    do {
       push = mouse_get(mouse,&x_mouse,&y_mouse);
