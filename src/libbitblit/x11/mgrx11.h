@@ -5,14 +5,15 @@
  *       on copies, and credit should be given to the author where it is due.
  *       THE AUTHOR MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
  */
-#include "mgrx11.h"
-#include "bitx11.h"
+#define DATA unsigned char
 
-#ifndef Min
-#define Min(x,y)	((x)>(y)?y:x)
-#endif
+#include <mgr/bitblit.h>
 
-extern const unsigned char bit_ops[16];
-extern int bit_colors[256];
-extern void bit_pixmap(BITMAP *map);
+#define LOGBITS 3
+#define BITS (~(~(unsigned)0<<LOGBITS))
 
+#define bit_linesize(wide,depth) ((((depth)*(wide)+BITS)&~BITS)>>3)
+
+#define BIT_SIZE(m) BIT_Size(BIT_WIDE(m), BIT_HIGH(m), BIT_DEPTH(m))
+#define BIT_Size(wide,high,depth) (((((depth)*(wide)+BITS)&~BITS)*(high))>>3)
+#define BIT_LINE(x) ((((x)->primary->depth*(x)->primary->wide+BITS)&~BITS)>>LOGBITS)

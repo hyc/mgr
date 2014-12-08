@@ -1,15 +1,33 @@
-#                        Copyright (c) 1988 Bellcore
+# Copyright (c) 2014 Howard Chu, hyc@symas.com
 #                            All Rights Reserved
 #       Permission is granted to copy or use this program, EXCEPT that it
 #       may not be sold for profit, the copyright notice must be reproduced
-#       on copies, and credit should be given to Bellcore where it is due.
-#       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+#       on copies, and credit should be given to the author where it is due.
+#       THE AUTHOR MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
 
-#	$Header: /files/src/linuxmgr/src/libbitblit/stub_lib/RCS/README,v 4.4 1994/01/28 21:39:20 broman Stab $
-#	$Source: /files/src/linuxmgr/src/libbitblit/stub_lib/RCS/README,v $
+This is a quick and dirty implementation of MGR's bitblit library
+for X11 Xlib. It supports 256-color indexed graphics, and fakes
+this mode on true-color displays.
 
-generic bitblit code stub
+It is currently hardcoded to use a 1024x768 window.
 
-* mem_rop(dst,x_dst,y_dst,w,h,op,src,x_src,y_src) /* bit-blt (clipped) */
-* bit_line(dst,x,y,op)	/* lines (clipped) */
-* bit_point(dst,x,y,op) /* a point (clipped) */
+Supporting MGR's BITMAP structure is somewhat clunky. MGR assumes a
+simple byte array can be used directly as video memory as well as
+for off-screen buffers. In X, graphics data must be sent to the X
+server and associated with server-resident Pixmaps. Local BITMAP
+data must be converted into X format before being usable with the
+X graphics operators. This means any bitmap data local to MGR is
+always being copied at least once before being usable.
+
+Currently the bit_open()/bit_initscreen() implementation is a bit
+broken; the API assumes that multiple processes can call bit_open
+and access the same physical screen. The current implementation just
+creates a new X window each time it's called, so processes that
+expect to see what the MGR server is operating on won't work.
+
+Overall this may not be the ideal way to use MGR; it is nowhere near
+as lightweight or responsive as an MGR server with direct hardware
+access. But it leverages the extensive video driver work that's been
+done for X, using whatever 2D acceleration hardware is available.
+
+ -- Howard Chu, hyc@symas.com 2014-11-15

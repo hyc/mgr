@@ -55,22 +55,26 @@ void mvpoint(tx,ty,v_x,v_y) int *tx,*ty,*v_x,*v_y;
   {
     *v_x = (*v_x > 0) ? -(*v_x) : *v_x;
     diddle(v_x);
+	*tx = MAXX;
   }
   if ( *ty >= MAXY)
   {
     *v_y = (*v_y > 0) ? -(*v_y) : *v_y;
     diddle(v_y);
+	*ty = MAXY;
   }
 
   if ( *tx <= 0)
   {
     *v_x = (*v_x < 0) ? -(*v_x) : *v_x;
     diddle(v_x);
+	*tx = 0;
   }
   if ( *ty <= 0)
   {
     *v_y = (*v_y < 0) ? -(*v_y) : *v_y;
     diddle(v_y);
+	*ty = 0;
   }
 }
 /*}}}  */

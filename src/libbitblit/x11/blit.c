@@ -1,16 +1,12 @@
-/*                        Copyright (c) 1987 Bellcore
+/* Copyright (c) 2014 Howard Chu, hyc@symas.com
  *                            All Rights Reserved
  *       Permission is granted to copy or use this program, EXCEPT that it
  *       may not be sold for profit, the copyright notice must be reproduced
- *       on copies, and credit should be given to Bellcore where it is due.
- *       BELLCORE MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
+ *       on copies, and credit should be given to the author where it is due.
+ *       THE AUTHOR MAKES NO WARRANTY AND ACCEPTS NO LIABILITY FOR THIS PROGRAM.
  */
-/*	$Header: /files/src/linuxmgr/src/libbitblit/stub_lib/RCS/blit.c,v 4.3 1994/01/28 21:01:13 broman Stab $
-	$Source: /files/src/linuxmgr/src/libbitblit/stub_lib/RCS/blit.c,v $
-*/
-static char	RCSid_[] = "$Source: /files/src/linuxmgr/src/libbitblit/stub_lib/RCS/blit.c,v $$Revision: 4.3 $";
 
-/*  stub bitblit code */
+/*  Xlib bitblit code */
 
 #include "bitmap.h"
 
@@ -87,7 +83,7 @@ int func;			/* rasterop function */
 		img.height = BIT_HIGH(src->primary);
 		img.xoffset = 0;
 		img.format = (src->depth == 1) ? XYBitmap : XYPixmap;
-		img.data = src->data;
+		img.data = (char *)src->data;
 		img.byte_order =  MSBFirst;
 		img.bitmap_bit_order = MSBFirst;
 		img.bitmap_unit = 32;
