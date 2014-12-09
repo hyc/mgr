@@ -11,6 +11,8 @@
 /* defines for mgr */
 /*}}}  */
 
+#include <string.h>
+
 /* potentially changable defines for mgr */
 
 #define MAXWIN 		24		/* Maximum number of windows */
