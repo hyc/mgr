@@ -552,6 +552,7 @@ int main(argc,argv) int argc; char **argv;
 				cur_event = ev;
 				evx = ev.xbutton.x;
 				evy = ev.xbutton.y;
+				mouse = -1;
 				proc_mouse(mouse);
 		} else if (ev.type == Expose) {
 			XSetFunction(bit_xinfo.d, bit_xinfo.gc, GXcopy);
