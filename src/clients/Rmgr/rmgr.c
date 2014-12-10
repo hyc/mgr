@@ -703,7 +703,7 @@ static Parse (buf, args) char *buf, **args; {
     }
 }
 
-static char TermBuf[MAXLINE];
+static char TermBuf[MY_MAXLINE];
 
 static int MakeWindow (prog, args, name, dir)
 	char *prog, *name, **args, *dir; {
@@ -711,7 +711,6 @@ static int MakeWindow (prog, args, name, dir)
     register char **cp;
     register n, f;
     int tf;
-    int mypid;
     char ebuf[16];
     char ibuf[MY_MAXLINE];
     char *av[MAXARGS];
@@ -749,8 +748,8 @@ static int MakeWindow (prog, args, name, dir)
     	m_sizeall(n*5,n*5,80,24);
 	strcpy(TermBuf,"TERMCAP=");
 	m_getinfo(G_TERMCAP);
-	read(0, &TermBuf[6], MAXLINE-6);
-	TermBuf[MAXLINE-1]='\0';
+	read(0, &TermBuf[6], MY_MAXLINE-6);
+	TermBuf[MY_MAXLINE-1]='\0';
 #ifdef USE_TERMIOS
 	m_resetflags(ICANON);
 #else
@@ -800,8 +799,6 @@ static int MakeWindow (prog, args, name, dir)
     MakeMenu(n);
     UpdateMenu(n);
     strncpy (p->tty, TtyName, MAXSTR-1);
-    (void) chown (TtyName, getuid (), getgid ());
-    (void) chmod (TtyName, TtyMode);
     p->slot = SetUtmp (TtyName);
     p->rows=24;
     p->cols=80;
@@ -823,8 +820,7 @@ static int MakeWindow (prog, args, name, dir)
 	    SendErrorMsg ("Cannot chdir to %s: %s", dir, strerror(errno));
 	    exit (1);
 	}
-	mypid = getpid ();
-	ioctl (DevTty, TIOCNOTTY, (char *)0);
+	setsid();
 	if ((tf = open (TtyName, O_RDWR)) == -1) {
 	    SendErrorMsg ("Cannot open %s: %s", TtyName, strerror(errno));
 	    exit (1);
@@ -834,8 +830,6 @@ static int MakeWindow (prog, args, name, dir)
 	(void) dup2 (tf, 2);
 	for (f = getdtablesize () - 1; f > 2; f--)
 	    close (f);
-	ioctl (0, TIOCSPGRP, &mypid);
-	(void) setpgid (0, mypid);
 	SetTTY (0, &OldMode);
 #ifdef	TIOCSWINSZ
 	{
@@ -898,6 +892,7 @@ static int OpenPTY () {
     register char *p, *l, *d;
     register i, f, tf;
 
+#if 0
     strcpy (PtyName, PtyProto);
     strcpy (TtyName, TtyProto);
     for (p = PtyName, i = 0; *p != 'X'; ++p, ++i) ;
@@ -915,6 +910,17 @@ static int OpenPTY () {
 	}
     }
     return -1;
+#else
+	f = getpt();
+	if (f != -1) {
+		char *tty, *ptsname();
+		grantpt(f);
+		unlockpt(f);
+		tty = ptsname(f);
+		strcpy(TtyName, tty);
+	}
+	return f;
+#endif
 }
 
 static void SetTTY (fd, mp) struct mode *mp; {
@@ -1435,11 +1441,6 @@ static IsNum (s, base) register char *s; register base; {
 static void InitUtmp () {
     struct passwd *p;
 
-    if ((utmpf = open (UtmpName, O_WRONLY)) == -1) {
-	if (errno != EACCES)
-	    Msg (errno, UtmpName);
-	return;
-    }
     if ((LoginName = getlogin ()) == 0 || LoginName[0] == '\0') {
 	if ((p = getpwuid (getuid ())) == 0)
 	    return;
@@ -1456,20 +1457,16 @@ static SetUtmp (name) char *name; {
 
     if (!utmp)
 	return 0;
-    if (p = rindex (name, '/'))
-	++p;
-    else p = name;
-    setttyent ();
-    while ((tp = getttyent ()) != NULL && strcmp (p, tp->ty_name) != 0)
-	++slot;
-    if (tp == NULL)
-	return 0;
-    strncpy (u.ut_line, p, 8);
-    strncpy (u.ut_name, LoginName, 8);
+	u.ut_type = USER_PROCESS;
+	u.ut_pid = getpid();
+	strcpy(u.ut_line, name + sizeof("/dev"));
+	strcpy(u.ut_id, name + sizeof("/dev/tty"));
+    strcpy(u.ut_user, LoginName);
     u.ut_host[0] = '\0';
+	u.ut_addr = 0;
     time (&u.ut_time);
-    (void) lseek (utmpf, (long)(slot * sizeof (u)), 0);
-    (void) write (utmpf, (char *)&u, sizeof (u));
+	setutent();
+	pututline(&u);
     return slot;
 }
 
@@ -1478,8 +1475,10 @@ static void RemoveUtmp (slot) {
 
     if (slot) {
 	bzero ((char *)&u, sizeof (u));
-	(void) lseek (utmpf, (long)(slot * sizeof (u)), 0);
-	(void) write (utmpf, (char *)&u, sizeof (u));
+	u.ut_type = DEAD_PROCESS;
+	setutent();
+	pututline(&u);
+	endutent();
     }
 }
 

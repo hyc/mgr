@@ -13,7 +13,7 @@
 #define MAXSTR       128
 #define	MAXARGS      64
 
-#define IOSIZE       256
+#define IOSIZE       512
 #define	SCRBUFSIZE	2048	/* About 1 screenful of characters */
 
 struct win {
