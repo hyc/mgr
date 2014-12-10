@@ -25,13 +25,22 @@
 static char Version[] = "$Header: /usr/src/rmgr/RCS/rmgr.c,v 1.5 90/10/15 03:39:02 hyc Stable $";
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <strings.h>
+#include <unistd.h>
+#define USE_TERMIOS
+#ifdef USE_TERMIOS
+#include <termios.h>
+#include <sys/ioctl.h>
+#else
 #include <sgtty.h>
+#endif
 #include <signal.h>
 #include <errno.h>
 #include <ctype.h>
 #include <utmp.h>
 #include <pwd.h>
-#include <nlist.h>
+/* #include <nlist.h> */
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -60,8 +69,6 @@ static char Version[] = "$Header: /usr/src/rmgr/RCS/rmgr.c,v 1.5 90/10/15 03:39:
 
 extern char **environ;
 extern errno;
-extern char *index(), *rindex(), *malloc(), *getenv(), *MakeTermcap();
-extern char *getlogin(), *ttyname();
 static void AttacherFinit(), Finit(), SigHup(), SigChld();
 static char *Filename(), **SaveArgs(), *GetTtyName();
 
@@ -98,23 +105,54 @@ static int VoluntaryDetach = 0;
 static int MyFont;
 
 struct mode {
+#ifdef USE_TERMIOS
+    struct termios m_termios;
+#else
     struct sgttyb m_ttyb;
     struct tchars m_tchars;
     struct ltchars m_ltchars;
-    int m_ldisc;
     int m_lmode;
+#endif
+    int m_ldisc;
 } OldMode, NewMode;
 
 static struct win *curr, *other;
 static CurrNum, OtherNum;
 static struct win *wtab[MAXWIN];
+static void InitMenu();
+static void InitTerm();
+static void FinitTerm();
+static void WriteString();
+static void SigHandler();
+static void KillWindow();
+static int ProcessInput();
+static void SwitchWindow();
+static void SetCurrWindow();
+static void SizeWindow();
+static void FreeWindow();
+static void CollectNames();
+static void UpdateMenu();
+static int MakeWindow();
+static void execvpe();
+static int OpenPTY();
+static void SetTTY(), GetTTY(), SetMode();
+static void Attach(), Attacher();
+static void Detach(), Kill();
+static GetSockName(), MakeServerSocket(), MakeClientSocket();
+static void SendCreateMsg(), SendErrorMsg();
+static void ReceiveMsg(), ExecCreate(), MakeNewEnv();
+static IsSymbol();
+static void InitUtmp(), RemoveUtmp();
+static SetUtmp();
+
+#define bcopy(src,dst,n)	memcpy(dst,src,n)
 
 main (ac, av) char **av; {
     register n, len;
     register struct win **pp, *p;
     char *ap;
-    static InitMenu();
-    int s, r, w, x = 0;
+    int s;
+	fd_set r, w, x;
     int rflag = 0;
     struct timeval tv;
     time_t now;
@@ -122,6 +160,7 @@ main (ac, av) char **av; {
     struct stat st;
     char *winname="";
 
+	FD_ZERO(&x);
     while (ac > 0) {
 	ap = *++av;
 	if (--ac > 0 && *ap == '-') {
@@ -231,19 +270,19 @@ main (ac, av) char **av; {
     signal (SIGCHLD, SigChld);
     tv.tv_usec = 0;
     while (1) {
-	r = 0;
-	w = 0;
+	FD_ZERO(&r);
+	FD_ZERO(&w);
 	if (inlen && curr->wpid>=0)
-	    w |= 1 << curr->ptyfd;
+		FD_SET(curr->ptyfd, &w);
 	else
-	    r |= 1 << 0;
+	    FD_SET(0, &r);
 	for (pp = wtab; pp < wtab+MAXWIN; ++pp) {
 	    if (!(p = *pp))
 		continue;
 	    if (p->wpid >=0)
-	    	r |= 1 << p->ptyfd;
+			FD_SET(p->ptyfd, &r);
 	}
-	r |= 1 << s;
+	FD_SET(s, &r);
 	(void) fflush (stdout);
 	if (GotSignal) {
 	    SigHandler ();
@@ -260,10 +299,10 @@ main (ac, av) char **av; {
 	    SigHandler ();
 	    continue;
 	}
-	if (r & 1 << s) {
+	if (FD_ISSET(s, &r)) {
 	    ReceiveMsg (s);
 	}
-	if (r & 1 << 0) {
+	if (FD_ISSET(0, &r)) {
 	    if (ESCseen) {
 		inbuf[0] = Esc;
 		inlen = read (0, inbuf+1, IOSIZE-1) + 1;
@@ -280,7 +319,7 @@ main (ac, av) char **av; {
 	    SigHandler ();
 	    continue;
 	}
-	if (curr && w & 1 << curr->ptyfd && inlen > 0) {
+	if (curr && FD_ISSET(curr->ptyfd, &w) && inlen > 0) {
 	    if ((len = write (curr->ptyfd, inbuf, inlen)) > 0) {
 		inlen -= len;
 		bcopy (inbuf+len, inbuf, inlen);
@@ -293,7 +332,7 @@ main (ac, av) char **av; {
 	for (n=0; n<MAXWIN; n++) {
 	    if (!(p = wtab[n]))
 		continue;
-	    if (r & 1 << p->ptyfd) {
+	    if (FD_ISSET(p->ptyfd, &r)) {
 		if ((len = read (p->ptyfd, buf, IOSIZE)) == -1) {
 		    if (errno == EWOULDBLOCK)
 			len = 0;
@@ -308,7 +347,7 @@ main (ac, av) char **av; {
     /*NOTREACHED*/
 }
 
-static InitTerm() {
+static void InitTerm() {
     register char *s;
 
     if ((s = getenv("TERM")) == 0)
@@ -322,14 +361,14 @@ static InitTerm() {
     m_dupkey(Esc);
 }
 
-static FinitTerm() {
+static void FinitTerm() {
     m_nomenu2(); m_nomenu();
     m_clearmenu(1); m_clearmenu(2);
     m_clearevent(ACTIVATE); m_clearevent(RESHAPE); m_clearevent(DESTROY);
     m_popall();
 }
     
-static WriteString(n, buf, len) int n, len; char *buf; {
+static void WriteString(n, buf, len) int n, len; char *buf; {
     register int i, j;
     register struct win *p;
 
@@ -358,13 +397,6 @@ static WriteString(n, buf, len) int n, len; char *buf; {
     }
 }
 
-static SigHandler () {
-    while (GotSignal) {
-	GotSignal = 0;
-	DoWait ();
-    }
-}
-
 static void SigChld () {
     GotSignal = 1;
 }
@@ -383,7 +415,7 @@ static DoWait () {
 	for (n = 0; n<MAXWIN; n++) {
 	    if (wtab[n] && pid == wtab[n]->wpid) {
 		if (WIFSTOPPED (wstat)) {
-		    (void) killpg (getpgrp (wtab[n]->wpid), SIGCONT);
+		    (void) killpg (getpgid (wtab[n]->wpid), SIGCONT);
 		} else
 			KillWindow(n);
 	    }
@@ -396,7 +428,14 @@ static DoWait () {
 	Finit();
 }
 
-static KillWindow (n) int n; {
+static void SigHandler () {
+    while (GotSignal) {
+	GotSignal = 0;
+	DoWait ();
+    }
+}
+
+static void KillWindow (n) int n; {
     if (Detached || n!=CurrNum || !n) {
 	WriteString(n,"[window shut down]",18);
 	wtab[n]->wpid = -1;	/* Shut it down, but don't close */
@@ -425,6 +464,15 @@ static void Finit () {
 }
 
 static linemode(onoff) int onoff; {
+#ifdef USE_TERMIOS
+	struct termios ts;
+	tcgetattr(0,&ts);
+	if (onoff)
+		ts.c_lflag |= ICANON;
+	else
+		ts.c_lflag &= ~ICANON;
+	tcsetattr(0,TCSANOW,&ts);
+#else
 	struct sgttyb buff;
 	gtty(0,&buff);
 	if (onoff)
@@ -432,9 +480,10 @@ static linemode(onoff) int onoff; {
 	else
 		buff.sg_flags |= CBREAK;
 	stty(0,&buff);
+#endif
 }
 
-static ProcessInput (buf, len) char *buf; {
+static int ProcessInput (buf, len) char *buf; {
     register n, k;
     register char *s, *p, *q;
     register struct win **pp;
@@ -500,14 +549,14 @@ static ProcessInput (buf, len) char *buf; {
     return p - buf;
 }
 
-static SwitchWindow(n) {
+static void SwitchWindow(n) {
     if (wtab[n]) {
     	SetCurrWindow(n);
     	m_setmode(M_ACTIVATE);
     }
 }
 
-static SetCurrWindow (n) {
+static void SetCurrWindow (n) {
     CurrNum = n;
     curr = wtab[n];
     m_selectwin(n);
@@ -515,7 +564,7 @@ static SetCurrWindow (n) {
 	m_setmode(M_NOINPUT);	/* Dead window, disallow input */
 }
 
-static SizeWindow (n) int n; {
+static void SizeWindow (n) int n; {
 	struct winsize wbuf;
 	char buf[32]; 
 
@@ -533,7 +582,7 @@ static SizeWindow (n) int n; {
 #endif
 }
 
-static FreeWindow (n) register int n; {
+static void FreeWindow (n) register int n; {
     register i;
     register struct win *wp;
 
@@ -556,7 +605,7 @@ static FreeWindow (n) register int n; {
     UpdateMenu(n);
 }
 
-static CollectNames() {		/* Collect command names for second menu */
+static void CollectNames() {		/* Collect command names for second menu */
     register struct win **wp;
     register int n;
     char buf[8];
@@ -587,7 +636,7 @@ static char MenuActs[24];
 static char MenuLabs[8]="ncksdq";
 static struct menu_entry MainMenu[9];
 
-static InitMenu() {
+static void InitMenu() {
     register int i;
     register char *ptr;
 
@@ -615,7 +664,7 @@ static MakeMenu(n) int n; {
     m_selectmenu2(1);
 }
 
-static UpdateMenu(n) int n; {
+static void UpdateMenu(n) int n; {
     register int i;
 
     for (i=0; i<MAXWIN; i++)
@@ -656,7 +705,7 @@ static Parse (buf, args) char *buf, **args; {
 
 static char TermBuf[MAXLINE];
 
-static MakeWindow (prog, args, name, dir)
+static int MakeWindow (prog, args, name, dir)
 	char *prog, *name, **args, *dir; {
     register struct win *p;
     register char **cp;
@@ -684,7 +733,11 @@ static MakeWindow (prog, args, name, dir)
     if (!wtab[0]) {
 	n=0;
     } else {
+#ifdef USE_TERMIOS
+	m_setflags(ICANON);
+#else
 	m_resetflags(CBREAK);
+#endif
 	m_newwin(0,0,50,50);
 	read(0, TermBuf, MAXLINE);
 	TermBuf[MAXLINE-1]='\0';
@@ -696,9 +749,13 @@ static MakeWindow (prog, args, name, dir)
     	m_sizeall(n*5,n*5,80,24);
 	strcpy(TermBuf,"TERMCAP=");
 	m_getinfo(G_TERMCAP);
-	read(0, &TermBuf[6], MAXLINE);
+	read(0, &TermBuf[6], MAXLINE-6);
 	TermBuf[MAXLINE-1]='\0';
+#ifdef USE_TERMIOS
+	m_resetflags(ICANON);
+#else
 	m_setflags(CBREAK);
+#endif
 	TermBuf[6]='P';
 	TermBuf[7]='=';
 	ptr=index(TermBuf,'\n');
@@ -778,7 +835,7 @@ static MakeWindow (prog, args, name, dir)
 	for (f = getdtablesize () - 1; f > 2; f--)
 	    close (f);
 	ioctl (0, TIOCSPGRP, &mypid);
-	(void) setpgrp (0, mypid);
+	(void) setpgid (0, mypid);
 	SetTTY (0, &OldMode);
 #ifdef	TIOCSWINSZ
 	{
@@ -798,7 +855,7 @@ static MakeWindow (prog, args, name, dir)
     return n;
 }
 
-static execvpe (prog, args, env) char *prog, **args, **env; {
+static void execvpe (prog, args, env) char *prog, **args, **env; {
     register char *path, *p;
     char buf[1024];
     char *shargs[MAXARGS+1];
@@ -837,7 +894,7 @@ static execvpe (prog, args, env) char *prog, **args, **env; {
 	errno = EACCES;
 }
 
-static OpenPTY () {
+static int OpenPTY () {
     register char *p, *l, *d;
     register i, f, tf;
 
@@ -860,24 +917,35 @@ static OpenPTY () {
     return -1;
 }
 
-static SetTTY (fd, mp) struct mode *mp; {
+static void SetTTY (fd, mp) struct mode *mp; {
+#ifdef USE_TERMIOS
+    ioctl (fd, TCSETS, &mp->m_termios);
+#else
     ioctl (fd, TIOCSETP, &mp->m_ttyb);
     ioctl (fd, TIOCSETC, &mp->m_tchars);
     ioctl (fd, TIOCSLTC, &mp->m_ltchars);
     ioctl (fd, TIOCLSET, &mp->m_lmode);
+#endif
     ioctl (fd, TIOCSETD, &mp->m_ldisc);
 }
 
-static GetTTY (fd, mp) struct mode *mp; {
+static void GetTTY (fd, mp) struct mode *mp; {
+#ifdef USE_TERMIOS
+    ioctl (fd, TCGETS, &mp->m_termios);
+#else
     ioctl (fd, TIOCGETP, &mp->m_ttyb);
     ioctl (fd, TIOCGETC, &mp->m_tchars);
     ioctl (fd, TIOCGLTC, &mp->m_ltchars);
     ioctl (fd, TIOCLGET, &mp->m_lmode);
+#endif
     ioctl (fd, TIOCGETD, &mp->m_ldisc);
 }
 
-static SetMode (op, np) struct mode *op, *np; {
+static void SetMode (op, np) struct mode *op, *np; {
     *np = *op;
+#ifdef USE_TERMIOS
+	cfmakeraw(&np->m_termios);
+#else
     np->m_ttyb.sg_flags &= ~(CRMOD|ECHO);
     np->m_ttyb.sg_flags |= CBREAK;
     np->m_tchars.t_intrc = -1;
@@ -886,6 +954,7 @@ static SetMode (op, np) struct mode *op, *np; {
     np->m_ltchars.t_dsuspc = -1;
     np->m_ltchars.t_flushc = -1;
     np->m_ltchars.t_lnextc = -1;
+#endif
 }
 
 static char *GetTtyName () {
@@ -899,7 +968,7 @@ static char *GetTtyName () {
     return p;
 }
 
-static Attach (how) {
+static void Attach (how) {
     register s, lasts, found = 0;
     register DIR *dirp;
     register struct direct *dp;
@@ -959,14 +1028,14 @@ static void ReAttach () {
     Attach (MSG_CONT);
 }
 
-static Attacher () {
+static void Attacher () {
     signal (SIGHUP, AttacherFinit);
     signal (SIGCONT, ReAttach);
     while (1)
 	pause ();
 }
 
-static Detach (suspend) {
+static void Detach (suspend) {
     register struct win **pp;
     register int i;
 
@@ -1013,7 +1082,7 @@ static Detach (suspend) {
     signal (SIGHUP, SigHup);
 }
 
-static Kill (pid, sig) {
+static void Kill (pid, sig) {
     if (pid != 0)
 	(void) kill (pid, sig);
 }
@@ -1079,7 +1148,7 @@ static MakeClientSocket (err) {
     return s;
 }
 
-static SendCreateMsg (s, ac, av, name) char **av, *name; {
+static void SendCreateMsg (s, ac, av, name) char **av, *name; {
     struct msg m;
     register char *p;
     register len, n;
@@ -1105,7 +1174,7 @@ static SendCreateMsg (s, ac, av, name) char **av, *name; {
 }
 
 /*VARARGS1*/
-static SendErrorMsg (fmt, p1, p2, p3, p4, p5, p6) char *fmt; {
+static void SendErrorMsg (fmt, p1, p2, p3, p4, p5, p6) char *fmt; {
     register s;
     struct msg m;
 
@@ -1204,7 +1273,7 @@ static RestoreWindows(mt) int mt; {
     VoluntaryDetach=0;
 }
 	    
-static ReceiveMsg (s) {
+static void ReceiveMsg (s) {
     register ns;
     struct sockaddr_un a;
     int left, len = sizeof (a);
@@ -1262,7 +1331,7 @@ static ReceiveMsg (s) {
     }
 }
 
-static ExecCreate (mp) struct msg *mp; {
+static void ExecCreate (mp) struct msg *mp; {
     char *args[MAXARGS];
     register n;
     register char **pp = args, *p = mp->m.create.line;
@@ -1292,7 +1361,7 @@ static char **SaveArgs (argc, argv) register argc; register char **argv; {
     return ap;
 }
 
-static MakeNewEnv () {
+static void MakeNewEnv () {
     register char **op, **np = NewEnv;
     static char buf[MAXSTR];
 
@@ -1363,7 +1432,7 @@ static IsNum (s, base) register char *s; register base; {
     return 1;
 }
 
-static InitUtmp () {
+static void InitUtmp () {
     struct passwd *p;
 
     if ((utmpf = open (UtmpName, O_WRONLY)) == -1) {
@@ -1404,7 +1473,7 @@ static SetUtmp (name) char *name; {
     return slot;
 }
 
-static RemoveUtmp (slot) {
+static void RemoveUtmp (slot) {
     struct utmp u;
 
     if (slot) {
@@ -1448,19 +1517,4 @@ static struct ttyent *getttyent () {
     return &t;
 }
 
-#endif
-
-#ifndef USEBCOPY
-bcopy (s1, s2, len) register char *s1, *s2; register len; {
-    if (s1 < s2 && s2 < s1 + len) {
-	s1 += len; s2 += len;
-	while (len-- > 0) {
-	    *--s2 = *--s1;
-	}
-    } else {
-	while (len-- > 0) {
-	    *s2++ = *s1++;
-	}
-    }
-}
 #endif

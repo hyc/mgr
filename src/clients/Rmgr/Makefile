@@ -13,7 +13,7 @@
 
 OPTIONS= -DGETTTYENT
 
-CFLAGS= -O -I/usr/mgr/include -L/usr/mgr/lib
+CFLAGS= -O -I/usr/local/mgr/include -L/usr/local/mgr/lib
 
 rmgr: rmgr.o
 	$(CC) $(CFLAGS) -o rmgr rmgr.o -lmgr
