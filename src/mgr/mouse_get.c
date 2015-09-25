@@ -126,11 +126,11 @@ int mouse_count()
 fd_set r;
 struct timeval timeout;
 
+        if (mfd<0) return 0;
 	FD_ZERO(&r); FD_SET(mfd, &r);
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
 
-        if (mfd<0) return 0;
-        else return (select(mfd+1, &r, NULL, NULL, &timeout));
+        return (select(mfd+1, &r, NULL, NULL, &timeout));
 }
 /*}}}  */
